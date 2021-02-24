@@ -5,6 +5,7 @@ This repository is an implementation of the BC-UR encoding, following the [C++ i
 ## Installing
 
 To install, run:
-
-`yarn add @ngraveio/bc-ur`
+```bash
+yarn add @ngraveio/bc-ur
+```
 
