@@ -45,13 +45,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Apocentre/bc-ur.git"
+    "url": "git+https://github.com/ngraveio/bc-ur.git"
   },
   "keywords": [
     "bc-ur"
   ],
   "bugs": {
-    "url": "https://github.com/Apocentre/bc-ur/issues"
+    "url": "https://github.com/ngraveio/bc-ur/issues"
   },
-  "homepage": "https://github.com/Apocentre/bc-ur#readme"
+  "homepage": "https://github.com/ngraveio/bc-ur#readme"
 }
