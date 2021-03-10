@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "declaration": true,
     "sourceMap": true,
     "composite": true,
     "module": "CommonJS",
@@ -23,4 +24,7 @@
   "include": [
     "src/**/*"
   ],
+  "exclude": [
+    "tests/"
+  ]
 }

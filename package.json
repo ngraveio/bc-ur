@@ -5,7 +5,7 @@
   "description": "A JS implementation of the Uniform Resources (UR) specification from Blockchain Commons",
   "license": "AGPLV3",
   "main": "dist/index.js",
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "directories": {
     "lib": "src",
     "test": "tests"
@@ -18,7 +18,8 @@
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
     "build": "yarn clean && yarn compile",
     "compile": "tsc -p tsconfig.json -outDir ./dist",
-    "test": "jest ",
+    "test": "jest",
+    "prepublish": "yarn build",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" --max-warnings=0"
   },
   "dependencies": {
