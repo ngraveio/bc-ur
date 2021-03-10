@@ -17,7 +17,6 @@
   "scripts": {
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
     "build": "yarn clean && yarn compile",
-    "start": "node ./src/deleteme.ts",
     "compile": "tsc -p tsconfig.json -outDir ./dist",
     "test": "jest ",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" --max-warnings=0"
