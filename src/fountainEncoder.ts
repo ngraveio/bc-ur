@@ -34,7 +34,7 @@ export class FountainEncoderPart {
     return `seqNum:${this._seqNum}, seqLen:${this._seqLength}, messageLen:${this._messageLength}, checksum:${this._checksum}, data:${this._fragment.toString('hex')}`
   }
 
-  public static fromCBOR(cborPayload: string) {
+  public static fromCBOR(cborPayload: string | Buffer) {
     const [
       seqNum,
       seqLength,
