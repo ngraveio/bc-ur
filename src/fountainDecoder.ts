@@ -1,6 +1,7 @@
 import { arrayContains, arraysEqual, bufferXOR, getCRC, setDifference, split } from "./utils";
 import { chooseFragments } from "./fountainUtils";
 import { FountainEncoderPart } from "./fountainEncoder";
+import { InvalidChecksumError } from "./errors";
 
 export class FountainDecoderPart {
   constructor(
@@ -128,8 +129,7 @@ export default class FountainDecoder {
       if (checksum === this.expectedChecksum) {
         this.result = message;
       } else {
-        // result = InvalidChecksumError();
-        // TODO: what do
+        this.error = new InvalidChecksumError();
       }
     }
     else {
