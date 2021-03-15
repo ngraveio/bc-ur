@@ -160,6 +160,18 @@ export default class URDecoder {
     return this.fountainDecoder.expectedPartCount();
   }
 
+  public expectedPartIndexes() {
+    return this.fountainDecoder.getExpectedPartIndexes();
+  }
+
+  public receivedPartIndexes() {
+    return this.fountainDecoder.getReceivedPartIndexes();
+  }
+
+  public lastPartIndexes() {
+    return this.fountainDecoder.getLastPartIndexes();
+  }
+
   public estimatedPercentComplete() {
     return this.fountainDecoder.estimatedPercentComplete();
   }
