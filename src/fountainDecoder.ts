@@ -225,15 +225,15 @@ export default class FountainDecoder {
   }
 
   public getExpectedPartIndexes(): PartIndexes {
-    return this.expectedPartIndexes
+    return [...this.expectedPartIndexes]
   }
 
   public getReceivedPartIndexes(): PartIndexes {
-    return this.receivedPartIndexes
+    return [...this.receivedPartIndexes]
   }
 
   public getLastPartIndexes(): PartIndexes {
-    return this.lastPartIndexes
+    return [...this.lastPartIndexes]
   }
 
   public estimatedPercentComplete(): number {
