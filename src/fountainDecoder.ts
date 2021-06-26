@@ -24,7 +24,6 @@ export class FountainDecoderPart {
   }
 }
 
-
 type PartIndexes = number[];
 interface PartDict {
   key: PartIndexes;
@@ -240,12 +239,15 @@ export default class FountainDecoder {
       return 1;
     }
 
-    const expectedPartCount = this.expectedPartCount() * 1.75;
+    const expectedPartCount = this.expectedPartCount();
 
     if (expectedPartCount === 0) {
       return 0;
     }
 
+    // We multiply the expectedPartCount by `1.75` as a way to compensate for the facet
+    // that `this.processedPartsCount` also tracks the duplicate parts that have been
+    // processeed.
     return Math.min(0.99, this.processedPartsCount / (expectedPartCount * 1.75));
   }
 
