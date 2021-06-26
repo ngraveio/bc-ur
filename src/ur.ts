@@ -16,6 +16,10 @@ export default class UR {
     return new UR(cborEncode(buf));
   }
 
+  public static from(value: any, encoding?: BufferEncoding) {
+    return UR.fromBuffer(Buffer.from(value, encoding));
+  }
+
   public decodeCBOR(): Buffer {
     return cborDecode(this._cborPayload);
   }
