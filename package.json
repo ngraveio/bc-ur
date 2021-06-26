@@ -24,15 +24,12 @@
   },
   "dependencies": {
     "@apocentre/alias-sampling": "^0.5.3",
-    "@ellipticoin/cbor": "^1.0.4",
-    "@iljucha/cbor": "^1.0.10",
     "@types/crc": "^3.4.0",
     "@types/sha.js": "^2.4.0",
     "assert": "^2.0.0",
     "big-integer": "^1.6.48",
     "bignumber.js": "^9.0.1",
     "cbor-sync": "^1.0.4",
-    "cborg": "^1.0.4",
     "crc": "^3.8.0",
     "sha.js": "^2.4.11"
   },

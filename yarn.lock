@@ -283,18 +283,6 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@ellipticoin/cbor@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@ellipticoin/cbor/-/cbor-1.0.4.tgz#de5c5eb2aba9cee93a0a944fae2258171e231dd5"
-  integrity sha512-BD1kzgcYtr2RfG3yXl4aagJnyNpqo5snhzTUyWo1ss7GYSZRqIpEpc78NTm+fYCJ5n7TWrCUKBOqxQfhAkIyBQ==
-  dependencies:
-    bigint-buffer "^1.1.5"
-
-"@iljucha/cbor@^1.0.10":
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/@iljucha/cbor/-/cbor-1.0.10.tgz#eb8f1cec52b1d7eacd21c721d31e441e87e36696"
-  integrity sha512-WEEFvEaLQceDj5J6NYFooMbk+l8FJIRYSnxGtwbO9+6rQ8aqRxQ3Nr4Qq0BpWnD/7wmqTAqupkpfomInQZ01PQ==
-
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz#fd3db1d59ecf7cf121e80650bb86712f9b55eced"
@@ -866,24 +854,10 @@ big-integer@^1.6.48:
   resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.48.tgz#8fd88bd1632cba4a1c8c3e3d7159f08bb95b4b9e"
   integrity sha512-j51egjPa7/i+RdiRuJbPdJ2FIUYYPhvYLjzoYbcMMm62ooO6F94fETG4MTs46zPAF9Brs04OajboA/qTGuz78w==
 
-bigint-buffer@^1.1.5:
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/bigint-buffer/-/bigint-buffer-1.1.5.tgz#d038f31c8e4534c1f8d0015209bf34b4fa6dd442"
-  integrity sha512-trfYco6AoZ+rKhKnxA0hgX0HAbVP/s808/EuDSe2JDzUnCp/xAsli35Orvk67UrTEcwuxZqYZDmfA2RXJgxVvA==
-  dependencies:
-    bindings "^1.3.0"
-
 bignumber.js@^9.0.1:
   version "9.0.1"
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.0.1.tgz#8d7ba124c882bfd8e43260c67475518d0689e4e5"
   integrity sha512-IdZR9mh6ahOBv/hYGiXyVuyCetmGJhtYkqLBpTStdhEGjegpPlUawydyaF3pbIOFynJTpllEs+NP+CS9jKFLjA==
-
-bindings@^1.3.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/bindings/-/bindings-1.5.0.tgz#10353c9e945334bc0511a6d90b38fbc7c9c504df"
-  integrity sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==
-  dependencies:
-    file-uri-to-path "1.0.0"
 
 brace-expansion@^1.1.7:
   version "1.1.11"
@@ -1002,11 +976,6 @@ cbor-sync@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/cbor-sync/-/cbor-sync-1.0.4.tgz#5a11a1ab75c2a14d1af1b237fd84aa8c1593662f"
   integrity sha512-GWlXN4wiz0vdWWXBU71Dvc1q3aBo0HytqwAZnXF1wOwjqNnDWA1vZ1gDMFLlqohak31VQzmhiYfiCX5QSSfagA==
-
-cborg@^1.0.4:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/cborg/-/cborg-1.0.4.tgz#6fc8160073bafbddb6fef34bf58cea1a24ed0ed6"
-  integrity sha512-/7DLFPNNmmwXSjfF34vln2stxQeeWg7lyAS/BU0U9yvjNCRBna33/npURK9BYQ5qU+6i4slJduEaBdVyz5ojTg==
 
 chalk@^2.0.0:
   version "2.4.2"
@@ -1516,11 +1485,6 @@ fb-watchman@^2.0.0:
   integrity sha512-DkPJKQeY6kKwmuMretBhr7G6Vodr7bFwDYTXIkfG1gjvNpaxBTQV3PbXg6bR1c1UP4jPOX0jHUbbHANL9vRjVg==
   dependencies:
     bser "2.1.1"
-
-file-uri-to-path@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/file-uri-to-path/-/file-uri-to-path-1.0.0.tgz#553a7b8446ff6f684359c445f1e37a05dacc33dd"
-  integrity sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==
 
 fill-range@^4.0.0:
   version "4.0.0"
