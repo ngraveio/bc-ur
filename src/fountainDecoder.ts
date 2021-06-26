@@ -190,7 +190,6 @@ export default class FountainDecoder {
     this.lastPartIndexes = decoderPart.indexes;
     this.queuedParts.push(decoderPart);
 
-
     while (!this.isComplete() && this.queuedParts.length > 0) {
       this.processQueuedItem();
     };
@@ -241,7 +240,7 @@ export default class FountainDecoder {
       return 1;
     }
 
-    const expectedPartCount = this.expectedPartCount();
+    const expectedPartCount = this.expectedPartCount() * 1.75;
 
     if (expectedPartCount === 0) {
       return 0;
