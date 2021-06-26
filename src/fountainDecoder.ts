@@ -224,6 +224,18 @@ export default class FountainDecoder {
     return this.expectedPartIndexes.length;
   }
 
+  public getExpectedPartIndexes(): PartIndexes {
+    return [...this.expectedPartIndexes]
+  }
+
+  public getReceivedPartIndexes(): PartIndexes {
+    return [...this.receivedPartIndexes]
+  }
+
+  public getLastPartIndexes(): PartIndexes {
+    return [...this.lastPartIndexes]
+  }
+
   public estimatedPercentComplete(): number {
     if (this.isComplete()) {
       return 1;
