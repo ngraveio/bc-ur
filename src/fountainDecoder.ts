@@ -262,7 +262,7 @@ export default class FountainDecoder {
       return 0;
     }
 
-    return Math.min(0.99, this.receivedPartIndexes.length / expectedPartCount);
+    return this.receivedPartIndexes.length / expectedPartCount;
   }
 }
 
