@@ -1,59 +1,62 @@
 import { sha256Hash } from "./utils";
 import BigNumber from 'bignumber.js'
+import JSBI from 'jsbi'
 
 const MAX_UINT64 = 0xFFFFFFFFFFFFFFFF;
-const rotl = (x: bigint, k: number): bigint => asUintN(64, x << BigInt(k))
-   | BigInt(
-    asUintN(
+const rotl = (x: JSBI, k: number): JSBI => JSBI.bitwiseXor(
+  JSBI.asUintN(64, JSBI.leftShift(x, JSBI.BigInt(k))),
+  JSBI.BigInt(
+    JSBI.asUintN(
       64,
-      x >> (BigInt(64)- BigInt(k))
+      JSBI.signedRightShift(x, (JSBI.subtract(JSBI.BigInt(64), JSBI.BigInt(k))))
     )
-  );
-
-const asUintN = (bits: number, bigint: bigint) => {
-  const p2bits = BigInt(1) << BigInt(bits);
-  const mod = bigint & BigInt(p2bits - BigInt(1));
-  return mod
-};
+  )
+);
 
 export default class Xoshiro {
-  private s: bigint[];
+  private s: JSBI[];
 
   constructor(seed: Buffer) {
     const digest = sha256Hash(seed);
 
-    this.s = [BigInt(0), BigInt(0), BigInt(0), BigInt(0)];
+    this.s = [JSBI.BigInt(0), JSBI.BigInt(0), JSBI.BigInt(0), JSBI.BigInt(0)];
     this.setS(digest);
   }
 
   private setS(digest: Buffer) {
     for (let i = 0; i < 4; i++) {
       let o = i * 8;
-      let v = BigInt(0);
+      let v = JSBI.BigInt(0);
       for (let n = 0; n < 8; n++) {
-        v = asUintN(64, v << BigInt(8));
-        v = asUintN(64, v | BigInt(digest[o + n]));
+        v = JSBI.asUintN(64, JSBI.leftShift(v, JSBI.BigInt(8)));
+        v = JSBI.asUintN(64, JSBI.bitwiseOr(v, JSBI.BigInt(digest[o + n])));
       }
-      this.s[i] = asUintN(64, v);
+      this.s[i] = JSBI.asUintN(64, v);
     }
   }
 
-  private roll(): bigint {
-    const result = asUintN(
+  private roll(): JSBI {
+    const result = JSBI.asUintN(
       64,
-      rotl(asUintN(64, this.s[1] * BigInt(5)), 7) * BigInt(9)
+      JSBI.multiply(
+        rotl(
+          JSBI.asUintN(64, JSBI.multiply(this.s[1], JSBI.BigInt(5))),
+          7
+        ),
+        JSBI.BigInt(9)
+      )
     );
 
-    const t = asUintN(64, this.s[1] << BigInt(17));
+    const t = JSBI.asUintN(64, JSBI.leftShift(this.s[1], JSBI.BigInt(17)));
 
-    this.s[2] = asUintN(64, this.s[2] ^ BigInt(this.s[0]));
-    this.s[3] = asUintN(64, this.s[3] ^ BigInt(this.s[1]));
-    this.s[1] = asUintN(64, this.s[1] ^ BigInt(this.s[2]));
-    this.s[0] = asUintN(64, this.s[0] ^ BigInt(this.s[3]));
+    this.s[2] = JSBI.asUintN(64, JSBI.bitwiseXor(this.s[2], JSBI.BigInt(this.s[0])));
+    this.s[3] = JSBI.asUintN(64, JSBI.bitwiseXor(this.s[3], JSBI.BigInt(this.s[1])));
+    this.s[1] = JSBI.asUintN(64, JSBI.bitwiseXor(this.s[1], JSBI.BigInt(this.s[2])));
+    this.s[0] = JSBI.asUintN(64, JSBI.bitwiseXor(this.s[0], JSBI.BigInt(this.s[3])));
 
-    this.s[2] = asUintN(64, this.s[2] ^ BigInt(t));
+    this.s[2] = JSBI.asUintN(64, JSBI.bitwiseXor(this.s[2], JSBI.BigInt(t)));
 
-    this.s[3] = asUintN(64, rotl(this.s[3], 45));
+    this.s[3] = JSBI.asUintN(64, rotl(this.s[3], 45));
 
     return result;
   }
