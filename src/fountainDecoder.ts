@@ -199,11 +199,11 @@ export default class FountainDecoder {
   }
 
   public isComplete() {
-    return this.result !== undefined && this.result.length > 0;
+    return Boolean(this.result !== undefined && this.result.length > 0);
   }
 
   public isSuccess() {
-    return this.error === undefined && this.isComplete();
+    return Boolean(this.error === undefined && this.isComplete());
   }
 
   public resultMessage(): Buffer {
