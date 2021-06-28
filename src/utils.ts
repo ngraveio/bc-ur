@@ -40,7 +40,7 @@ export const arraysEqual = (ar1: any[], ar2: any[]): boolean => {
     return false;
   }
 
-  return ar1.every((el, index) => ar2.includes(index))
+  return ar1.every(el => ar2.includes(el))
 }
 
 /**
