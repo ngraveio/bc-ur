@@ -140,15 +140,15 @@ export default class URDecoder {
     return this.result ? this.result : new UR(Buffer.from([]));
   }
 
-  public isComplete() {
+  public isComplete(): boolean {
     return this.result && this.result.cbor.length > 0;
   }
 
-  public isSuccess() {
+  public isSuccess(): boolean {
     return !this.error && this.isComplete();
   }
 
-  public isError() {
+  public isError(): boolean {
     return this.error !== undefined;
   }
 

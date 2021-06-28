@@ -24,7 +24,6 @@ export class FountainDecoderPart {
   }
 }
 
-
 type PartIndexes = number[];
 interface PartDict {
   key: PartIndexes;
@@ -190,7 +189,6 @@ export default class FountainDecoder {
     this.lastPartIndexes = decoderPart.indexes;
     this.queuedParts.push(decoderPart);
 
-
     while (!this.isComplete() && this.queuedParts.length > 0) {
       this.processQueuedItem();
     };
@@ -201,11 +199,11 @@ export default class FountainDecoder {
   }
 
   public isComplete() {
-    return this.result !== undefined && this.result.length > 0;
+    return Boolean(this.result !== undefined && this.result.length > 0);
   }
 
   public isSuccess() {
-    return this.error === undefined && this.isComplete();
+    return Boolean(this.error === undefined && this.isComplete());
   }
 
   public resultMessage(): Buffer {
@@ -247,6 +245,9 @@ export default class FountainDecoder {
       return 0;
     }
 
+    // We multiply the expectedPartCount by `1.75` as a way to compensate for the facet
+    // that `this.processedPartsCount` also tracks the duplicate parts that have been
+    // processeed.
     return Math.min(0.99, this.processedPartsCount / (expectedPartCount * 1.75));
   }
 
@@ -261,7 +262,7 @@ export default class FountainDecoder {
       return 0;
     }
 
-    return Math.min(0.99, this.receivedPartIndexes.length / expectedPartCount);
+    return this.receivedPartIndexes.length / expectedPartCount;
   }
 }
 
