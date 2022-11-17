@@ -14,7 +14,7 @@ yarn add @ngraveio/bc-ur
 ### Encode a message
 
 ```js
-import {UR, UREncoder} from '@ngraveio/br-ur'
+import {UR, UREncoder} from '@ngraveio/bc-ur'
 
 const message = {any: 'property'}
 const messageBuffer = Buffer.from(JSON.stringify(message))
@@ -51,7 +51,7 @@ while(!stop) {
 ### Decode a message
 
 ```js
-import {URDecoder} from '@ngraveio/br-ur'
+import {URDecoder} from '@ngraveio/bc-ur'
 
 // Create the decoder object
 const decoder = new URDecoder()
