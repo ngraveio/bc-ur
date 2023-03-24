@@ -1,10 +1,15 @@
-import FountainDecoder from './fountainDecoder';
-import bytewords from './bytewords';
-import assert from 'assert';
-import { isURType, toUint32 } from './utils';
-import { InvalidSchemeError, InvalidPathLengthError, InvalidTypeError, InvalidSequenceComponentError } from './errors';
-import UR from './ur';
-import { FountainEncoderPart } from './fountainEncoder';
+import FountainDecoder, { IFountainDecoder } from "./fountainDecoder";
+import bytewords from "./bytewords";
+import assert from "assert";
+import { isURType, toUint32 } from "./utils";
+import {
+  InvalidSchemeError,
+  InvalidPathLengthError,
+  InvalidTypeError,
+  InvalidSequenceComponentError,
+} from "./errors";
+import UR from "./ur";
+import { FountainEncoderPart } from "./fountainEncoder";
 
 export default class URDecoder {
   private expected_type: string;
@@ -12,18 +17,18 @@ export default class URDecoder {
   private error: Error | undefined;
 
   constructor(
-    private fountainDecoder: FountainDecoder = new FountainDecoder(),
-    public type: string = 'bytes'
+    private fountainDecoder: IFountainDecoder = new FountainDecoder(),
+    public type: string = "bytes"
   ) {
-    assert(isURType(type), 'Invalid UR type');
+    assert(isURType(type), "Invalid UR type");
 
-    this.expected_type = '';
+    this.expected_type = "";
   }
 
   private static decodeBody(type: string, message: string): UR {
     const cbor = bytewords.decode(message, bytewords.STYLES.MINIMAL);
 
-    return new UR(Buffer.from(cbor, 'hex'), type);
+    return new UR(Buffer.from(cbor, "hex"), type);
   }
 
   private validatePart(type: string): boolean {
@@ -56,11 +61,11 @@ export default class URDecoder {
     const lowercase = message.toLowerCase();
     const prefix = lowercase.slice(0, 3);
 
-    if (prefix !== 'ur:') {
+    if (prefix !== "ur:") {
       throw new InvalidSchemeError();
     }
 
-    const components = lowercase.slice(3).split('/')
+    const components = lowercase.slice(3).split("/");
     const type = components[0];
 
     if (components.length < 2) {
@@ -71,11 +76,11 @@ export default class URDecoder {
       throw new InvalidTypeError();
     }
 
-    return [type, components.slice(1)]
+    return [type, components.slice(1)];
   }
 
   public static parseSequenceComponent(s: string) {
-    const components = s.split('-');
+    const components = s.split("-");
 
     if (components.length !== 2) {
       throw new InvalidSequenceComponentError();
@@ -96,7 +101,7 @@ export default class URDecoder {
       return false;
     }
 
-    const [type, components] = URDecoder.parse(s)
+    const [type, components] = URDecoder.parse(s);
 
     if (!this.validatePart(type)) {
       return false;
@@ -104,7 +109,7 @@ export default class URDecoder {
 
     // If this is a single-part UR then we're done
     if (components.length === 1) {
-      this.result = URDecoder.decodeBody(type, components[0])
+      this.result = URDecoder.decodeBody(type, components[0]);
 
       return true;
     }
@@ -128,8 +133,7 @@ export default class URDecoder {
 
     if (this.fountainDecoder.isSuccess()) {
       this.result = new UR(this.fountainDecoder.resultMessage(), type);
-    }
-    else if (this.fountainDecoder.isFailure()) {
+    } else if (this.fountainDecoder.isFailure()) {
       this.error = new InvalidSchemeError();
     }
 
@@ -153,7 +157,7 @@ export default class URDecoder {
   }
 
   public resultError() {
-    return this.error ? this.error.message : '';
+    return this.error ? this.error.message : "";
   }
 
   public expectedPartCount() {
@@ -179,4 +183,37 @@ export default class URDecoder {
   public getProgress() {
     return this.fountainDecoder.getProgress();
   }
+}
+
+type GetPartialURDecoder<
+  T extends IFountainDecoder,
+  KefOfFountainDecoder extends keyof IFountainDecoder,
+  KefOfURDecoder extends keyof URDecoder
+> = KefOfFountainDecoder extends keyof T ? Pick<URDecoder, KefOfURDecoder> : {};
+
+type PartialFountainDecoder<T extends IFountainDecoder> = Omit<
+  URDecoder,
+  | "expectedPartCount"
+  | "expectedPartIndexes"
+  | "receivedPartIndexes"
+  | "lastPartIndexes"
+  | "estimatedPercentComplete"
+  | "getProgress"
+> &
+  GetPartialURDecoder<T, "getExpectedPartIndexes", "expectedPartIndexes"> &
+  GetPartialURDecoder<T, "getReceivedPartIndexes", "receivedPartIndexes"> &
+  GetPartialURDecoder<T, "getProgress", "getProgress"> &
+  GetPartialURDecoder<T, "getLastPartIndexes", "lastPartIndexes"> &
+  GetPartialURDecoder<
+    T,
+    "estimatedPercentComplete",
+    "estimatedPercentComplete"
+  > &
+  GetPartialURDecoder<T, "expectedPartCount", "expectedPartCount">;
+
+export function urDecoderFactory<T extends IFountainDecoder>(
+  fountainDecoder: T,
+  type: string
+): PartialFountainDecoder<T> {
+  return new URDecoder(fountainDecoder, type);
 }

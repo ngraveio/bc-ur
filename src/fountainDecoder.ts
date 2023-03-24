@@ -30,7 +30,21 @@ interface PartDict {
   value: FountainDecoderPart;
 }
 
-export default class FountainDecoder {
+
+export interface IFountainDecoder {
+  isSuccess(): boolean;
+  isFailure(): boolean;
+  resultMessage(): Buffer;
+  receivePart(part: FountainEncoderPart): boolean;
+  getProgress?(): number;
+  estimatedPercentComplete?(): number;
+  getExpectedPartIndexes?(): PartIndexes;
+  getReceivedPartIndexes?(): PartIndexes;
+  getLastPartIndexes?(): PartIndexes;
+  expectedPartCount?(): number;
+}
+
+export default class FountainDecoder implements IFountainDecoder {
   private error: Error | undefined;
   private result: Buffer | undefined = undefined;
   private expectedMessageLength: number = 0;
