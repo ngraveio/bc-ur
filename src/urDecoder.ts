@@ -11,24 +11,26 @@ import {
 import UR from "./ur";
 import { FountainEncoderPart } from "./fountainEncoder";
 
-export default class URDecoder {
+
+export default class URDecoder <T = UR> {
   private expected_type: string;
-  private result: UR | undefined;
+  private result: T | undefined;
   private error: Error | undefined;
 
   constructor(
     private fountainDecoder: IFountainDecoder = new FountainDecoder(),
-    public type: string = "bytes"
+    public type: string = "bytes",
+    private urDecoderFactory: (args: {payload: Buffer, type: string}) => T = ({payload, type}) => new UR(payload, type) as any,
   ) {
     assert(isURType(type), "Invalid UR type");
 
     this.expected_type = "";
   }
 
-  private static decodeBody(type: string, message: string): UR {
+  private decodeBody(type: string, message: string) {
     const cbor = bytewords.decode(message, bytewords.STYLES.MINIMAL);
 
-    return new UR(Buffer.from(cbor, "hex"), type);
+    return this.urDecoderFactory({payload: Buffer.from(cbor, "hex"), type});
   }
 
   /**
@@ -50,8 +52,8 @@ export default class URDecoder {
     return true;
   }
 
-  public static decode(message: string): UR {
-    const [type, components] = this.parse(message);
+  public decode(message: string) {
+    const [type, components] = URDecoder.parse(message);
 
     if (components.length === 0) {
       throw new InvalidPathLengthError();
@@ -59,7 +61,7 @@ export default class URDecoder {
 
     const body = components[0];
 
-    return URDecoder.decodeBody(type, body);
+    return this.decodeBody(type, body);
   }
 
   /**
@@ -133,7 +135,7 @@ export default class URDecoder {
 
     // If this is a single-part UR then we're done
     if (components.length === 1) {
-      this.result = URDecoder.decodeBody(type, components[0]);
+      this.result = this.decodeBody(type, components[0]);
 
       return true;
     }
@@ -156,7 +158,7 @@ export default class URDecoder {
     }
 
     if (this.fountainDecoder.isSuccess()) {
-      this.result = new UR(this.fountainDecoder.resultMessage(), type);
+      this.result = this.urDecoderFactory({payload: this.fountainDecoder.resultMessage(), type});
     } else if (this.fountainDecoder.isFailure()) {
       this.error = new InvalidSchemeError();
     }
@@ -164,12 +166,12 @@ export default class URDecoder {
     return true;
   }
 
-  public resultUR(): UR {
-    return this.result ? this.result : new UR(Buffer.from([]));
+  public resultUR() {
+    return this.result;
   }
 
-  public isComplete(): boolean {
-    return this.result && this.result.cbor.length > 0;
+  public isComplete() {
+    return !!this.result
   }
 
   public isSuccess(): boolean {
