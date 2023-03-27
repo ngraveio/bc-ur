@@ -108,6 +108,7 @@ const _decode = (string: string, separator: string, wordLength: number): string 
   // e.g. "8506171907d11a21314c2d5857314659792f..."
   const decodedString = decodedWords.join('');
 
+  // 4 bytes for checksum, at least 1 byte for body
   assert(decodedString.length >= 5, 'Invalid Bytewords: invalid decoded string length');
 
   // decoded string consists of `body` and `checksum`
@@ -120,7 +121,7 @@ const _decode = (string: string, separator: string, wordLength: number): string 
 }
 
 /**
- * Decode a string of Bytewords into a hex string.
+ * Decode a string of bytewords into a hex string.
  * @param string string of Bytewords
  * @param style style of Bytewords
  * @returns hex string
