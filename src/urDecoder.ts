@@ -31,6 +31,11 @@ export default class URDecoder {
     return new UR(Buffer.from(cbor, "hex"), type);
   }
 
+  /**
+   * validates the type of the UR part
+   * @param type type of the UR part (e.g. "bytes")
+   * @returns true if the type is valid and matches the expected type
+   */
   private validatePart(type: string): boolean {
     if (this.expected_type) {
       return this.expected_type === type;
@@ -57,8 +62,13 @@ export default class URDecoder {
     return URDecoder.decodeBody(type, body);
   }
 
+  /**
+   * Parses a UR and performs basic validation
+   * @param message e.g. "UR:BYTES/6-23/LPAMCHCFATTTCYCLEHGSDPHDHGEHFGHKKKDL..."
+   * @returns `[type, components]` // e.g. `["bytes", ["6-23", "lpamchcfatttcyclehgsdphdhgehfghkkkdl..."]]`
+   */
   public static parse(message: string): [string, string[]] {
-    const lowercase = message.toLowerCase();
+    const lowercase = message.toLowerCase(); // e.g. "ur:bytes/6-23/lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
     const prefix = lowercase.slice(0, 3);
 
     if (prefix !== "ur:") {
@@ -66,7 +76,7 @@ export default class URDecoder {
     }
 
     const components = lowercase.slice(3).split("/");
-    const type = components[0];
+    const type = components[0]; //e.g. "bytes"
 
     if (components.length < 2) {
       throw new InvalidPathLengthError();
@@ -79,6 +89,11 @@ export default class URDecoder {
     return [type, components.slice(1)];
   }
 
+  /**
+   * Parses a sequence component of a UR and performs basic validation
+   * @param s e.g. "146-23"
+   * @returns `[seqNum, seqLength]` // e.g. `[146, 23]`
+   */
   public static parseSequenceComponent(s: string) {
     const components = s.split("-");
 
@@ -89,6 +104,7 @@ export default class URDecoder {
     const seqNum = toUint32(Number(components[0]));
     const seqLength = Number(components[1]);
 
+    // seqNum, seqLength must be greater than 0
     if (seqNum < 1 || seqLength < 1) {
       throw new InvalidSequenceComponentError();
     }
@@ -96,11 +112,19 @@ export default class URDecoder {
     return [seqNum, seqLength];
   }
 
+  /**
+   * Receives a UR part and returns true if the UR part was successfully received
+   * @param s e.g. "UR:BYTES/6-23/LPAMCHCFATTTCYCLEHGSDPHDHGEHFGHKKKDL..."
+   * @returns true if the UR part was successfully received
+   */
   public receivePart(s: string): boolean {
+
+    // If we already have a result, we're done
     if (this.result !== undefined) {
       return false;
     }
 
+    // e.g bytes ["6-23", "lpamchcfatttcyclehgsdphdhgehfghkkkdl..."]
     const [type, components] = URDecoder.parse(s);
 
     if (!this.validatePart(type)) {
@@ -118,10 +142,10 @@ export default class URDecoder {
       throw new InvalidPathLengthError();
     }
 
-    const [seq, fragment] = components;
-    const [seqNum, seqLength] = URDecoder.parseSequenceComponent(seq);
-    const cbor = bytewords.decode(fragment, bytewords.STYLES.MINIMAL);
-    const part = FountainEncoderPart.fromCBOR(cbor);
+    const [seq, fragment] = components; // e.g. "6-23", "lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
+    const [seqNum, seqLength] = URDecoder.parseSequenceComponent(seq); // e.g. [6, 23]
+    const cbor = bytewords.decode(fragment, bytewords.STYLES.MINIMAL); // e.g. "8506171907d11a21314c2d5857..."
+    const part = FountainEncoderPart.fromCBOR(cbor); // {"_checksum": 556878893, "_fragment": [Object], "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
 
     if (seqNum !== part.seqNum || seqLength !== part.seqLength) {
       return false;
