@@ -12,7 +12,7 @@ import UR from "./ur";
 import { FountainEncoderPart } from "./fountainEncoder";
 
 
-export default class URDecoder <T = UR> {
+export default class URDecoder <T extends {cbor: Buffer} = UR> {
   private expected_type: string;
   private result: T | undefined;
   private error: Error | undefined;
@@ -167,11 +167,11 @@ export default class URDecoder <T = UR> {
   }
 
   public resultUR() {
-    return this.result;
+    return this.result ? this.result : this.urDecoderFactory({payload: Buffer.from([]), type: this.expected_type});
   }
 
-  public isComplete() {
-    return !!this.result
+  public isComplete(): boolean {
+    return this.result && this.result.cbor.length > 0;
   }
 
   public isSuccess(): boolean {
