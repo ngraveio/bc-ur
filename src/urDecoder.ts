@@ -11,8 +11,7 @@ import {
 import UR from "./ur";
 import { FountainEncoderPart } from "./fountainEncoder";
 
-
-export default class URDecoder <T extends {cbor: Buffer} = UR> {
+export default class URDecoder<T extends { cbor: Buffer } = UR> {
   private expected_type: string;
   private result: T | undefined;
   private error: Error | undefined;
@@ -30,7 +29,7 @@ export default class URDecoder <T extends {cbor: Buffer} = UR> {
   private decodeBody(type: string, message: string) {
     const cbor = bytewords.decode(message, bytewords.STYLES.MINIMAL);
 
-    return this.urDecoderFactory({payload: Buffer.from(cbor, "hex"), type});
+    return this.urDecoderFactory({ payload: Buffer.from(cbor, "hex"), type });
   }
 
   /**
@@ -133,6 +132,7 @@ export default class URDecoder <T extends {cbor: Buffer} = UR> {
       return false;
     }
 
+    // TODO: "UR:BYTES/LPAMCHCFATTTCYCLEHGSDPHDHGEHFGHKKKDL..."
     // If this is a single-part UR then we're done
     if (components.length === 1) {
       this.result = this.decodeBody(type, components[0]);
