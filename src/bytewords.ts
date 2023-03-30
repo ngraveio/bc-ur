@@ -91,12 +91,27 @@ const decodeWord = (word: string, wordLength: number): string => {
   return Buffer.from([value]).toString('hex')
 }
 
+/**
+ * Decode a string of Bytewords into a hex string.
+ * @param string string of Bytewords. e.g. "lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
+ * @param separator e.g. " " or "-" or "" or any other separator
+ * @param wordLength e.g. 4 or 2 or any other length
+ * @returns hex string
+ */
 const _decode = (string: string, separator: string, wordLength: number): string => {
+  // Split the string into words. e.g. ["lp", "am", "ch", "cf", "at", "tt", "cy", "cl", "eh", "gs", "dp", "hd", "hg", "eh", "fg", "hk", "kk", "dl", ...]
   const words = wordLength == BYTEWORD_LENGTH ? string.split(separator) : partition(string, 2)
-  const decodedString = words.map((word: string) => decodeWord(word, wordLength)).join('');
+  
+  // Decode each word. e.g. ["85", "06", "17", "19", "07", "d1", "1a", "21", "31", "4c", "2d", "58", "57", "31", "46", "59", "79", "2f", ...]
+  const decodedWords = words.map((word: string) => decodeWord(word, wordLength))
 
+  // e.g. "8506171907d11a21314c2d5857314659792f..."
+  const decodedString = decodedWords.join('');
+
+  // 4 bytes for checksum, at least 1 byte for body
   assert(decodedString.length >= 5, 'Invalid Bytewords: invalid decoded string length');
 
+  // decoded string consists of `body` and `checksum`
   const [body, bodyChecksum] = split(Buffer.from(decodedString, 'hex'), 4)
   const checksum = getCRCHex(body)// convert to hex
 
@@ -105,7 +120,12 @@ const _decode = (string: string, separator: string, wordLength: number): string 
   return body.toString('hex');
 }
 
-
+/**
+ * Decode a string of bytewords into a hex string.
+ * @param string string of Bytewords
+ * @param style style of Bytewords
+ * @returns hex string
+ */
 const decode = (string: string, style: STYLES = STYLES.MINIMAL): string => {
   switch (style) {
     case STYLES.STANDARD:
