@@ -211,9 +211,9 @@ type PartialFountainDecoder<T extends IFountainDecoder> = Omit<
 > &
   GetPartialURDecoder<T, "getProgress", "getProgress">;
 
-export function urDecoderFactory<T extends IFountainDecoder>(
-  fountainDecoder: T,
-  type: string
-): PartialFountainDecoder<T> {
-  return new URDecoder(fountainDecoder, type);
-}
+// export function urDecoderFactory<T extends IFountainDecoder>(
+//   fountainDecoder: T,
+//   type: string
+// ): PartialFountainDecoder<T> {
+//   return new URDecoder(fountainDecoder, type);
+// }

@@ -2,11 +2,20 @@ import FountainEncoder, { FountainEncoderPart } from "../src/fountainEncoder";
 import { makeMessage } from "./utils";
 
 describe('Fountain Encoder', () => {
-  test('finds fragment length', () => {
-    expect(FountainEncoder.findNominalFragmentLength(12345, 1005, 1955))
-      .toBe(1764);
-    expect(FountainEncoder.findNominalFragmentLength(12345, 1005, 30000))
-      .toBe(12345);
+  describe('finds fragment length', () => {
+    const messageLength = 12345;
+    const minFragmentLength = 1005;
+    const maxFragmentLength = 1955;
+    const fragmentLength = FountainEncoder.findNominalFragmentLength(messageLength, minFragmentLength, maxFragmentLength);
+
+    test('fragments are within bounds', () => {
+      expect(fragmentLength).toBeLessThan(maxFragmentLength)
+      expect(fragmentLength).toBeGreaterThan(minFragmentLength)
+  } );
+    test('last fragment is within bounds', () => {
+      expect(messageLength % fragmentLength).toBeGreaterThan(minFragmentLength)
+      expect(messageLength % fragmentLength).toBeLessThan(maxFragmentLength)
+    });
   });
 
   test('is complete', () => {

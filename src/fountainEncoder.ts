@@ -125,6 +125,13 @@ export default class FountainEncoder {
     )
   }
 
+  /**
+   * find fragment length that is between min and max and for all and last fragment (last fragment can be smaller)
+   * @param messageLength message length
+   * @param minFragmentLength minimum fragment length
+   * @param maxFragmentLength maximum fragment length
+   * @returns fragment length
+   */
   public static findNominalFragmentLength(
     messageLength: number,
     minFragmentLength: number,
