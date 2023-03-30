@@ -17,13 +17,21 @@ export default class URDecoder<T extends { cbor: Buffer } = UR> {
   private error: Error | undefined;
 
   constructor(
-    private fountainDecoder: IFountainDecoder = new FountainDecoder(),
+    private _fountainDecoder: IFountainDecoder = new FountainDecoder(),
     public type: string = "bytes",
     private urDecoderFactory: (args: {payload: Buffer, type: string}) => T = ({payload, type}) => new UR(payload, type) as any,
   ) {
     assert(isURType(type), "Invalid UR type");
 
     this.expected_type = "";
+  }
+
+  get fountainDecoder(){
+    return this._fountainDecoder;
+  }
+
+  set fountainDecoder(fountainDecoder){
+    this._fountainDecoder = fountainDecoder;
   }
 
   private decodeBody(type: string, message: string) {
@@ -186,26 +194,6 @@ export default class URDecoder<T extends { cbor: Buffer } = UR> {
     return this.error ? this.error.message : "";
   }
 
-  public expectedPartCount() {
-    return this.fountainDecoder.expectedPartCount();
-  }
-
-  public expectedPartIndexes() {
-    return this.fountainDecoder.getExpectedPartIndexes();
-  }
-
-  public receivedPartIndexes() {
-    return this.fountainDecoder.getReceivedPartIndexes();
-  }
-
-  public lastPartIndexes() {
-    return this.fountainDecoder.getLastPartIndexes();
-  }
-
-  public estimatedPercentComplete() {
-    return this.fountainDecoder.estimatedPercentComplete();
-  }
-
   public getProgress() {
     return this.fountainDecoder.getProgress();
   }
@@ -219,27 +207,13 @@ type GetPartialURDecoder<
 
 type PartialFountainDecoder<T extends IFountainDecoder> = Omit<
   URDecoder,
-  | "expectedPartCount"
-  | "expectedPartIndexes"
-  | "receivedPartIndexes"
-  | "lastPartIndexes"
-  | "estimatedPercentComplete"
-  | "getProgress"
+  "getProgress"
 > &
-  GetPartialURDecoder<T, "getExpectedPartIndexes", "expectedPartIndexes"> &
-  GetPartialURDecoder<T, "getReceivedPartIndexes", "receivedPartIndexes"> &
-  GetPartialURDecoder<T, "getProgress", "getProgress"> &
-  GetPartialURDecoder<T, "getLastPartIndexes", "lastPartIndexes"> &
-  GetPartialURDecoder<
-    T,
-    "estimatedPercentComplete",
-    "estimatedPercentComplete"
-  > &
-  GetPartialURDecoder<T, "expectedPartCount", "expectedPartCount">;
+  GetPartialURDecoder<T, "getProgress", "getProgress">;
 
-export function urDecoderFactory<T extends IFountainDecoder>(
-  fountainDecoder: T,
-  type: string
-): PartialFountainDecoder<T> {
-  return new URDecoder(fountainDecoder, type);
-}
+// export function urDecoderFactory<T extends IFountainDecoder>(
+//   fountainDecoder: T,
+//   type: string
+// ): PartialFountainDecoder<T> {
+//   return new URDecoder(fountainDecoder, type);
+// }
