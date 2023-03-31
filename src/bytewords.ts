@@ -139,6 +139,12 @@ const decode = (string: string, style: STYLES = STYLES.MINIMAL): string => {
   }
 }
 
+/**
+ * Encodes a string (hex representation of a buffer) into bytewords.
+ * @param string string to encode.
+ * @param style style to use for the encoding.
+ * @returns the byteword encoded string
+ */
 const encode = (string: string, style: STYLES = STYLES.MINIMAL): string => {
   switch (style) {
     case STYLES.STANDARD:

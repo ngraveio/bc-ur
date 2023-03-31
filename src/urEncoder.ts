@@ -21,6 +21,10 @@ export default class UREncoder {
   public get messageLength() { return this.fountainEncoder.messageLength; }
   public get cbor() { return this.ur.cbor; }
 
+  /**
+   * Convert the full payload into a bc-ur bytewords string.
+   * @returns string representation of every fragment in the form of bc-ur bytewords.
+   */
   public encodeWhole(): string[] {
     return [...new Array(this.fragmentsLength)].map(() => this.nextPart())
   }
@@ -45,6 +49,13 @@ export default class UREncoder {
     return UREncoder.encodeUri('ur', pathComponents);
   }
 
+  //FIXME: should not use FountainEncoderPart type.
+  /**
+   * Encodes a part of the cbor payload into bytewords.
+   * @param type bc-ur type
+   * @param part Object containing the sequence of the part cbor payload
+   * @returns string representation of a part [ur]:[type]/[sequence]/[body(cbor payload in bytewords)]
+   */
   private static encodePart(type: string, part: FountainEncoderPart): string {
     const seq = `${part.seqNum}-${part.seqLength}`;
     const body = bytewords.encode(part.cbor().toString('hex'), bytewords.STYLES.MINIMAL);
