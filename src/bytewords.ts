@@ -7,7 +7,7 @@ const BYTEWORDS_NUM = 256;
 const BYTEWORD_LENGTH = 4;
 const MINIMAL_BYTEWORD_LENGTH = 2;
 
-enum STYLES {
+export enum STYLES {
   STANDARD = 'standard',
   URI = 'uri',
   MINIMAL = 'minimal'
@@ -126,7 +126,7 @@ const _decode = (string: string, separator: string, wordLength: number): string 
  * @param style style of Bytewords
  * @returns hex string
  */
-const decode = (string: string, style: STYLES = STYLES.MINIMAL): string => {
+export const decode = (string: string, style: STYLES = STYLES.MINIMAL): string => {
   switch (style) {
     case STYLES.STANDARD:
       return _decode(string, ' ', BYTEWORD_LENGTH);
@@ -145,7 +145,7 @@ const decode = (string: string, style: STYLES = STYLES.MINIMAL): string => {
  * @param style style to use for the encoding.
  * @returns the byteword encoded string
  */
-const encode = (string: string, style: STYLES = STYLES.MINIMAL): string => {
+export const encode = (string: string, style: STYLES = STYLES.MINIMAL): string => {
   switch (style) {
     case STYLES.STANDARD:
       return encodeWithSeparator(string, ' ');
