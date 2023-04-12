@@ -15,7 +15,6 @@ export class Encoder<T, U> implements IEncoder<T, U> {
 
     // Apply each encoding method in sequence
     for (const encodingMethod of this._encodingMethods) {
-      console.log('encodedValue', encodedValue);
       encodedValue = encodingMethod.encode(encodedValue);
     }
 

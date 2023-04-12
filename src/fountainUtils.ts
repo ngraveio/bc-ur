@@ -1,4 +1,4 @@
-import { intToBytes } from "./utils";
+import { bufferXOR, intToBytes } from "./utils";
 import Xoshiro from "./xoshiro";
 const randomSampler = require('@apocentre/alias-sampling');
 
@@ -41,4 +41,11 @@ export const chooseFragments = (seqNum: number, seqLength: number, checksum: num
 
     return shuffledIndexes.slice(0, degree);
   }
+}
+
+export const mix = (indexes: number[], fragments: Buffer[]) => {
+  return indexes.reduce(
+    (result, index) => bufferXOR(fragments[index], result),
+    Buffer.alloc(fragments.length, 0)
+  )
 }

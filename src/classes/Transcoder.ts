@@ -3,6 +3,8 @@ import { CborEncoding } from "./CborEncoding";
 import { Decoder } from "./Decoder";
 import { Encoder } from "./Encoder";
 import { HexEncoding } from "./HexEncoding";
+import { UrDecoder } from "./UrDecoder";
+import { UrEncoder } from "./UrEncoder";
 
 export interface ITranscoder<T,U> {
     encoder: Encoder<T,U>;
@@ -10,12 +12,12 @@ export interface ITranscoder<T,U> {
 }
 
 export class NgraveTranscoder implements ITranscoder<any,string> {
-    encoder: Encoder<any,string>;
-    decoder: Decoder<string,any>;
+    encoder: UrEncoder;
+    decoder: UrDecoder;
 
     constructor(){
         const methods = [new CborEncoding(), new HexEncoding(), new BytewordEncoding()]
-        this.encoder = new Encoder(methods);
-        this.decoder = new Decoder(methods)
+        this.encoder = new UrEncoder(methods);
+        this.decoder = new UrDecoder(methods)
     }
 }
