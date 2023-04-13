@@ -1,5 +1,6 @@
 import { Ur } from "../src/classes/Ur";
 import { NgraveTranscoder } from "../src/classes/Transcoder";
+import UrFountainEncoder from "../src/classes/UrFountainEncoder";
 import { makeMessage } from "./utils";
 
 describe("getFragments", () => {
@@ -70,5 +71,49 @@ describe("getFragments", () => {
 
     const decoded = decoder.decodeFragments(fountainFragments);
     expect(decoded.payload).toEqual(ur.payload);
+  });
+  test("using nextpart keeps generating multipart Ur's", () => {
+    const ur = new Ur({ name: "Pieter" }, { type: "custom", tag: 0 });
+    const fountainEncoder = new UrFountainEncoder(encoder._encodingMethods,ur,5,5)
+    const count = 10;
+    const parts: string[] = [];
+    for (let index = 0; index < count; index++) {
+      const part = fountainEncoder.nextPart();
+      parts.push(part);
+    }
+    expect(parts.length).toEqual(count);
+
+    const decoded = decoder.decodeFragments(parts);
+    expect(decoded).toEqual(ur)
+  });
+  test("FountainEncoder encoded ur should be equal to input ur", () => {
+    const ur = new Ur({ name: "Pieter" }, { type: "custom", tag: 0 });
+    const fountainEncoder = new UrFountainEncoder(encoder._encodingMethods,ur,5,5)
+    const count = 10;
+    const parts: string[] = [];
+
+    const minimumCount = fountainEncoder.getPureFragmentCount();
+
+    for (let index = 0; index < minimumCount; index++) {
+      const part = fountainEncoder.nextPart();
+      parts.push(part);
+    }
+
+    const decoded = decoder.decodeFragments(parts);
+    expect(decoded).toEqual(ur)
+  });
+  test("FountainEncoder should not be able to decode when the generated fragments are too little", () => {
+    const ur = new Ur({ name: "Pieter" }, { type: "custom", tag: 0 });
+    const fountainEncoder = new UrFountainEncoder(encoder._encodingMethods,ur,5,5)
+    const count = fountainEncoder.getPureFragmentCount() - 1;
+    const parts: string[] = [];
+
+    for (let index = 0; index < count; index++) {
+      const part = fountainEncoder.nextPart();
+      parts.push(part);
+    }
+
+    const decoded = decoder.decodeFragments(parts);
+    expect(decoded).not.toEqual(ur)
   });
 });

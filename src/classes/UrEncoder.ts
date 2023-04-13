@@ -1,32 +1,27 @@
 import assert from "assert";
 import { getCRC, split, toUint32 } from "../utils";
-import { BytewordEncoding } from "./BytewordEncoding";
-import { CborEncoding } from "./CborEncoding";
 import { Encoder } from "./Encoder";
-import { HexEncoding } from "./HexEncoding";
 import { Ur, getUrString } from "./Ur";
-import { MultipartUr, getMultipartUrString } from "./MultipartUr";
+import { getMultipartUrString } from "./MultipartUr";
 import { chooseFragments, mix } from "../fountainUtils";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
-import FountainEncoder from "../fountainEncoder";
 
 export class UrEncoder extends Encoder<any, string> {
-
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
     super(encodingMethods);
   }
 
-  encode(ur: Ur): string {
-    return super.encode(ur.payload);
+  cborEncode(ur: Ur): Buffer {
+    return this._encodingMethods[0].encode(ur.payload);
   }
 
-/**
- * Get a single encoded ur fragment from the ur
- * @param ur ur that needs to be encoded.
- * @returns the encoded payload as a ur string
- */
+  /**
+   * Get a single encoded ur fragment from the ur
+   * @param ur ur that needs to be encoded.
+   * @returns the encoded payload as a ur string
+   */
   getFragment(ur: Ur): string {
-    const encoded = this.encode(ur);
+    const encoded = this.encode(ur.payload);
     return getUrString(ur.registryType.type, encoded);
   }
 
@@ -40,18 +35,18 @@ export class UrEncoder extends Encoder<any, string> {
   getFragments(
     ur: Ur,
     maxFragmentLength: number,
-    minFragmentLength: number,
+    minFragmentLength: number
   ): string[] {
     // encode first time to split the original payload up as cbor
-    const cborMessage = this._encodingMethods[0].encode(ur.payload);
+    const cborMessage = this.cborEncode(ur);
     const totalPayloadLength = cborMessage.length;
-    const fragmentLength = UrEncoder.findNominalFragmentLength(
+    const fragmentLength = this.findNominalFragmentLength(
       totalPayloadLength,
       minFragmentLength,
       maxFragmentLength
     );
     const checksum = getCRC(cborMessage);
-    const fragments = UrEncoder.partitionMessage(cborMessage, fragmentLength);
+    const fragments = this.partitionMessage(cborMessage, fragmentLength);
     const fountainUrs = fragments.map((fragment, index) => {
       const seqNum = toUint32(index + 1);
       // TODO: do I need to use Buffer.from on the fragment?
@@ -72,7 +67,7 @@ export class UrEncoder extends Encoder<any, string> {
     return fountainUrs;
   }
 
-/**
+  /**
    * get an array of encoded fragments, based on the payload length, max en min fragment length.
    * @param ur ur that needs to be encoded.
    * @param maxFragmentLength maximum length of a fragment
@@ -87,18 +82,18 @@ export class UrEncoder extends Encoder<any, string> {
     redundancy: number = 2
   ): string[] {
     // encode first time to split the original payload up as cbor
-    const cborMessage = this._encodingMethods[0].encode(ur.payload);
+    const cborMessage = this.cborEncode(ur);
     const messageLength = cborMessage.length;
-    const fragmentLength = UrEncoder.findNominalFragmentLength(
+    const fragmentLength = this.findNominalFragmentLength(
       messageLength,
       minFragmentLength,
       maxFragmentLength
     );
     const checksum = getCRC(cborMessage);
-    const fragments = UrEncoder.partitionMessage(cborMessage, fragmentLength);
+    const fragments = this.partitionMessage(cborMessage, fragmentLength);
     // ceil to always get an integer
     const numberofParts = Math.ceil(fragments.length * redundancy);
-    const fountainUrs = [...new Array(numberofParts)].map((_,index) => {
+    const fountainUrs = [...new Array(numberofParts)].map((_, index) => {
       const seqNum = toUint32(index + 1);
       const indexes = chooseFragments(seqNum, fragments.length, checksum);
       const mixed = mix(indexes, fragments);
@@ -126,10 +121,7 @@ export class UrEncoder extends Encoder<any, string> {
    * @param fragmentLength
    * @returns
    */
-  public static partitionMessage(
-    message: Buffer,
-    fragmentLength: number
-  ): Buffer[] {
+  partitionMessage(message: Buffer, fragmentLength: number): Buffer[] {
     let remaining = Buffer.from(message);
     let fragment;
     let _fragments: Buffer[] = [];
@@ -151,7 +143,7 @@ export class UrEncoder extends Encoder<any, string> {
    * @param maxFragmentLength maximum length of a fragment.
    * @returns
    */
-  static findNominalFragmentLength(
+  findNominalFragmentLength(
     messageLength: number,
     minFragmentLength: number,
     maxFragmentLength: number
