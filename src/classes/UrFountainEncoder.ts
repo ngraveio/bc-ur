@@ -6,7 +6,7 @@ import { Ur } from "./Ur";
 import { UrEncoder } from "./UrEncoder";
 
 /**
- * Encoder that uses an internal state to keep generating ur fragments of the payload.
+ * Encode data on the fly. This encoder uses an internal state to keep generating ur fragments of the payload.
  */
 export default class UrFountainEncoder extends UrEncoder {
   private _messageLength: number;
