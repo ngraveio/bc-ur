@@ -25,12 +25,20 @@ export const shuffle = (items: any[], rng: Xoshiro): any[] => {
   return result;
 }
 
-
+/**
+ * Get an array of indexes for the fragments that we want to mix with each other.
+ * The first `seqLenth` parts are the "pure" fragments, not mixed with any others.
+ * This means that if you only generate the first `seqLenth` parts,
+ * then you have all the parts you need to decode the message.
+ * @param seqNum sequence (index + 1) of the fragment.
+ * @param seqLength total length of pure fragments.
+ * @param checksum 
+ * @returns array of fragment indexes.
+ */
 export const chooseFragments = (seqNum: number, seqLength: number, checksum: number): number[] => {
-  // The first `seqLenth` parts are the "pure" fragments, not mixed with any
-  // others. This means that if you only generate the first `seqLenth` parts,
-  // then you have all the parts you need to decode the message.
+  //The first `seqLenth` parts are the "pure" fragments
   if (seqNum <= seqLength) {
+    // return the index of the current fragment.
     return [seqNum - 1];
   } else {
     const seed = Buffer.concat([intToBytes(seqNum), intToBytes(checksum)]);
@@ -38,12 +46,18 @@ export const chooseFragments = (seqNum: number, seqLength: number, checksum: num
     const degree = chooseDegree(seqLength, rng);
     const indexes = [...new Array(seqLength)].map((_, index) => index);
     const shuffledIndexes = shuffle(indexes, rng);
-
+    // return a mix of indexes that we want to include.
     return shuffledIndexes.slice(0, degree);
   }
 }
 
-export const mix = (indexes: number[], fragments: Buffer[]) => {
+/**
+ * Mix the fragments of the passed indexes.
+ * @param indexes array of indexes to include in the mix.
+ * @param fragments array of pure fragments for a given payload.
+ * @returns A mixed fragment, represented as a buffer.
+ */
+export const mix = (indexes: number[], fragments: Buffer[]): Buffer => {
   return indexes.reduce(
     (result, index) => bufferXOR(fragments[index], result),
     Buffer.alloc(fragments.length, 0)
