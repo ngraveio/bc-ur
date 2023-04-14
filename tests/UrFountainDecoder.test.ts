@@ -111,6 +111,32 @@ describe("FountainDecoder", () => {
   });
 });
 
+describe("GetProgress", () => {
+  const { fountainDecoderCreator, fountainEncoderCreator } =
+    new NgraveTranscoder();
+
+    test("Should get the expected and recieved parts as an array of indexes", () => {
+      const message = makeMessage(300);
+      const ur = new Ur(message);
+      //Will generate 4 parts, based on the 300 sized message and additional ur characters
+      const fountainEncoder = fountainEncoderCreator(ur, 100,10);
+      const fountainDecoder = fountainDecoderCreator();
+    
+      for (let index = 0; index <= 1 ; index++) {
+        const part = fountainEncoder.nextPart();
+        fountainDecoder.receivePart(part);
+      }
+      
+      const expected = fountainDecoder.getExpectedPartIndexes();
+      const received = fountainDecoder.getReceivedPartIndexes();
+      const progressPercentage = fountainDecoder.getProgress();
+
+      expect(expected).toEqual([0,1,2,3]);
+      expect(received).toEqual([0,1]);
+      expect(progressPercentage).toEqual(0.5);
+    });
+});
+
 describe("Passing wrong encoded data into the FountainDecoder", () => {
   const { fountainDecoderCreator, fountainEncoderCreator, encoder } =
     new NgraveTranscoder();
