@@ -32,8 +32,13 @@ export default class UrFountainDecoder extends UrDecoder {
     private mixedParts: PartDict[] = [];
     private simpleParts: PartDict[] = [];
   
-  
-    private validatePart(part: MultipartPayload) {
+  /**
+   * Set the expected values on the initial run the current decoder. 
+   * And check if the next multipart ur is a 'member' of the originally scanned ur with the current decoder.
+   * @param part received multipart ur
+   * @returns boolean indicating if the multipart ur is a 'member' of the originally scanned ur with the current decoder.
+   */
+    private validatePart(part: MultipartPayload): boolean {
       // If this is the first part we've seen
       if (this.expectedPartIndexes.length === 0) {
         // Record the things that all the other parts we see will have to match to be valid.

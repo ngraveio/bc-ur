@@ -110,3 +110,69 @@ describe("FountainDecoder", () => {
     expect(decodedUR.payload).toEqual(test.payload);
   });
 });
+
+describe("Passing wrong encoded data into the FountainDecoder", () => {
+  const { fountainDecoderCreator, fountainEncoderCreator, encoder } =
+    new NgraveTranscoder();
+
+    test("Should ignore ur parts that have a different ur type", () => {
+      const ur = makeCborUr(40, {type: "1"})
+      const ur2 = makeCborUr(20, {type: "2"})
+      const differentFragments = encoder.getFragments(ur2,5,5)
+      const fountainEncoder = fountainEncoderCreator(ur, 5,5);
+      const fountainDecoder = fountainDecoderCreator();
+  
+      for (let index = 0; !fountainDecoder.isUrDecoderCompleteOrHasError(); index++) {
+        let part = "";
+        if(index < 2 || !differentFragments[index]){
+          part = fountainEncoder.nextPart();
+        } else if(!!differentFragments[index]) {
+          part = differentFragments[index]
+        } 
+        fountainDecoder.receivePart(part);
+      }
+      const result = fountainDecoder.getUrResult();
+      console.log('result', result)
+      expect(result.payload).toEqual(ur.payload);
+    });
+    test("Should ignore ur parts that have a different sequenceLength then the first read QR code", () => {
+      const ur = makeCborUr(40, {type: "pieter"})
+      const ur2 = makeCborUr(20, {type: "pieter"})
+      const differentFragments = encoder.getFragments(ur2,5,5)
+      const fountainEncoder = fountainEncoderCreator(ur, 5,5);
+      const fountainDecoder = fountainDecoderCreator();
+  
+      for (let index = 0; !fountainDecoder.isUrDecoderCompleteOrHasError(); index++) {
+        let part = "";
+        if(index < 2 || !differentFragments[index]){
+          part = fountainEncoder.nextPart();
+        } else if(!!differentFragments[index]) {
+          part = differentFragments[index]
+        } 
+        fountainDecoder.receivePart(part);
+      }
+      const result = fountainDecoder.getUrResult();
+      console.log('result', result)
+      expect(result.payload).toEqual(ur.payload);
+    });
+    test("Should ignore ur parts that have a different payload then the first read QR code. This is checked by the checksum", () => {
+      const ur = makeCborUr(40, {type: "pieter"})
+      const ur2 = makeCborUr(40, {type: "pieter"}, "Pieter")
+      const differentFragments = encoder.getFragments(ur2,5,5)
+      const fountainEncoder = fountainEncoderCreator(ur, 5,5);
+      const fountainDecoder = fountainDecoderCreator();
+  
+      for (let index = 0; !fountainDecoder.isUrDecoderCompleteOrHasError(); index++) {
+        let part = "";
+        if(index < 2 || !differentFragments[index]){
+          part = fountainEncoder.nextPart();
+        } else if(!!differentFragments[index]) {
+          part = differentFragments[index]
+        } 
+        fountainDecoder.receivePart(part);
+      }
+      const result = fountainDecoder.getUrResult();
+      console.log('result', result)
+      expect(result.payload).toEqual(ur.payload);
+    });
+});
