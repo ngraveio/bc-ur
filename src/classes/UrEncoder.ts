@@ -12,7 +12,7 @@ export class UrEncoder extends Encoder<any, string> {
   }
 
   cborEncode(ur: Ur): Buffer {
-    return this._encodingMethods[0].encode(ur.payload);
+    return this._encodingMethods[0].encode(ur);
   }
 
   /**
@@ -72,15 +72,17 @@ export class UrEncoder extends Encoder<any, string> {
    * @param ur ur that needs to be encoded.
    * @param maxFragmentLength maximum length of a fragment
    * @param minFragmentLength minimum length of a fragment
-   * @param redundancy ratio of additional generated fragments
+   * @param redundancyRatio ratio of additional generated fragments
    * @returns the encoded payload as am array of ur strings
    */
   getFountainFragments(
     ur: Ur,
     maxFragmentLength: number,
     minFragmentLength: number,
-    redundancy: number = 2
+    // TODO: see what the best way is for the ratio to work.
+    redundancyRatio: number = 0
   ): string[] {
+
     // encode first time to split the original payload up as cbor
     const cborMessage = this.cborEncode(ur);
     const messageLength = cborMessage.length;
@@ -92,11 +94,11 @@ export class UrEncoder extends Encoder<any, string> {
     const checksum = getCRC(cborMessage);
     const fragments = this.partitionMessage(cborMessage, fragmentLength);
     // ceil to always get an integer
-    const numberofParts = Math.ceil(fragments.length * redundancy);
+    const numberofParts = Math.ceil(fragments.length * (1 +redundancyRatio));
     const fountainUrs = [...new Array(numberofParts)].map((_, index) => {
       const seqNum = toUint32(index + 1);
       const indexes = chooseFragments(seqNum, fragments.length, checksum);
-      const mixed = mix(indexes, fragments);
+      const mixed = mix(indexes, fragments, fragmentLength);
       // TODO: do I need to use Buffer.from on the fragment?
       const encodedFragment = super.encode([
         seqNum,

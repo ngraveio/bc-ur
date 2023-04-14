@@ -11,15 +11,14 @@ import {
 import UR from "./ur";
 import { FountainEncoderPart } from "./fountainEncoder";
 
-export default class URDecoder<T extends { cbor: Buffer } = UR> {
+export default class URDecoder {
   private expected_type: string;
-  private result: T | undefined;
+  private result: UR | undefined;
   private error: Error | undefined;
 
   constructor(
     private _fountainDecoder: IFountainDecoder = new FountainDecoder(),
     public type: string = "bytes",
-    private urDecoderFactory: (args: {payload: Buffer, type: string}) => T = ({payload, type}) => new UR(payload, type) as any,
   ) {
     assert(isURType(type), "Invalid UR type");
 
@@ -37,7 +36,7 @@ export default class URDecoder<T extends { cbor: Buffer } = UR> {
   private decodeBody(type: string, message: string) {
     const cbor = bytewords.decode(message, bytewords.STYLES.MINIMAL);
 
-    return this.urDecoderFactory({ payload: Buffer.from(cbor, "hex"), type });
+    return new UR(Buffer.from(cbor, "hex"), type);
   }
 
   /**
@@ -166,7 +165,7 @@ export default class URDecoder<T extends { cbor: Buffer } = UR> {
     }
 
     if (this.fountainDecoder.isSuccess()) {
-      this.result = this.urDecoderFactory({payload: this.fountainDecoder.resultMessage(), type});
+      this.result = new UR(this.fountainDecoder.resultMessage(), type);
     } else if (this.fountainDecoder.isFailure()) {
       this.error = new InvalidSchemeError();
     }
@@ -174,8 +173,8 @@ export default class URDecoder<T extends { cbor: Buffer } = UR> {
     return true;
   }
 
-  public resultUR() {
-    return this.result ? this.result : this.urDecoderFactory({payload: Buffer.from([]), type: this.expected_type});
+  public resultUR(): UR {
+    return this.result ? this.result : new UR(Buffer.from([]));
   }
 
   public isComplete(): boolean {

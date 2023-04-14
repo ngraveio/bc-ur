@@ -1,3 +1,4 @@
+import assert from "assert";
 import { Ur } from "./Ur";
 
 export class MultipartUr extends Ur {
@@ -14,12 +15,27 @@ export class MultipartUr extends Ur {
    * @returns string representation of a multipart Ur
    */
   getUrString(): string {
+    // FIXME: payload can be anything, so we do not know how to convert it to string.
     return getMultipartUrString(
       this.type,
       this.seqNum,
       this.seqLength,
       this.payload
     );
+  }
+
+  static fromMultipartUr(payload, registryType, seqNum, seqLength): MultipartUr {
+    // first validate the basic ur
+    const ur = Ur.fromUr(payload, registryType);
+    const {registryType: validatedRegistryType} = ur
+    // validated Multipart ur
+    assert(typeof seqNum === 'number');
+    assert(typeof seqLength === 'number');
+
+    // FIXME: multipart is inherently encoded with cbor and so the payload is a buffer.
+    // assert(Buffer.isBuffer(payload) && payload.length > 0);
+    // return combined result
+    return new MultipartUr(payload, validatedRegistryType,seqNum,seqLength);
   }
 }
 

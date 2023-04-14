@@ -1,3 +1,4 @@
+import assert from "assert";
 import { InvalidTypeError } from "../errors";
 import { RegistryType } from "../interfaces/RegistryType";
 
@@ -30,10 +31,7 @@ export class Ur {
    * @returns Ur object as a string
    */
   getUrString(): string {
-    return getUrString(
-      this.type,
-      this.payload
-    );
+    return getUrString(this.type, this.payload);
   }
   /**
    * Checks if the given type is a valid UR type (consisting of lowercase letters, numbers or dashes)
@@ -63,6 +61,21 @@ export class Ur {
    */
   static encodeUR(pathComponents: string[]): string {
     return Ur.joinUri("ur", pathComponents);
+  }
+
+  /**
+   * Convert raw data into a Ur object
+   * @param payload payload that was encoded
+   * @param type registry type of the encoded ur
+   * @param tag tag of the ur registry
+   * @returns 
+   */
+  static fromUr(payload: any, registryType: {type: string, tag: number}): Ur {
+    const {type, tag} = registryType
+    assert(typeof type === 'string', "registry type should be included in the ur payload");
+    assert(typeof tag === 'number', "registry type should have a tag");
+
+    return new Ur(payload, { type, tag });
   }
 }
 

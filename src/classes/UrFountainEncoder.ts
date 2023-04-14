@@ -11,6 +11,7 @@ import { UrEncoder } from "./UrEncoder";
 export default class UrFountainEncoder extends UrEncoder {
   private _messageLength: number;
   private _fragments: Buffer[];
+  private _nominalFragmentLength: number;
   private _seqNum: number;
   private _checksum: number;
   private _type: string;
@@ -37,6 +38,8 @@ export default class UrFountainEncoder extends UrEncoder {
       minFragmentLength,
       maxFragmentLength
     );
+
+    this._nominalFragmentLength = fragmentLength;
 
     // Split up the message buffer in an array of buffers, by the nominal length
     this._fragments = super.partitionMessage(cborMessage, fragmentLength);
@@ -78,7 +81,7 @@ export default class UrFountainEncoder extends UrEncoder {
       this._fragments.length,
       this._checksum
     );
-    const mixed = mix(indexes, this._fragments);
+    const mixed = mix(indexes, this._fragments,this._nominalFragmentLength);
 
     const encodedFragment = super.encode([
       this._seqNum,

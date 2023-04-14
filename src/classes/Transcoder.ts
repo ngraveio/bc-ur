@@ -1,3 +1,4 @@
+import { STYLES } from "../bytewords";
 import { BytewordEncoding } from "./BytewordEncoding";
 import { CborEncoding } from "./CborEncoding";
 import { Decoder } from "./Decoder";
@@ -6,6 +7,7 @@ import { HexEncoding } from "./HexEncoding";
 import { Ur } from "./Ur";
 import { UrDecoder } from "./UrDecoder";
 import { UrEncoder } from "./UrEncoder";
+import UrFountainDecoder from "./UrFountainDecoder";
 import UrFountainEncoder from "./UrFountainEncoder";
 
 export interface ITranscoder<T, U> {
@@ -23,13 +25,14 @@ export interface ITranscoder<T, U> {
 export class NgraveTranscoder implements ITranscoder<any, string> {
   encoder: UrEncoder;
   decoder: UrDecoder;
+  // We want to create a new instance of the fountain encoder & decoder so it does not keep it's internal state
+  fountainDecoderCreator: () => UrFountainDecoder;
   fountainEncoderCreator: (
     ur: Ur,
     maxFragmentLength?: number,
     minFragmentLength?: number,
     firstSeqNum?: number
   ) => UrFountainEncoder;
-  // fountainDecoder: UrDecoder;
   constructor() {
     const methods = [
       new CborEncoding(),
@@ -38,6 +41,7 @@ export class NgraveTranscoder implements ITranscoder<any, string> {
     ];
     this.encoder = new UrEncoder(methods);
     this.decoder = new UrDecoder(methods);
+    this.fountainDecoderCreator = () => new UrFountainDecoder(methods)
     this.fountainEncoderCreator = (
       ur: Ur,
       maxFragmentLength?: number,

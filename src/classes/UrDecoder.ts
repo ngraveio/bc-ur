@@ -12,14 +12,19 @@ import { MultipartUr } from "./MultipartUr";
 import { HexEncoding } from "./HexEncoding";
 import { Ur } from "./Ur";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
+import assert from "assert";
+
+export type MultipartPayload = {
+  seqNum: number;
+  seqLength: number;
+  messageLength: number;
+  checksum: number;
+  fragment: Buffer;
+};
 
 export class UrDecoder extends Decoder<string, any> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
     super(encodingMethods);
-  }
-
-  decode(payload: string): any {
-    return super.decode(payload);
   }
 
   decodeCbor(payload: Buffer): any {
@@ -34,11 +39,13 @@ export class UrDecoder extends Decoder<string, any> {
    * @returns original encoded Ur.
    */
   decodeFragment(fragment: string): Ur {
-    const [type, components] = UrDecoder.parseUr(fragment);
+    const [type, components] = this.parseUr(fragment);
 
     const [bytewords] = components;
 
     const decoded = this.decode(bytewords);
+
+    //FIXME: validation of the payload is missing here...
 
     return new Ur(decoded, { type, tag: 0 });
   }
@@ -49,18 +56,22 @@ export class UrDecoder extends Decoder<string, any> {
    * @returns original encoded Ur.
    */
   decodeFragments(fragments: string[]): Ur {
-    let type = "";
+    let registryType = {type: "bytes", tag: 0};
     const fragmentPayloads = fragments.map((f) => {
       const multipart = this.decodeMultipartUr(f);
-      type = multipart.type;
+      registryType = multipart.registryType;
       // fourth part of the array payload is the actual fragment.
+      // TODO: pass in a type of the payload
       return multipart.payload[4];
     });
+
+    //FIXME: validation of the payload is missing here...
+
     // concat all the buffer payloads to a single buffer
     const cborPayload = Buffer.concat(fragmentPayloads);
     // decode the buffer as a whole.
     const decoded = this.decodeCbor(cborPayload);
-    return new Ur(decoded, { type, tag: 0 });
+    return Ur.fromUr(decoded.payload, {...registryType})
   }
 
   /**
@@ -68,15 +79,29 @@ export class UrDecoder extends Decoder<string, any> {
    * @param payload
    * @returns
    */
-  private decodeMultipartUr(payload: string): MultipartUr {
-    const [type, components] = UrDecoder.parseUr(payload);
+  decodeMultipartUr(payload: string): MultipartUr {
+    const [type, components] = this.parseUr(payload);
 
     const [sequence, bytewords] = components;
-    const [seqNum, seqLength] = UrDecoder.parseSequenceComponent(sequence);
+    const [seqNumFromUr, seqLengthFromUr] =
+      this.parseSequenceComponent(sequence);
 
-    const decoded = this.decode(bytewords);
+    const decoded = this.decode(bytewords); // {"_checksum": 556878893, "_fragment": [Object] (type of Buffer), "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
 
-    return new MultipartUr(decoded, { type, tag: 0 }, seqNum, seqLength);
+    // FIXME: tag is not defined inside the payload..
+    return MultipartUr.fromMultipartUr(decoded,{ type, tag: 666 },seqNumFromUr, seqLengthFromUr)
+  }
+
+  public validateMultipartPayload(decoded: Buffer): MultipartPayload {
+    const [seqNum, seqLength, messageLength, checksum, fragment] = decoded;
+
+    assert(typeof seqNum === "number");
+    assert(typeof seqLength === "number");
+    assert(typeof messageLength === "number");
+    assert(typeof checksum === "number");
+    assert(Buffer.isBuffer(fragment) && fragment.length > 0);
+
+    return { seqNum, seqLength, messageLength, checksum, fragment };
   }
 
   /**
@@ -84,7 +109,7 @@ export class UrDecoder extends Decoder<string, any> {
    * @param message e.g. "UR:BYTES/6-23/LPAMCHCFATTTCYCLEHGSDPHDHGEHFGHKKKDL..."
    * @returns `[type, components]` // e.g. `["bytes", ["6-23", "lpamchcfatttcyclehgsdphdhgehfghkkkdl..."]]`
    */
-  public static parseUr(message: string): [string, string[]] {
+  public parseUr(message: string): [string, string[]] {
     const lowercase = message.toLowerCase(); // e.g. "ur:bytes/6-23/lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
     const prefix = lowercase.slice(0, 3);
 
@@ -111,7 +136,7 @@ export class UrDecoder extends Decoder<string, any> {
    * @param s e.g. "146-23"
    * @returns `[seqNum, seqLength]` // e.g. `[146, 23]`
    */
-  public static parseSequenceComponent(s: string) {
+  public parseSequenceComponent(s: string) {
     const components = s.split("-");
 
     if (components.length !== 2) {
