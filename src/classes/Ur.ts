@@ -8,7 +8,7 @@ export class Ur {
 
   constructor(
     payload: any,
-    registryType: RegistryType = { type: "bytes", tag: 0 }
+    registryType: RegistryType = { type: "bytes" }
   ) {
     if (!Ur.isURType(registryType.type)) {
       throw new InvalidTypeError();
@@ -70,12 +70,11 @@ export class Ur {
    * @param tag tag of the ur registry
    * @returns 
    */
-  static fromUr(payload: any, registryType: {type: string, tag: number}): Ur {
-    const {type, tag} = registryType
+  static fromUr(payload: any, registryType: RegistryType): Ur {
+    const {type} = registryType
     assert(typeof type === 'string', "registry type should be included in the ur payload");
-    assert(typeof tag === 'number', "registry type should have a tag");
 
-    return new Ur(payload, { type, tag });
+    return new Ur(payload, { type });
   }
 }
 

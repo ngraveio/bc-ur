@@ -1,4 +1,5 @@
 export interface RegistryType {
     type: string;
-    tag: number;
+    // is not encoded in cbor message for now
+    // tag: number;
 }

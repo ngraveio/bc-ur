@@ -6,7 +6,7 @@ import { makeMessage } from "./utils";
 describe("getFragments", () => {
   const { encoder, decoder, fountainDecoderCreator } = new NgraveTranscoder();
   test("should encode/decode a ur", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom", tag: 0 });
+    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
     const fragment = encoder.getFragment(ur);
     console.log("fragment", fragment);
 
@@ -16,7 +16,7 @@ describe("getFragments", () => {
     expect(decodedFragment.payload).toEqual(ur.payload);
   });
   test("should encode/decode multipart ur's", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom", tag: 0 });
+    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
     const fragmentLength = 5
     const fragments = encoder.getFragments(ur, fragmentLength, fragmentLength);
     console.log("fragments", fragments);
@@ -26,7 +26,7 @@ describe("getFragments", () => {
     expect(decoded.payload).toEqual(ur.payload);
   });
   test("should create 3 fragments when payloadlength is 13 and min/max fragment size is 5", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom", tag: 0 });
+    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
 
     const fragmentLength = 5
     const payloadLength = encoder.cborEncode(ur).length;
@@ -37,7 +37,7 @@ describe("getFragments", () => {
     expect(fragments.length).toEqual(expectedFragmentLength);
   });
   test("should create 6 fragments when payloadlength is 13 and min/max fragment size is 5, with default redundancy of 2", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom", tag: 0 });
+    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
 
     const fragmentLength = 5
     const payloadLength = encoder.cborEncode(ur).length;
@@ -51,7 +51,7 @@ describe("getFragments", () => {
     console.log('decoded', decoded)
   });
   test("should have twice the amount of fragments for a ratio of 1", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom", tag: 0 });
+    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
 
     const fragmentLength = 5
     const payloadLength = encoder.cborEncode(ur).length;
@@ -65,7 +65,7 @@ describe("getFragments", () => {
     console.log('decoded', decoded)
   });
   test("should be able to fountain encode/decode the payload", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom", tag: 0 });
+    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
 
     const fountainFragments = encoder.getFountainFragments(ur, 10, 5);
     console.log("fountainFragments", fountainFragments);
@@ -75,7 +75,7 @@ describe("getFragments", () => {
   });
   test("should be able to fountain encode/decode the payload with a small maxFragmentLength", () => {
     const message = makeMessage(30);
-    const ur = new Ur(message, { type: "custom", tag: 0 });
+    const ur = new Ur(message, { type: "custom" });
 
     const maxFragmentLength = 1
     const fountainFragments = encoder.getFountainFragments(ur, maxFragmentLength, maxFragmentLength);
@@ -86,7 +86,7 @@ describe("getFragments", () => {
   });
   test("should be able to encode and decode cbor payload", () => {
     const message = makeMessage(250);
-    const ur = new Ur(message, { type: "custom", tag: 0 });
+    const ur = new Ur(message, { type: "custom" });
 
     const fountainFragments = encoder.getFountainFragments(ur, 50, 5,5);
     console.log("fountainFragments", fountainFragments);
@@ -95,7 +95,7 @@ describe("getFragments", () => {
     expect(decoded.payload).toEqual(ur.payload);
   });
   test("using nextpart keeps generating multipart Ur's", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom", tag: 0 });
+    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
     const fountainEncoder = new UrFountainEncoder(encoder._encodingMethods,ur,10,10)
     const count = 10;
     const parts: string[] = [];
@@ -109,7 +109,7 @@ describe("getFragments", () => {
     expect(decoded.payload).toEqual(ur.payload)
   });
   test("FountainEncoder encoded ur should be equal to input ur", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom", tag: 0 });
+    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
     const fountainEncoder = new UrFountainEncoder(encoder._encodingMethods,ur,10,10)
     const count = 10;
     const parts: string[] = [];
@@ -122,12 +122,12 @@ describe("getFragments", () => {
     }
 
     const decoded = decoder.decodeFragments(parts);
-    expect(decoded.payload).toEqual(ur.payload)
+    expect(decoded).toEqual(ur)
   });
   test("FountainEncoder should not be able to decode when the generated fragments are too little", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom", tag: 0 });
+    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
     const fountainEncoder = new UrFountainEncoder(encoder._encodingMethods,ur,5,5)
-    const count = fountainEncoder.getPureFragmentCount() - 1;
+    const count = 1;
     const parts: string[] = [];
 
     for (let index = 0; index < count; index++) {

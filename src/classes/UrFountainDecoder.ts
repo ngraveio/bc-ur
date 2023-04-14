@@ -240,7 +240,7 @@ export default class UrFountainDecoder extends UrDecoder {
   
       if (this.isSuccess()) {
         const decodedMessage = this.decodeCbor(this.result);
-        this.urDecoderResult = new Ur(decodedMessage.payload,{type, tag: 666});
+        this.urDecoderResult = new Ur(decodedMessage.payload,{type});
       } else if (this.isFailure()) {
         this.urDecoderError = new InvalidSchemeError();
       }
@@ -280,7 +280,14 @@ export default class UrFountainDecoder extends UrDecoder {
     }
   
     public isUrDecoderComplete(): boolean {
-      return this.urDecoderResult && this.urDecoderResult.payload.length > 0;
+      if(this.urDecoderResult){
+        if(typeof this.urDecoderResult.payload === 'object'){
+          return Object.keys(this.urDecoderResult.payload).length > 0
+        } else {
+          return this.urDecoderResult.payload.length > 0
+        }
+      }
+      return false;
     }
 
     public getUrResult(): Ur {
@@ -288,7 +295,8 @@ export default class UrFountainDecoder extends UrDecoder {
     }
 
     public isUrDecoderCompleteOrHasError(): boolean {
-      return this.urDecoderResult && this.urDecoderResult.payload.length > 0 || this.isFailure();
+      
+      return this.isUrDecoderComplete() || this.isFailure();
     }
 
     public isSuccess() {

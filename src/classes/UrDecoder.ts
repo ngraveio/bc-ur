@@ -47,7 +47,7 @@ export class UrDecoder extends Decoder<string, any> {
 
     //FIXME: validation of the payload is missing here...
 
-    return new Ur(decoded, { type, tag: 0 });
+    return new Ur(decoded, { type });
   }
 
   /**
@@ -56,7 +56,7 @@ export class UrDecoder extends Decoder<string, any> {
    * @returns original encoded Ur.
    */
   decodeFragments(fragments: string[]): Ur {
-    let registryType = {type: "bytes", tag: 0};
+    let registryType = {type: ""};
     const fragmentPayloads = fragments.map((f) => {
       const multipart = this.decodeMultipartUr(f);
       registryType = multipart.registryType;
@@ -88,8 +88,7 @@ export class UrDecoder extends Decoder<string, any> {
 
     const decoded = this.decode(bytewords); // {"_checksum": 556878893, "_fragment": [Object] (type of Buffer), "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
 
-    // FIXME: tag is not defined inside the payload..
-    return MultipartUr.fromMultipartUr(decoded,{ type, tag: 666 },seqNumFromUr, seqLengthFromUr)
+    return MultipartUr.fromMultipartUr(decoded,{ type },seqNumFromUr, seqLengthFromUr)
   }
 
   public validateMultipartPayload(decoded: Buffer): MultipartPayload {

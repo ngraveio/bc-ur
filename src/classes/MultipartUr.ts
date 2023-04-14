@@ -1,5 +1,6 @@
 import assert from "assert";
 import { Ur } from "./Ur";
+import { RegistryType } from "../interfaces/RegistryType";
 
 export class MultipartUr extends Ur {
   seqNum: number;
@@ -24,7 +25,7 @@ export class MultipartUr extends Ur {
     );
   }
 
-  static fromMultipartUr(payload, registryType, seqNum, seqLength): MultipartUr {
+  static fromMultipartUr(payload: any, registryType: RegistryType, seqNum: number, seqLength:number): MultipartUr {
     // first validate the basic ur
     const ur = Ur.fromUr(payload, registryType);
     const {registryType: validatedRegistryType} = ur
