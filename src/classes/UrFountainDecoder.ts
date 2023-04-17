@@ -24,6 +24,7 @@ export default class UrFountainDecoder extends UrDecoder {
     private expectedMessageLength: number = 0;
     private expectedChecksum: number = 0;
     private expectedFragmentLength: number = 0;
+    // Keeps track of the amount of times 'receivepart()' has been called.
     private processedPartsCount: number = 0;
     private expectedPartIndexes: PartIndexes = [];
     private lastPartIndexes: PartIndexes = [];
@@ -35,32 +36,32 @@ export default class UrFountainDecoder extends UrDecoder {
   /**
    * Set the expected values on the initial run the current decoder. 
    * And check if the next multipart ur is a 'member' of the originally scanned ur with the current decoder.
-   * @param part received multipart ur
+   * @param decodedPart received multipart ur
    * @returns boolean indicating if the multipart ur is a 'member' of the originally scanned ur with the current decoder.
    */
-    private validatePart(part: MultipartPayload): boolean {
+    private validatePart(decodedPart: MultipartPayload): boolean {
       // If this is the first part we've seen
       if (this.expectedPartIndexes.length === 0) {
         // Record the things that all the other parts we see will have to match to be valid.
-        [...new Array(part.seqLength)]
+        [...new Array(decodedPart.seqLength)]
           .forEach((_, index) => this.expectedPartIndexes.push(index));
   
-        this.expectedMessageLength = part.messageLength;
-        this.expectedChecksum = part.checksum;
-        this.expectedFragmentLength = part.fragment.length;
+        this.expectedMessageLength = decodedPart.messageLength;
+        this.expectedChecksum = decodedPart.checksum;
+        this.expectedFragmentLength = decodedPart.fragment.length;
       }
       else {
         // If this part's values don't match the first part's values, throw away the part
-        if (this.expectedPartIndexes.length !== part.seqLength) {
+        if (this.expectedPartIndexes.length !== decodedPart.seqLength) {
           return false;
         }
-        if (this.expectedMessageLength !== part.messageLength) {
+        if (this.expectedMessageLength !== decodedPart.messageLength) {
           return false;
         }
-        if (this.expectedChecksum !== part.checksum) {
+        if (this.expectedChecksum !== decodedPart.checksum) {
           return false;
         }
-        if (this.expectedFragmentLength !== part.fragment.length) {
+        if (this.expectedFragmentLength !== decodedPart.fragment.length) {
           return false;
         }
       }
@@ -68,7 +69,7 @@ export default class UrFountainDecoder extends UrDecoder {
       // This part should be processed
       return true;
     }
-  
+
     /**
      * Create a new decoderpart merging previously mixed parts with the newly received part 
      * or return existing mixedpart. 
@@ -366,7 +367,7 @@ export default class UrFountainDecoder extends UrDecoder {
       // processeed.
       return Math.min(0.99, this.processedPartsCount / (expectedPartCount * 1.75));
     }
-  
+    
     public getProgress(): number {
       if (this.isComplete()) {
         return 1;
