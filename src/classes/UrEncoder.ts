@@ -20,8 +20,8 @@ export class UrEncoder extends Encoder<any, string> {
    * @param ur ur that needs to be encoded.
    * @returns the encoded payload as a ur string
    */
-  getFragment(ur: Ur): string {
-    const encoded = this.encode(ur.payload);
+  encodeUr(ur: Ur): string {
+    const encoded = super.encode(ur.payload);
     return getUrString(ur.registryType.type, encoded);
   }
 
@@ -82,7 +82,6 @@ export class UrEncoder extends Encoder<any, string> {
     // TODO: see what the best way is for the ratio to work.
     redundancyRatio: number = 0
   ): string[] {
-
     // encode first time to split the original payload up as cbor
     const cborMessage = this.cborEncode(ur);
     const messageLength = cborMessage.length;
@@ -94,7 +93,7 @@ export class UrEncoder extends Encoder<any, string> {
     const checksum = getCRC(cborMessage);
     const fragments = this.partitionMessage(cborMessage, fragmentLength);
     // ceil to always get an integer
-    const numberofParts = Math.ceil(fragments.length * (1 +redundancyRatio));
+    const numberofParts = Math.ceil(fragments.length * (1 + redundancyRatio));
     const fountainUrs = [...new Array(numberofParts)].map((_, index) => {
       const seqNum = toUint32(index + 1);
       const indexes = chooseFragments(seqNum, fragments.length, checksum);
@@ -157,16 +156,21 @@ export class UrEncoder extends Encoder<any, string> {
       "maxFragmentLength should be >= minFragmentLength"
     );
 
+    // Calculate the maximum number of fragments that can be created with the minimum allowed length
     const maxFragmentCount = Math.ceil(messageLength / minFragmentLength);
     let fragmentLength = 0;
 
+    // Try increasing the number of fragments until a suitable fragment length is found
     for (
       let fragmentCount = 1;
       fragmentCount <= maxFragmentCount;
       fragmentCount++
     ) {
+      // Calculate the nominal fragment length for the current fragment count
       fragmentLength = Math.ceil(messageLength / fragmentCount);
 
+      // If the nominal fragment length is less than or equal to the maximum allowed length,
+      // then we have found a suitable fragment length, so we can stop searching
       if (fragmentLength <= maxFragmentLength) {
         break;
       }

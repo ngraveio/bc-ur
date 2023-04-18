@@ -6,7 +6,7 @@ export class BytewordEncoding implements IEncodingMethod<string, string> {
   name: EncodingMethodName.bytewords;
   readonly _style: STYLES;
 
-  constructor(style = STYLES.MINIMAL) {
+  constructor(style: STYLES = STYLES.MINIMAL) {
     this._style = style;
   }
   encode(payload: string): string {

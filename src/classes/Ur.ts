@@ -59,7 +59,7 @@ export class Ur {
    * @param pathComponents
    * @returns
    */
-  static encodeUR(pathComponents: string[]): string {
+  static combineUR(pathComponents: string[]): string {
     return Ur.joinUri("ur", pathComponents);
   }
 
@@ -79,5 +79,5 @@ export class Ur {
 }
 
 export function getUrString(type: string, payload: string): string {
-  return Ur.encodeUR([type, payload]);
+  return Ur.combineUR([type, payload]);
 }

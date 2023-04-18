@@ -8,7 +8,7 @@ describe("getFragments", () => {
   const { encoder, decoder, fountainDecoderCreator } = new NgraveTranscoder();
   test("should encode/decode a ur", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
-    const fragment = encoder.getFragment(ur);
+    const fragment = encoder.encodeUr(ur);
     console.log("fragment", fragment);
 
     const decodedFragment = decoder.decodeFragment(fragment);
@@ -19,7 +19,7 @@ describe("getFragments", () => {
   test("should throw invalid type error for invalid ur type", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
     ur.registryType.type = "è";
-    const fragment = encoder.getFragment(ur);
+    const fragment = encoder.encodeUr(ur);
 
     expect(() => decoder.decodeFragment(fragment)).toThrow(InvalidTypeError);
   });

@@ -47,5 +47,5 @@ export function getMultipartUrString(
   payload: string
 ): string {
   const seq = `${seqNum}-${seqLength}`;
-  return Ur.encodeUR([type, seq, payload]);
+  return Ur.combineUR([type, seq, payload]);
 }
