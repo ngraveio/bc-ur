@@ -216,21 +216,16 @@ export default class UrFountainDecoder extends UrDecoder {
        }
    
        // e.g bytes ["6-23", "lpamchcfatttcyclehgsdphdhgehfghkkkdl..."]
-       const [type, components] = this.parseUr(s);
+       const {type, bytewords, seqLength} = this.parseUr(s);
    
        if (!this.validateUrType(type)) {
          return false;
        }
 
        // If this is a single-part UR then we're done
-       if (components.length === 1) {
-         this.urDecoderResult = this.decode(components[0]);
+       if (!seqLength) {
+         this.urDecoderResult = this.decode(bytewords);
          return true;
-       }
-   
-       // after this, we know we are talking about a multipart UR.
-       if (components.length !== 2) {
-         throw new InvalidPathLengthError();
        }
    
        const multipartUr = this.decodeMultipartUr(s);
