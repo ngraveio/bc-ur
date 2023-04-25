@@ -19,7 +19,7 @@ export interface ITranscoder<T, U> {
     minFragmentLength?: number,
     firstSeqNum?: number
   ) => UrFountainEncoder;
-//   fountainDecoder?: () => Decoder<U, T>;
+  fountainDecoderCreator: () => Decoder<U, T>;
 }
 
 export class NgraveTranscoder implements ITranscoder<any, string> {

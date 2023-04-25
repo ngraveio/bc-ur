@@ -119,7 +119,7 @@ describe("getFragments", () => {
   test("using nextpart keeps generating multipart Ur's", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
     const fountainEncoder = new UrFountainEncoder(
-      encoder._encodingMethods,
+      encoder.encodingMethods,
       ur,
       10,
       10
@@ -138,7 +138,7 @@ describe("getFragments", () => {
   test("FountainEncoder encoded ur should be equal to input ur", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
     const fountainEncoder = new UrFountainEncoder(
-      encoder._encodingMethods,
+      encoder.encodingMethods,
       ur,
       10,
       10
@@ -159,7 +159,7 @@ describe("getFragments", () => {
   test("FountainEncoder should not be able to decode when the generated fragments are too little", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
     const fountainEncoder = new UrFountainEncoder(
-      encoder._encodingMethods,
+      encoder.encodingMethods,
       ur,
       5,
       5
