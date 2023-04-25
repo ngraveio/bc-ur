@@ -12,7 +12,7 @@ export class UrEncoder extends Encoder<any, string> {
   }
 
   cborEncode(ur: Ur): Buffer {
-    return this._encodingMethods[0].encode(ur);
+    return this.encodingMethods[0].encode(ur);
   }
 
   /**

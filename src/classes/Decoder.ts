@@ -1,15 +1,19 @@
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 
 export interface IDecoder<T, U> {
-  _encodingMethods: IEncodingMethod<any, any>[];
+  encodingMethods: IEncodingMethod<any, any>[];
   decode(payload: T): U;
 }
 
 export class Decoder<T, U> implements IDecoder<T, U> {
-  _encodingMethods: IEncodingMethod<any, any>[];
+  private _encodingMethods: IEncodingMethod<any, any>[];
 
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
     this._encodingMethods = [...encodingMethods].reverse();
+  }
+  
+  get encodingMethods(){
+    return this._encodingMethods;
   }
   
   decode(payload: T): U {

@@ -26,7 +26,7 @@ export class UrDecoder extends Decoder<string, any> {
   }
 
   decodeCbor(payload: Buffer): any {
-    return this._encodingMethods[this._encodingMethods.length - 1].decode(
+    return this.encodingMethods[this.encodingMethods.length - 1].decode(
       payload
     );
   }
