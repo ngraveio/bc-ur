@@ -46,7 +46,7 @@ export class UrDecoder extends Decoder<string, any> {
 
   /**
    * Decode multipart fragments into the original Ur.
-   * Take into account that in order to use this function, the fragments should be in the correct order.
+   * Take into account that in order to use this function, the fragments should be in the correct order (ordered by seqNum, ascending).
    * Otherwise you can sort them yourself, or use the fountainDecoder.
    * @param fragments array of stringified Ur's, in the correct order.
    * @returns original encoded Ur.
