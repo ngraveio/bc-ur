@@ -26,11 +26,11 @@ export class UrEncoder extends Encoder<any, string> {
   }
 
   /**
-   * get an array of encoded fragments, based on the payload length, max en min fragment length.
+   * get an array of encoded fragments, based on the payload length, max and min fragment length.
    * @param ur ur that needs to be encoded.
    * @param maxFragmentLength maximum length of a fragment
    * @param minFragmentLength minimum length of a fragment
-   * @returns the encoded payload as am array of ur strings
+   * @returns the encoded payload as an array of ur strings
    */
   getFragments(
     ur: Ur,
@@ -68,12 +68,12 @@ export class UrEncoder extends Encoder<any, string> {
   }
 
   /**
-   * get an array of encoded fragments, based on the payload length, max en min fragment length.
+   * get an array of encoded fragments, based on the payload length, max and min fragment length.
    * @param ur ur that needs to be encoded.
    * @param maxFragmentLength maximum length of a fragment
    * @param minFragmentLength minimum length of a fragment
    * @param redundancyRatio ratio of additional generated fragments
-   * @returns the encoded payload as am array of ur strings
+   * @returns the encoded payload as an array of ur strings
    */
   getFountainFragments(
     ur: Ur,
