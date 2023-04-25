@@ -1,4 +1,4 @@
-import { chooseFragments, mix } from "../fountainUtils";
+import { chooseFragments, mixFragments } from "../fountainUtils";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 import { toUint32, getCRC } from "../utils";
 import { getMultipartUrString } from "./MultipartUr";
@@ -81,7 +81,7 @@ export default class UrFountainEncoder extends UrEncoder {
       this._fragments.length,
       this._checksum
     );
-    const mixed = mix(indexes, this._fragments,this._nominalFragmentLength);
+    const mixed = mixFragments(indexes, this._fragments,this._nominalFragmentLength);
 
     const encodedFragment = super.encode([
       this._seqNum,

@@ -19,7 +19,7 @@ export default class UrFountainDecoder extends UrDecoder {
     private result: Buffer | undefined = undefined;
 
     private urDecoderResult: Ur | undefined;
-    private expected_type: string;
+    private expectedType: string;
 
     private expectedMessageLength: number = 0;
     private expectedChecksum: number = 0;
@@ -196,15 +196,15 @@ export default class UrFountainDecoder extends UrDecoder {
    * @returns true if the type is valid and matches the expected type
    */
   private validateUrType(type: string): boolean {
-    if (this.expected_type) {
-      return this.expected_type === type;
+    if (this.expectedType) {
+      return this.expectedType === type;
     }
 
     if (!Ur.isURType(type)) {
       return false;
     }
 
-    this.expected_type = type;
+    this.expectedType = type;
 
     return true;
   }

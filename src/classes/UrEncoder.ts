@@ -3,7 +3,7 @@ import { getCRC, split, toUint32 } from "../utils";
 import { Encoder } from "./Encoder";
 import { Ur, getUrString } from "./Ur";
 import { getMultipartUrString } from "./MultipartUr";
-import { chooseFragments, mix } from "../fountainUtils";
+import { chooseFragments, mixFragments } from "../fountainUtils";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 
 export class UrEncoder extends Encoder<any, string> {
@@ -97,7 +97,7 @@ export class UrEncoder extends Encoder<any, string> {
     const fountainUrs = [...new Array(numberofParts)].map((_, index) => {
       const seqNum = toUint32(index + 1);
       const indexes = chooseFragments(seqNum, fragments.length, checksum);
-      const mixed = mix(indexes, fragments, fragmentLength);
+      const mixed = mixFragments(indexes, fragments, fragmentLength);
       // TODO: do I need to use Buffer.from on the fragment?
       const encodedFragment = super.encode([
         seqNum,
@@ -125,16 +125,16 @@ export class UrEncoder extends Encoder<any, string> {
   partitionMessage(message: Buffer, fragmentLength: number): Buffer[] {
     let remaining = Buffer.from(message);
     let fragment;
-    let _fragments: Buffer[] = [];
+    let fragments: Buffer[] = [];
 
     while (remaining.length > 0) {
       [fragment, remaining] = split(remaining, -fragmentLength);
       fragment = Buffer.alloc(fragmentLength, 0) // initialize with 0's to achieve the padding
         .fill(fragment, 0, fragment.length);
-      _fragments.push(fragment);
+      fragments.push(fragment);
     }
 
-    return _fragments;
+    return fragments;
   }
 
   /**

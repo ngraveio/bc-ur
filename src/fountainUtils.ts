@@ -57,7 +57,7 @@ export const chooseFragments = (seqNum: number, seqLength: number, checksum: num
  * @param fragments array of pure fragments for a given payload.
  * @returns A mixed fragment, represented as a buffer.
  */
-export const mix = (indexes: number[], fragments: Buffer[], nominalFragmentLength: number): Buffer => {
+export const mixFragments = (indexes: number[], fragments: Buffer[], nominalFragmentLength: number): Buffer => {
   return indexes.reduce(
     (result, index) => bufferXOR(fragments[index], result),
     Buffer.alloc(nominalFragmentLength, 0)
