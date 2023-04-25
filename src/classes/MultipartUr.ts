@@ -11,20 +11,6 @@ export class MultipartUr extends Ur {
     this.seqLength = seqLength;
   }
 
-  /**
-   * get multipart ur represented as a string
-   * @returns string representation of a multipart Ur
-   */
-  getUrString(): string {
-    // FIXME: payload can be anything, so we do not know how to convert it to string.
-    return getMultipartUrString(
-      this.type,
-      this.seqNum,
-      this.seqLength,
-      this.payload
-    );
-  }
-
   static fromMultipartUr(payload: any, registryType: RegistryType, seqNum: number, seqLength:number): MultipartUr {
     // first validate the basic ur
     const ur = Ur.fromUr(payload, registryType);

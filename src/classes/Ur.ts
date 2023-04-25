@@ -27,13 +27,6 @@ export class Ur {
   }
 
   /**
-   * get ur represented as a string
-   * @returns Ur object as a string
-   */
-  getUrString(): string {
-    return getUrString(this.type, this.payload);
-  }
-  /**
    * Checks if the given type is a valid UR type (consisting of lowercase letters, numbers or dashes)
    * @param type the type to be checked
    * @returns true if the type is a valid UR type
