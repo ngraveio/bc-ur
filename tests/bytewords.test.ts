@@ -1,5 +1,5 @@
 import { AssertionError } from 'assert';
-import bytewords from '../src/bytewords';
+import bytewords from '../src/encodingMethods/bytewords';
 
 describe('Bytewords', () => {
   const hexInput = 'd9012ca20150c7098580125e2ab0981253468b2dbc5202d8641947da';

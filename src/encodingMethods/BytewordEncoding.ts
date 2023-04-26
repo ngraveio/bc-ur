@@ -1,4 +1,4 @@
-import { STYLES, decode, encode } from "../bytewords";
+import { STYLES, decode, encode } from "./bytewords";
 import { EncodingMethodName } from "../enums/EncodingMethodName";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 

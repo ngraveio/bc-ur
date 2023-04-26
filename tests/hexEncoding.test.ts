@@ -1,4 +1,4 @@
-import { HexEncoding } from "../src/classes/HexEncoding";
+import { HexEncoding } from "../src/encodingMethods/HexEncoding";
 
 describe("HexEncoding", () => {
   const hexEncoding = new HexEncoding();

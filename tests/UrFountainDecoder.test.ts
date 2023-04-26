@@ -1,6 +1,6 @@
 import { Ur } from "../src/classes/Ur";
 import { NgraveTranscoder } from "../src/classes/Transcoder";
-import { makeCborUr, makeMessage, makeMessageUR } from "./utils";
+import { makeCborUr, makeMessage } from "./utils";
 
 describe("FountainDecoder", () => {
   const { fountainDecoderCreator, fountainEncoderCreator } =
@@ -105,7 +105,7 @@ describe("FountainDecoder", () => {
 
     expect(fountainDecoder.isSuccess()).toEqual(true);
     const decoded = fountainDecoder.getDecodedResult();
-    const decodedUR = Ur.fromUr(decoded.payload, {...decoded.registryType});
+    const decodedUR = Ur.toUr(decoded.payload, {...decoded.registryType});
     expect(decodedUR.type).toEqual(test.registryType.type);
     expect(decodedUR.payload).toEqual(test.payload);
   });
@@ -158,7 +158,6 @@ describe("Passing wrong encoded data into the FountainDecoder", () => {
         fountainDecoder.receivePart(part);
       }
       const result = fountainDecoder.getUrResult();
-      console.log('result', result)
       expect(result.payload).toEqual(ur.payload);
     });
     test("Should ignore ur parts that have a different sequenceLength then the first read QR code", () => {
@@ -178,7 +177,6 @@ describe("Passing wrong encoded data into the FountainDecoder", () => {
         fountainDecoder.receivePart(part);
       }
       const result = fountainDecoder.getUrResult();
-      console.log('result', result)
       expect(result.payload).toEqual(ur.payload);
     });
     test("Should ignore ur parts that have a different payload then the first read QR code. This is checked by the checksum", () => {
@@ -198,7 +196,6 @@ describe("Passing wrong encoded data into the FountainDecoder", () => {
         fountainDecoder.receivePart(part);
       }
       const result = fountainDecoder.getUrResult();
-      console.log('result', result)
       expect(result.payload).toEqual(ur.payload);
     });
 });

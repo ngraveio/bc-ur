@@ -1,10 +1,11 @@
-import UR from './ur';
-import UREncoder from './urEncoder';
-import URDecoder from './urDecoder';
+import { MultipartUr } from './classes/MultipartUr';
+import { ITranscoder, NgraveTranscoder } from './classes/Transcoder';
+import { Ur } from './classes/Ur';
 
 export {
-  UR,
-  UREncoder,
-  URDecoder
+  Ur,
+  MultipartUr,
+  ITranscoder,
+  NgraveTranscoder
 }
 

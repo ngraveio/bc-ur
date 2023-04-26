@@ -6,7 +6,7 @@ import {
 } from "../errors";
 import { toUint32 } from "../utils";
 import { Decoder } from "./Decoder";
-import { MultipartUr } from "./MultipartUr";
+import { IMultipartUr, MultipartUr } from "./MultipartUr";
 import { Ur } from "./Ur";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 import assert from "assert";
@@ -37,9 +37,9 @@ export class UrDecoder extends Decoder<string, any> {
    * @returns original encoded Ur.
    */
   decodeFragment(fragment: string): Ur {
-    const { type, bytewords } = this.parseUr(fragment);
-
-    const decoded = this.decode(bytewords);
+    const { registryType, payload } = Ur.parseUr(fragment);
+    const { type } = registryType;
+    const decoded = this.decode(payload);
 
     return new Ur(decoded, { type });
   }
@@ -111,7 +111,7 @@ export class UrDecoder extends Decoder<string, any> {
     // decode the buffer as a whole.
     const decoded = this.decodeCbor(cborPayload);
 
-    return Ur.fromUr(decoded.payload, { ...expectedRegistryType });
+    return Ur.toUr(decoded.payload, { ...expectedRegistryType });
   }
 
   private compareMultipartUrPayload(
@@ -146,11 +146,16 @@ export class UrDecoder extends Decoder<string, any> {
    * @returns
    */
   decodeMultipartUr(payload: string): MultipartUr {
-    const { bytewords, type, seqNum, seqLength } = this.parseUr(payload);
+    const {
+      payload: bytewords,
+      registryType,
+      seqNum,
+      seqLength,
+    } = MultipartUr.parseUr(payload);
 
     const decoded = this.decode(bytewords); // {"_checksum": 556878893, "_fragment": [Object] (type of Buffer), "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
 
-    return MultipartUr.fromMultipartUr(decoded, { type }, seqNum, seqLength);
+    return MultipartUr.toMultipartUr(decoded, registryType, seqNum, seqLength);
   }
 
   public validateMultipartPayload(decoded: Buffer): MultipartPayload {
@@ -178,88 +183,5 @@ export class UrDecoder extends Decoder<string, any> {
     const { type } = registryType;
 
     return expectedType === type;
-  }
-
-  /**
-   * Parses a UR and performs basic validation
-   * @param message e.g. "UR:BYTES/6-23/LPAMCHCFATTTCYCLEHGSDPHDHGEHFGHKKKDL..."
-   * @returns `{
-    type: string;
-    bytewords: string;
-    seqNum?: number;
-    seqLength?: number;
-  }` // e.g.
-  {
-    type: "bytes",
-    bytewords: "lpamchcfatttcyclehgsdphdhgehfghkkkdl..."",
-    seqNum: 6,
-    seqLength: 23
-  } 
-   */
-  public parseUr(message: string): {
-    type: string;
-    bytewords: string;
-    seqNum?: number;
-    seqLength?: number;
-  } {
-    const lowercase = message.toLowerCase(); // e.g. "ur:bytes/6-23/lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
-    const prefix = lowercase.slice(0, 3);
-
-    if (prefix !== "ur:") {
-      throw new InvalidSchemeError();
-    }
-
-    const components = lowercase.slice(3).split("/");
-
-    if (components.length !== 2 && components.length !== 3) {
-      throw new InvalidPathLengthError();
-    }
-
-    const type = components[0]; //e.g. "bytes"
-
-    if (!Ur.isURType(type)) {
-      throw new InvalidTypeError();
-    }
-
-    // if we have 3 components, it means we are dealing with a multipart ur.
-    if (components.length === 3) {
-      // sequence is included
-      const { seqNum, seqLength } = this.parseSequenceComponent(components[1]);
-      return {
-        type,
-        seqNum,
-        seqLength,
-        bytewords: components[2],
-      };
-    }
-
-    // singlePart ur
-    return {
-      type,
-      bytewords: components[1],
-    };
-  }
-
-  /**
-   * Parses a sequence component of a UR and performs basic validation
-   * @param s e.g. "146-23"
-   * @returns `{seqNum, seqLength}` // e.g. `{seqNum: 146, seqLength:23}`
-   */
-  public parseSequenceComponent(s: string) {
-    const components = s.split("-");
-
-    if (components.length !== 2) {
-      throw new InvalidSequenceComponentError();
-    }
-
-    const seqNum = toUint32(Number(components[0]));
-    const seqLength = Number(components[1]);
-
-    // seqNum, seqLength must be greater than 0
-    if (seqNum < 1 || seqLength < 1) {
-      throw new InvalidSequenceComponentError();
-    }
-
-    return { seqNum, seqLength };
   }
 }

@@ -1,8 +1,17 @@
 import assert from "assert";
-import { InvalidTypeError } from "../errors";
+import { InvalidPathLengthError, InvalidSchemeError, InvalidTypeError } from "../errors";
 import { RegistryType } from "../interfaces/RegistryType";
 
-export class Ur {
+export interface IUr {
+  payload: any;
+  registryType: RegistryType;
+}
+/**
+ * Class that represents the structure of the data we encode/decode in this package.
+ * e.g. 'ur:bytes/lpamcmcfatrdcyzcpldpgwhdhtiaiaecgyktgsflguhshthfghjtjngrhsfegtiafegaktgugui'
+ * Based on the bc definition. TODO: add link to bc ur registry
+ */
+export class Ur implements IUr {
   payload: any;
   registryType: RegistryType;
 
@@ -19,8 +28,7 @@ export class Ur {
 
   /**
    * Gets the registry type of the UR.
-   * e.g. bytes,
-   * TODO: add link to bc ur registry
+   * e.g. bytes
    */
   get type(): string {
     return this.registryType.type;
@@ -63,11 +71,50 @@ export class Ur {
    * @param tag tag of the ur registry
    * @returns 
    */
-  static fromUr(payload: any, registryType: RegistryType): Ur {
+  static toUr(payload: any, registryType: RegistryType): Ur {
     const {type} = registryType
     assert(typeof type === 'string', "registry type should be included in the ur payload");
 
     return new Ur(payload, { type });
+  }
+
+    /**
+   * Parses a UR and performs basic validation
+   * @param message e.g. "UR:BYTES/6-23/LPAMCHCFATTTCYCLEHGSDPHDHGEHFGHKKKDL..."
+   * @returns `{
+    type: string;
+    bytewords: string;
+  }` // e.g.
+  {
+    type: "bytes",
+    bytewords: "lpamchcfatttcyclehgsdphdhgehfghkkkdl..."",
+  } 
+   */
+  static parseUr(message: string): IUr{
+    const lowercase = message.toLowerCase(); // e.g. "ur:bytes/6-23/lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
+    const prefix = lowercase.slice(0, 3);
+
+    if (prefix !== "ur:") {
+      throw new InvalidSchemeError();
+    }
+
+    const components = lowercase.slice(3).split("/");
+
+    if (components.length !== 2 ) {
+      throw new InvalidPathLengthError();
+    }
+
+    const type = components[0]; //e.g. "bytes"
+
+    if (!Ur.isURType(type)) {
+      throw new InvalidTypeError();
+    }
+
+    // singlePart ur
+    return {
+      registryType: {type},
+      payload: components[1],
+    };
   }
 }
 

@@ -1,10 +1,23 @@
-import { InvalidChecksumError, InvalidPathLengthError, InvalidSchemeError } from "../errors";
-import { FountainDecoderPart } from "../fountainDecoder";
+import { InvalidChecksumError, InvalidSchemeError } from "../errors";
 import { chooseFragments } from "../fountainUtils";
-import UR from "../ur";
 import { arrayContains, arraysEqual, bufferXOR, getCRC, setDifference } from "../utils";
+import { IMultipartUr, MultipartUr } from "./MultipartUr";
 import { Ur } from "./Ur";
 import { MultipartPayload, UrDecoder } from "./UrDecoder";
+
+class FountainDecoderPart {
+  constructor(
+    private _indexes: number[],
+    private _fragment: Buffer
+  ) { }
+
+  get indexes() { return this._indexes; }
+  get fragment() { return this._fragment; }
+
+  public isSimple() {
+    return this.indexes.length === 1;
+  }
+}
 
 type PartIndexes = number[];
 interface PartDict {
@@ -216,7 +229,7 @@ export default class UrFountainDecoder extends UrDecoder {
        }
    
        // e.g bytes ["6-23", "lpamchcfatttcyclehgsdphdhgehfghkkkdl..."]
-       const {type, bytewords, seqLength} = this.parseUr(s);
+       const {registryType:{type}, payload: bytewords, seqLength} = MultipartUr.parseUr(s);
    
        if (!this.validateUrType(type)) {
          return false;

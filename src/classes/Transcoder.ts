@@ -1,14 +1,13 @@
-import { STYLES } from "../bytewords";
-import { BytewordEncoding } from "./BytewordEncoding";
-import { CborEncoding } from "./CborEncoding";
+import { CborEncoding } from "../encodingMethods/CborEncoding";
 import { Decoder } from "./Decoder";
 import { Encoder } from "./Encoder";
-import { HexEncoding } from "./HexEncoding";
 import { Ur } from "./Ur";
 import { UrDecoder } from "./UrDecoder";
 import { UrEncoder } from "./UrEncoder";
 import UrFountainDecoder from "./UrFountainDecoder";
 import UrFountainEncoder from "./UrFountainEncoder";
+import { HexEncoding } from "../encodingMethods/HexEncoding";
+import { BytewordEncoding } from "../encodingMethods/BytewordEncoding";
 
 /**
  * A Transcoder creates encoders and decoders that use the same encodingMethods.
@@ -26,11 +25,22 @@ export interface ITranscoder<T, U> {
   fountainDecoderCreator: () => Decoder<U, T>;
 }
 
+/**
+ * Transcoder used in the ngrave suite.
+ * It implements the following encoding methods: cbor -> hex -> bytewords
+ */
 export class NgraveTranscoder implements ITranscoder<any, string> {
   encoder: UrEncoder;
   decoder: UrDecoder;
-  // We want to create a new instance of the fountain encoder & decoder so it does not keep it's internal state
+  /**
+   * Function that creates a fountain decoder class.
+   * We want to create a new instance of the fountain encoder & decoder so it does not keep it's internal state
+   * */
   fountainDecoderCreator: () => UrFountainDecoder;
+  /**
+   * Function that creates a fountain encoder class for a specific Ur.
+   * We want to create a new instance of the fountain encoder & decoder so it does not keep it's internal state
+   * */
   fountainEncoderCreator: (
     ur: Ur,
     maxFragmentLength?: number,
@@ -45,7 +55,7 @@ export class NgraveTranscoder implements ITranscoder<any, string> {
     ];
     this.encoder = new UrEncoder(methods);
     this.decoder = new UrDecoder(methods);
-    this.fountainDecoderCreator = () => new UrFountainDecoder(methods)
+    this.fountainDecoderCreator = () => new UrFountainDecoder(methods);
     this.fountainEncoderCreator = (
       ur: Ur,
       maxFragmentLength?: number,

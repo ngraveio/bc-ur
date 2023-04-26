@@ -9,10 +9,8 @@ describe("getFragments", () => {
   test("should encode/decode a ur", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
     const fragment = encoder.encodeUr(ur);
-    console.log("fragment", fragment);
 
     const decodedFragment = decoder.decodeFragment(fragment);
-    console.log("decoded", decodedFragment);
 
     expect(decodedFragment.payload).toEqual(ur.payload);
   });
@@ -38,10 +36,8 @@ describe("getFragments", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
     const fragmentLength = 5;
     const fragments = encoder.getFragments(ur, fragmentLength, fragmentLength);
-    console.log("fragments", fragments);
 
     const decoded = decoder.decodeFragments(fragments);
-    console.log("decodedFragments", decoded);
     expect(decoded.payload).toEqual(ur.payload);
   });
   test("should create 10 fragments when payloadlength is 48 and min/max fragment size is 5, with default redundancy of 0", () => {
@@ -57,7 +53,6 @@ describe("getFragments", () => {
       fragmentLength,
       fragmentLength
     );
-    console.log("fountainFragments", fountainFragments);
     expect(fountainFragments.length).toEqual(expectedFragmentLength);
   });
   test("should have 20 fragments for a ratio of 1", () => {
@@ -75,14 +70,12 @@ describe("getFragments", () => {
       fragmentLength,
       ratio
     );
-    console.log("fountainFragments", fountainFragments);
     expect(fountainFragments.length).toEqual(expectedFragmentLength);
   });
   test("should be able to fountain encode/decode the payload", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
 
     const fountainFragments = encoder.getFountainFragments(ur, 10, 5);
-    console.log("fountainFragments", fountainFragments);
     const decoded = decoder.decodeFragments(fountainFragments);
 
     expect(decoded.payload).toEqual(ur.payload);
@@ -107,7 +100,6 @@ describe("getFragments", () => {
     const ur = new Ur(message, { type: "custom" });
 
     const fountainFragments = encoder.getFountainFragments(ur, 50, 5, 5);
-    console.log("fountainFragments", fountainFragments);
 
     const decoded = decoder.decodeFragments(fountainFragments);
     expect(decoded.payload).toEqual(ur.payload);
