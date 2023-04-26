@@ -1,7 +1,7 @@
 import { InvalidChecksumError, InvalidSchemeError } from "../errors";
 import { chooseFragments } from "../fountainUtils";
 import { arrayContains, arraysEqual, bufferXOR, getCRC, setDifference } from "../utils";
-import { IMultipartUr, MultipartUr } from "./MultipartUr";
+import { MultipartUr } from "./MultipartUr";
 import { Ur } from "./Ur";
 import { MultipartPayload, UrDecoder } from "./UrDecoder";
 

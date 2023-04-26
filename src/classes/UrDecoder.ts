@@ -1,12 +1,5 @@
-import {
-  InvalidPathLengthError,
-  InvalidSchemeError,
-  InvalidSequenceComponentError,
-  InvalidTypeError,
-} from "../errors";
-import { toUint32 } from "../utils";
 import { Decoder } from "./Decoder";
-import { IMultipartUr, MultipartUr } from "./MultipartUr";
+import { MultipartUr } from "./MultipartUr";
 import { Ur } from "./Ur";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 import assert from "assert";
