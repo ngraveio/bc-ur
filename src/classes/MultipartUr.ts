@@ -9,7 +9,7 @@ import {
 } from "../errors";
 import { toUint32 } from "../utils";
 
-export interface IMultipartUr extends IUr {
+export interface IMultipartUr<T> extends IUr<T> {
   seqNum: number;
   seqLength: number;
 }
@@ -18,10 +18,10 @@ export interface IMultipartUr extends IUr {
  * Extends the basic Ur class to add support for a Ur splitted into multiple parts.
  * e.g. 'ur:bytes/6-22/lpamcmcfatrdcyzcpldpgwhdhtiaiaecgyktgsflguhshthfghjtjngrhsfegtiafegaktgugui'
  */
-export class MultipartUr extends Ur implements IMultipartUr {
+export class MultipartUr<T> extends Ur<T> implements IMultipartUr<T> {
   seqNum: number;
   seqLength: number;
-  constructor(payload, registryType, seqNum, seqLength) {
+  constructor(payload: T, registryType: RegistryType, seqNum: number, seqLength: number) {
     super(payload, registryType);
     this.seqNum = seqNum;
     this.seqLength = seqLength;
@@ -31,12 +31,12 @@ export class MultipartUr extends Ur implements IMultipartUr {
     return `type: ${this.type} seqNum:${this.seqNum} seqLen:${this.seqLength} data:${this.payload}`;
   }
 
-  static toMultipartUr(
-    payload: any,
+  static toMultipartUr<T>(
+    payload: T,
     registryType: RegistryType,
     seqNum: number,
     seqLength: number
-  ): MultipartUr {
+  ): MultipartUr<T> {
     // first validate the basic ur
     const ur = Ur.toUr(payload, registryType);
     const { registryType: validatedRegistryType } = ur;
@@ -50,7 +50,7 @@ export class MultipartUr extends Ur implements IMultipartUr {
     return new MultipartUr(payload, validatedRegistryType, seqNum, seqLength);
   }
 
-  static fromMultipartUr(ur: MultipartUr): string {
+  static fromMultipartUr(ur: MultipartUr<string>): string {
     return getMultipartUrString(ur.type, ur.seqNum, ur.seqLength, ur.payload);
   }
 
@@ -70,7 +70,7 @@ export class MultipartUr extends Ur implements IMultipartUr {
     seqLength: 23
   } 
    */
-  static parseUr(message: string): IMultipartUr {
+  static parseUr(message: string): IMultipartUr<string> {
     const lowercase = message.toLowerCase(); // e.g. "ur:bytes/6-23/lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
     const prefix = lowercase.slice(0, 3);
 

@@ -13,12 +13,12 @@ export type MultipartPayload = {
   fragment: Buffer;
 };
 
-export class UrDecoder extends Decoder<string, any> {
+export class UrDecoder<T,U> extends Decoder<string, U> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
     super(encodingMethods);
   }
 
-  decodeCbor(payload: Buffer): any {
+  decodeCbor(payload: Buffer): Ur<U> {
     return this.encodingMethods[this.encodingMethods.length - 1].decode(
       payload
     );
@@ -29,10 +29,10 @@ export class UrDecoder extends Decoder<string, any> {
    * @param fragment stringified Ur
    * @returns original encoded Ur.
    */
-  decodeFragment(fragment: string): Ur {
+  decodeFragment(fragment: string): Ur<T> {
     const { registryType, payload } = Ur.parseUr(fragment);
     const { type } = registryType;
-    const decoded = this.decode(payload);
+    const decoded = super.decode<T>(payload);
 
     return new Ur(decoded, { type });
   }
@@ -44,7 +44,7 @@ export class UrDecoder extends Decoder<string, any> {
    * @param fragments array of stringified Ur's, in the correct order.
    * @returns original encoded Ur.
    */
-  decodeFragments(fragments: string[]): Ur {
+  decodeFragments(fragments: string[]): Ur<U> {
     let expectedRegistryType = null;
     let expectedPayload: {
       indexes: number[];
@@ -103,7 +103,7 @@ export class UrDecoder extends Decoder<string, any> {
 
     // decode the buffer as a whole.
     const decoded = this.decodeCbor(cborPayload);
-
+    
     return Ur.toUr(decoded.payload, { ...expectedRegistryType });
   }
 
@@ -138,7 +138,7 @@ export class UrDecoder extends Decoder<string, any> {
    * @param payload
    * @returns
    */
-  decodeMultipartUr(payload: string): MultipartUr {
+  decodeMultipartUr(payload: string): MultipartUr<Buffer> {
     const {
       payload: bytewords,
       registryType,
@@ -146,9 +146,9 @@ export class UrDecoder extends Decoder<string, any> {
       seqLength,
     } = MultipartUr.parseUr(payload);
 
-    const decoded = this.decode(bytewords); // {"_checksum": 556878893, "_fragment": [Object] (type of Buffer), "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
+    const decoded = this.decode<Buffer>(bytewords); // {"_checksum": 556878893, "_fragment": [Object] (type of Buffer), "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
 
-    return MultipartUr.toMultipartUr(decoded, registryType, seqNum, seqLength);
+    return MultipartUr.toMultipartUr<Buffer>(decoded, registryType, seqNum, seqLength);
   }
 
   public validateMultipartPayload(decoded: Buffer): MultipartPayload {

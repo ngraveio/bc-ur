@@ -15,7 +15,7 @@ export class Encoder<T, U> implements IEncoder<T, U> {
     return this._encodingMethods;
   }
   
-  encode(payload: T): U {
+  encode<V = T>(payload: V): U {
     let encodedValue: any = payload;
 
     // Apply each encoding method in sequence

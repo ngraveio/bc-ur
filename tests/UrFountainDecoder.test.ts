@@ -1,42 +1,44 @@
 import { Ur } from "../src/classes/Ur";
 import { NgraveTranscoder } from "../src/classes/Transcoder";
 import { makeCborUr, makeMessage } from "./utils";
+import { InvalidPathLengthError } from "../src/errors";
 
 describe("FountainDecoder", () => {
-  const { fountainDecoderCreator, fountainEncoderCreator } =
+  const { fountainDecoderCreator, fountainEncoderCreator, encoder } =
     new NgraveTranscoder();
 
-    test("Should be able to encode/decode when the payload is an object", () => {
-      const ur = new Ur({text: "hello world"});;
-      const fountainEncoder = fountainEncoderCreator(ur);
-      const fountainDecoder = fountainDecoderCreator();
-  
-      do {
-        const part = fountainEncoder.nextPart();
-        fountainDecoder.receivePart(part);
-      } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
-  
-      expect(fountainDecoder.isSuccess()).toEqual(true);
-      const result = fountainDecoder.getUrResult();
-      expect(result.payload).toEqual(ur.payload)
-    });
+  test("Should be able to encode/decode when the payload is an object", () => {
+    const ur = new Ur({ text: "hello world" });
+    const fountainEncoder = fountainEncoderCreator(ur);
+    const fountainDecoder = fountainDecoderCreator();
 
-    test("Should be able to encode/decode a simple string with default values", () => {
-      const ur = new Ur("thisIsATest");;
-      const fountainEncoder = fountainEncoderCreator(ur);
-      const fountainDecoder = fountainDecoderCreator();
-  
-      do {
-        const part = fountainEncoder.nextPart();
-        fountainDecoder.receivePart(part);
-      } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
-  
-      expect(fountainDecoder.isSuccess()).toEqual(true);
-      const result = fountainDecoder.getUrResult();
-      expect(result.payload).toEqual(ur.payload)
-    });
+    do {
+      const part = fountainEncoder.nextPart();
+      fountainDecoder.receivePart(part);
+    } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
+
+    expect(fountainDecoder.isSuccess()).toEqual(true);
+    const result = fountainDecoder.getUrResult();
+    expect(result.payload).toEqual(ur.payload);
+  });
+
+  test("Should be able to encode/decode a simple string with default values", () => {
+    const ur = new Ur("thisIsATest");
+    const fountainEncoder = fountainEncoderCreator(ur);
+    const fountainDecoder = fountainDecoderCreator();
+
+    do {
+      const part = fountainEncoder.nextPart();
+      fountainDecoder.receivePart(part);
+    } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
+
+    expect(fountainDecoder.isSuccess()).toEqual(true);
+    const result = fountainDecoder.getUrResult();
+    expect(result.payload).toEqual(ur.payload);
+  });
   test("Should be able to encode/decode a text", () => {
-    const testUr = new Ur(`The standard Lorem Ipsum passage, used since the 1500s
+    const testUr = new Ur(
+      `The standard Lorem Ipsum passage, used since the 1500s
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     
     Section 1.10.32 of "de Finibus Bonorum et Malorum", written by Cicero in 45 BC
@@ -49,7 +51,9 @@ describe("FountainDecoder", () => {
     "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat."
     
     1914 translation by H. Rackham
-    "On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures, or else he endures pains to avoid worse pains."`,{type: "test"});
+    "On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures, or else he endures pains to avoid worse pains."`,
+      { type: "test" }
+    );
     const maxFragmentLength = 500;
     const fountainEncoder = fountainEncoderCreator(testUr, maxFragmentLength);
     const fountainDecoder = fountainDecoderCreator();
@@ -61,17 +65,31 @@ describe("FountainDecoder", () => {
     expect(fountainDecoder.isSuccess()).toEqual(true);
     expect(fountainDecoder.getDecodedResult()).toEqual(testUr);
   });
-  test('Should be able to encode/decode a buffer with a small fragment length', () => {
+  test("Should throw an error when decoding a simple ur", () => {
+    const message = makeMessage(30);
+    const ur = new Ur(message);
+    const singleEncodedUR = encoder.encodeUr(ur);
+    const fountainDecoder = fountainDecoderCreator();
+
+    expect(() => fountainDecoder.receivePart(singleEncodedUR)).toThrow(
+      InvalidPathLengthError
+    );
+  });
+  test("Should be able to encode/decode a buffer with a small fragment length", () => {
     const message = makeMessage(30);
     const ur = new Ur(message);
     const maxFragmentLength = 1;
-    const fountainEncoder = fountainEncoderCreator(ur, maxFragmentLength,maxFragmentLength);
+    const fountainEncoder = fountainEncoderCreator(
+      ur,
+      maxFragmentLength,
+      maxFragmentLength
+    );
     const fountainDecoder = fountainDecoderCreator();
 
     do {
       const part = fountainEncoder.nextPart();
       fountainDecoder.receivePart(part);
-    } while (!fountainDecoder.isUrDecoderCompleteOrHasError())
+    } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
 
     expect(fountainDecoder.isSuccess()).toBe(true);
     expect(fountainDecoder.getDecodedResult()).toEqual(ur);
@@ -90,7 +108,7 @@ describe("FountainDecoder", () => {
     expect(fountainDecoder.isSuccess()).toEqual(true);
     expect(fountainDecoder.getDecodedResult()).toEqual(ur);
     const result = fountainDecoder.getUrResult();
-    expect(result).toEqual(ur)
+    expect(result).toEqual(ur);
   });
   test("Should keep the registryType while decoding", () => {
     const test = makeCborUr(250, { type: "custom-crypto" });
@@ -105,7 +123,7 @@ describe("FountainDecoder", () => {
 
     expect(fountainDecoder.isSuccess()).toEqual(true);
     const decoded = fountainDecoder.getDecodedResult();
-    const decodedUR = Ur.toUr(decoded.payload, {...decoded.registryType});
+    const decodedUR = Ur.toUr(decoded.payload, { ...decoded.registryType });
     expect(decodedUR.type).toEqual(test.registryType.type);
     expect(decodedUR.payload).toEqual(test.payload);
   });
@@ -115,87 +133,99 @@ describe("GetProgress", () => {
   const { fountainDecoderCreator, fountainEncoderCreator } =
     new NgraveTranscoder();
 
-    test("Should get the expected and recieved parts as an array of indexes", () => {
-      const message = makeMessage(300);
-      const ur = new Ur(message);
-      //Will generate 4 parts, based on the 300 sized message and additional ur characters
-      const fountainEncoder = fountainEncoderCreator(ur, 100,10);
-      const fountainDecoder = fountainDecoderCreator();
-    
-      for (let index = 0; index <= 1 ; index++) {
-        const part = fountainEncoder.nextPart();
-        fountainDecoder.receivePart(part);
-      }
-      
-      const expected = fountainDecoder.getExpectedPartIndexes();
-      const received = fountainDecoder.getReceivedPartIndexes();
-      const progressPercentage = fountainDecoder.getProgress();
+  test("Should get the expected and recieved parts as an array of indexes", () => {
+    const message = makeMessage(300);
+    const ur = new Ur(message);
+    //Will generate 4 parts, based on the 300 sized message and additional ur characters
+    const fountainEncoder = fountainEncoderCreator(ur, 100, 10);
+    const fountainDecoder = fountainDecoderCreator();
 
-      expect(expected).toEqual([0,1,2,3]);
-      expect(received).toEqual([0,1]);
-      expect(progressPercentage).toEqual(0.5);
-    });
+    for (let index = 0; index <= 1; index++) {
+      const part = fountainEncoder.nextPart();
+      fountainDecoder.receivePart(part);
+    }
+
+    const expected = fountainDecoder.getExpectedPartIndexes();
+    const received = fountainDecoder.getReceivedPartIndexes();
+    const progressPercentage = fountainDecoder.getProgress();
+
+    expect(expected).toEqual([0, 1, 2, 3]);
+    expect(received).toEqual([0, 1]);
+    expect(progressPercentage).toEqual(0.5);
+  });
 });
 
 describe("Passing wrong encoded data into the FountainDecoder", () => {
   const { fountainDecoderCreator, fountainEncoderCreator, encoder } =
     new NgraveTranscoder();
 
-    test("Should ignore ur parts that have a different ur type", () => {
-      const ur = makeCborUr(40, {type: "1"})
-      const ur2 = makeCborUr(20, {type: "2"})
-      const differentFragments = encoder.getFragments(ur2,5,5)
-      const fountainEncoder = fountainEncoderCreator(ur, 5,5);
-      const fountainDecoder = fountainDecoderCreator();
-  
-      for (let index = 0; !fountainDecoder.isUrDecoderCompleteOrHasError(); index++) {
-        let part = "";
-        if(index < 2 || !differentFragments[index]){
-          part = fountainEncoder.nextPart();
-        } else if(!!differentFragments[index]) {
-          part = differentFragments[index]
-        } 
-        fountainDecoder.receivePart(part);
+  test("Should ignore ur parts that have a different ur type", () => {
+    const ur = makeCborUr(40, { type: "1" });
+    const ur2 = makeCborUr(20, { type: "2" });
+    const differentFragments = encoder.getFragments(ur2, 5, 5);
+    const fountainEncoder = fountainEncoderCreator(ur, 5, 5);
+    const fountainDecoder = fountainDecoderCreator();
+
+    for (
+      let index = 0;
+      !fountainDecoder.isUrDecoderCompleteOrHasError();
+      index++
+    ) {
+      let part = "";
+      if (index < 2 || !differentFragments[index]) {
+        part = fountainEncoder.nextPart();
+      } else if (!!differentFragments[index]) {
+        part = differentFragments[index];
       }
-      const result = fountainDecoder.getUrResult();
-      expect(result.payload).toEqual(ur.payload);
-    });
-    test("Should ignore ur parts that have a different sequenceLength then the first read QR code", () => {
-      const ur = makeCborUr(40, {type: "pieter"})
-      const ur2 = makeCborUr(20, {type: "pieter"})
-      const differentFragments = encoder.getFragments(ur2,5,5)
-      const fountainEncoder = fountainEncoderCreator(ur, 5,5);
-      const fountainDecoder = fountainDecoderCreator();
-  
-      for (let index = 0; !fountainDecoder.isUrDecoderCompleteOrHasError(); index++) {
-        let part = "";
-        if(index < 2 || !differentFragments[index]){
-          part = fountainEncoder.nextPart();
-        } else if(!!differentFragments[index]) {
-          part = differentFragments[index]
-        } 
-        fountainDecoder.receivePart(part);
+      fountainDecoder.receivePart(part);
+    }
+    const result = fountainDecoder.getUrResult();
+    expect(result.payload).toEqual(ur.payload);
+  });
+  test("Should ignore ur parts that have a different sequenceLength then the first read QR code", () => {
+    const ur = makeCborUr(40, { type: "pieter" });
+    const ur2 = makeCborUr(20, { type: "pieter" });
+    const differentFragments = encoder.getFragments(ur2, 5, 5);
+    const fountainEncoder = fountainEncoderCreator(ur, 5, 5);
+    const fountainDecoder = fountainDecoderCreator();
+
+    for (
+      let index = 0;
+      !fountainDecoder.isUrDecoderCompleteOrHasError();
+      index++
+    ) {
+      let part = "";
+      if (index < 2 || !differentFragments[index]) {
+        part = fountainEncoder.nextPart();
+      } else if (!!differentFragments[index]) {
+        part = differentFragments[index];
       }
-      const result = fountainDecoder.getUrResult();
-      expect(result.payload).toEqual(ur.payload);
-    });
-    test("Should ignore ur parts that have a different payload then the first read QR code. This is checked by the checksum", () => {
-      const ur = makeCborUr(40, {type: "pieter"})
-      const ur2 = makeCborUr(40, {type: "pieter"}, "Pieter")
-      const differentFragments = encoder.getFragments(ur2,5,5)
-      const fountainEncoder = fountainEncoderCreator(ur, 5,5);
-      const fountainDecoder = fountainDecoderCreator();
-  
-      for (let index = 0; !fountainDecoder.isUrDecoderCompleteOrHasError(); index++) {
-        let part = "";
-        if(index < 2 || !differentFragments[index]){
-          part = fountainEncoder.nextPart();
-        } else if(!!differentFragments[index]) {
-          part = differentFragments[index]
-        } 
-        fountainDecoder.receivePart(part);
+      fountainDecoder.receivePart(part);
+    }
+    const result = fountainDecoder.getUrResult();
+    expect(result.payload).toEqual(ur.payload);
+  });
+  test("Should ignore ur parts that have a different payload then the first read QR code. This is checked by the checksum", () => {
+    const ur = makeCborUr(40, { type: "pieter" });
+    const ur2 = makeCborUr(40, { type: "pieter" }, "Pieter");
+    const differentFragments = encoder.getFragments(ur2, 5, 5);
+    const fountainEncoder = fountainEncoderCreator(ur, 5, 5);
+    const fountainDecoder = fountainDecoderCreator();
+
+    for (
+      let index = 0;
+      !fountainDecoder.isUrDecoderCompleteOrHasError();
+      index++
+    ) {
+      let part = "";
+      if (index < 2 || !differentFragments[index]) {
+        part = fountainEncoder.nextPart();
+      } else if (!!differentFragments[index]) {
+        part = differentFragments[index];
       }
-      const result = fountainDecoder.getUrResult();
-      expect(result.payload).toEqual(ur.payload);
-    });
+      fountainDecoder.receivePart(part);
+    }
+    const result = fountainDecoder.getUrResult();
+    expect(result.payload).toEqual(ur.payload);
+  });
 });

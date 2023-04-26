@@ -3,9 +3,13 @@ import { NgraveTranscoder } from "../src/classes/Transcoder";
 import UrFountainEncoder from "../src/classes/UrFountainEncoder";
 import { makeCborUr, makeMessage } from "./utils";
 import { InvalidTypeError } from "../src/errors";
+import { UrEncoder } from "../src/classes/UrEncoder";
+import { BytewordEncoding } from "../src/encodingMethods/BytewordEncoding";
+import { CborEncoding } from "../src/encodingMethods/CborEncoding";
+import { HexEncoding } from "../src/encodingMethods/HexEncoding";
 
 describe("getFragments", () => {
-  const { encoder, decoder, fountainDecoderCreator } = new NgraveTranscoder();
+  const { encoder, decoder } = new NgraveTranscoder<{ name: string }>();
   test("should encode/decode a ur", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
     const fragment = encoder.encodeUr(ur);
@@ -81,6 +85,8 @@ describe("getFragments", () => {
     expect(decoded.payload).toEqual(ur.payload);
   });
   test("should be able to fountain encode/decode the payload with a small maxFragmentLength", () => {
+    const { encoder, decoder } = new NgraveTranscoder<Buffer>();
+
     const message = makeMessage(30);
     const ur = new Ur(message, { type: "custom" });
 
@@ -96,6 +102,8 @@ describe("getFragments", () => {
     expect(decoded.payload).toEqual(ur.payload);
   });
   test("should be able to encode and decode cbor payload", () => {
+    const { encoder, decoder } = new NgraveTranscoder<Buffer>();
+
     const message = makeMessage(250);
     const ur = new Ur(message, { type: "custom" });
 
@@ -175,5 +183,21 @@ describe("getFragments", () => {
     const result = decoder.decodeFragments(fragments1);
 
     expect(result.payload).toEqual(ur.payload);
+  });
+});
+
+describe("UrEncoder", () => {
+  test("should be able to define a custom input and output type", () => {
+    type CurrentType = { numberToEncode: number };
+    const encoder = new UrEncoder<CurrentType, string>([
+      new CborEncoding(),
+      new HexEncoding(),
+      // return type actually depends on the return type of the last encoding method.
+      new BytewordEncoding(),
+    ]);
+    const ur = new Ur({ numberToEncode: 9999 }, { type: "custom" });
+    const fragment = encoder.encodeUr(ur);
+    expect(fragment).toBeDefined()
+    expect(typeof fragment).toBe("string")
   });
 });

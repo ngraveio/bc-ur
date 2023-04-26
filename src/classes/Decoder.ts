@@ -11,12 +11,12 @@ export class Decoder<T, U> implements IDecoder<T, U> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
     this._encodingMethods = [...encodingMethods].reverse();
   }
-  
-  get encodingMethods(){
+
+  get encodingMethods() {
     return this._encodingMethods;
   }
-  
-  decode(payload: T): U {
+
+  decode<V = U>(payload: T): V {
     let decodedValue: any = payload;
 
     // Apply each decoding method in reverse sequence

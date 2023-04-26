@@ -2,8 +2,8 @@ import assert from "assert";
 import { InvalidPathLengthError, InvalidSchemeError, InvalidTypeError } from "../errors";
 import { RegistryType } from "../interfaces/RegistryType";
 
-export interface IUr {
-  payload: any;
+export interface IUr<T> {
+  payload: T;
   registryType: RegistryType;
 }
 /**
@@ -11,12 +11,12 @@ export interface IUr {
  * e.g. 'ur:bytes/lpamcmcfatrdcyzcpldpgwhdhtiaiaecgyktgsflguhshthfghjtjngrhsfegtiafegaktgugui'
  * Based on the bc definition. TODO: add link to bc ur registry
  */
-export class Ur implements IUr {
-  payload: any;
+export class Ur<T> implements IUr<T> {
+  payload: T;
   registryType: RegistryType;
 
   constructor(
-    payload: any,
+    payload: T,
     registryType: RegistryType = { type: "bytes" }
   ) {
     if (!Ur.isURType(registryType.type)) {
@@ -71,7 +71,7 @@ export class Ur implements IUr {
    * @param tag tag of the ur registry
    * @returns 
    */
-  static toUr(payload: any, registryType: RegistryType): Ur {
+  static toUr<U>(payload: U, registryType: RegistryType): Ur<U> {
     const {type} = registryType
     assert(typeof type === 'string', "registry type should be included in the ur payload");
 
@@ -90,7 +90,7 @@ export class Ur implements IUr {
     bytewords: "lpamchcfatttcyclehgsdphdhgehfghkkkdl..."",
   } 
    */
-  static parseUr(message: string): IUr{
+  static parseUr(message: string): IUr<string>{
     const lowercase = message.toLowerCase(); // e.g. "ur:bytes/6-23/lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
     const prefix = lowercase.slice(0, 3);
 
