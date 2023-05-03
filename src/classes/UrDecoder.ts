@@ -93,8 +93,6 @@ export class UrDecoder<T,U> extends Decoder<string, U> {
         // return default value.
         return Buffer.from([]);
       }
-      // fourth part of the array payload is the actual fragment.
-      // TODO: pass in a type of the payload
       return validatedPayload.fragment;
     });
 
