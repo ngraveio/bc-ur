@@ -8,7 +8,7 @@ import { BytewordEncoding } from "../src/encodingMethods/BytewordEncoding";
 import { CborEncoding } from "../src/encodingMethods/CborEncoding";
 import { HexEncoding } from "../src/encodingMethods/HexEncoding";
 
-describe("getFragments", () => {
+describe("getFragments, for payload { name: string }", () => {
   const { encoder, decoder } = new NgraveTranscoder<{ name: string }>();
   test("should encode/decode a ur", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
@@ -84,8 +84,11 @@ describe("getFragments", () => {
 
     expect(decoded.payload).toEqual(ur.payload);
   });
+});
+
+describe("encoder/decoder for ", () => {
+  const { encoder, decoder } = new NgraveTranscoder<Buffer>();
   test("should be able to fountain encode/decode the payload with a small maxFragmentLength", () => {
-    const { encoder, decoder } = new NgraveTranscoder<Buffer>();
 
     const message = makeMessage(30);
     const ur = new Ur(message, { type: "custom" });

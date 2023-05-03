@@ -37,7 +37,7 @@ describe("Fountain Encoder", () => {
       part = encoder.nextPart();
       generatedParts += 1;
     }
-    const parsedPart = MultipartUr.parseUr(part) as IMultipartUr
+    const parsedPart = MultipartUr.parseUr(part)
 
     expect(parsedPart.seqLength).toBe(generatedParts);
   });
