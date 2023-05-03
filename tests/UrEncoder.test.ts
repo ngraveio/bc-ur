@@ -2,7 +2,7 @@ import { Ur } from "../src/classes/Ur";
 import { NgraveTranscoder } from "../src/classes/Transcoder";
 import UrFountainEncoder from "../src/classes/UrFountainEncoder";
 import { makeCborUr, makeMessage } from "./utils";
-import { InvalidTypeError } from "../src/errors";
+import { InvalidChecksumError, InvalidTypeError } from "../src/errors";
 import { UrEncoder } from "../src/classes/UrEncoder";
 import { BytewordEncoding } from "../src/encodingMethods/BytewordEncoding";
 import { CborEncoding } from "../src/encodingMethods/CborEncoding";
@@ -29,7 +29,7 @@ describe("getFragments, for payload { name: string }", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
 
     const fragmentLength = 5;
-    const payloadLength = encoder.cborEncode(ur).length;
+    const payloadLength = encoder.cborEncode(ur.payload).length;
     const expectedFragmentLength = Math.ceil(payloadLength / fragmentLength);
 
     const fragments = encoder.getFragments(ur, fragmentLength, fragmentLength);
@@ -44,13 +44,12 @@ describe("getFragments, for payload { name: string }", () => {
     const decoded = decoder.decodeFragments(fragments);
     expect(decoded.payload).toEqual(ur.payload);
   });
-  test("should create 10 fragments when payloadlength is 48 and min/max fragment size is 5, with default redundancy of 0", () => {
+  test("should create 3 fragments when payloadlength is 13 and min/max fragment size is 5, with default redundancy of 0", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
 
     const fragmentLength = 5;
-    // const payloadLength = encoder.cborEncode(ur).length;
-    // Math.ceil(payloadLength / fragmentLength);
-    const expectedFragmentLength = 10;
+    const payloadLength = encoder.cborEncode(ur.payload).length;
+    const expectedFragmentLength = Math.ceil(payloadLength / fragmentLength);;
 
     const fountainFragments = encoder.getFountainFragments(
       ur,
@@ -59,14 +58,13 @@ describe("getFragments, for payload { name: string }", () => {
     );
     expect(fountainFragments.length).toEqual(expectedFragmentLength);
   });
-  test("should have 20 fragments for a ratio of 1", () => {
+  test("should have twice the amount of fragments for a ratio of 1", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
 
     const fragmentLength = 5;
     const ratio = 1;
-    // const payloadLength = encoder.cborEncode(ur).length;
-    // Math.ceil(payloadLength / fragmentLength) * 2;
-    const expectedFragmentLength = 20;
+    const payloadLength = encoder.cborEncode(ur.payload).length;
+    const expectedFragmentLength = Math.ceil(payloadLength / fragmentLength) * 2;;
 
     const fountainFragments = encoder.getFountainFragments(
       ur,
@@ -155,7 +153,7 @@ describe("encoder/decoder for ", () => {
     const decoded = decoder.decodeFragments(parts);
     expect(decoded).toEqual(ur);
   });
-  test("FountainEncoder should not be able to decode when the generated fragments are too little", () => {
+  test("FountainEncoder should not be able to decode when the generated fragments are too little, checksum unequal", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
     const fountainEncoder = new UrFountainEncoder(
       encoder.encodingMethods,
@@ -171,8 +169,7 @@ describe("encoder/decoder for ", () => {
       parts.push(part);
     }
 
-    const decoded = decoder.decodeFragments(parts);
-    expect(decoded).not.toEqual(ur);
+    expect(() => decoder.decodeFragments(parts)).toThrow(InvalidChecksumError);
   });
 
   test("Should ignore ur parts of the second ur, that have a different ur types and return the correct result", () => {

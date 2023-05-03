@@ -28,7 +28,7 @@ export default class UrFountainEncoder<T> extends UrEncoder<T, string> {
     this._seqNum = toUint32(firstSeqNum);
 
     // We need to encode the message as a Buffer, because we mix them later on
-    const cborMessage = super.cborEncode(ur);
+    const cborMessage = super.cborEncode(ur.payload);
     this._messageLength = cborMessage.length;
     this._checksum = getCRC(cborMessage);
 

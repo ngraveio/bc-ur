@@ -63,7 +63,7 @@ describe("FountainDecoder", () => {
     } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
 
     expect(fountainDecoder.isSuccess()).toEqual(true);
-    expect(fountainDecoder.getDecodedResult()).toEqual(testUr);
+    expect(fountainDecoder.getDecodedResult()).toEqual(testUr.payload);
   });
   test("Should throw an error when decoding a simple ur", () => {
     const message = makeMessage(30);
@@ -92,7 +92,9 @@ describe("FountainDecoder", () => {
     } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
 
     expect(fountainDecoder.isSuccess()).toBe(true);
-    expect(fountainDecoder.getDecodedResult()).toEqual(ur);
+    expect(fountainDecoder.getDecodedResult()).toEqual(ur.payload);
+    expect(fountainDecoder.getUrResult()).toEqual(ur);
+
   });
   test("Should be able to encode/decode a buffer", () => {
     const ur = makeCborUr(250);
@@ -106,9 +108,8 @@ describe("FountainDecoder", () => {
     } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
 
     expect(fountainDecoder.isSuccess()).toEqual(true);
-    expect(fountainDecoder.getDecodedResult()).toEqual(ur);
-    const result = fountainDecoder.getUrResult();
-    expect(result).toEqual(ur);
+    expect(fountainDecoder.getDecodedResult()).toEqual(ur.payload);
+    expect(fountainDecoder.getUrResult()).toEqual(ur);
   });
   test("Should keep the registryType while decoding", () => {
     const test = makeCborUr(250, { type: "custom-crypto" });
@@ -122,8 +123,7 @@ describe("FountainDecoder", () => {
     } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
 
     expect(fountainDecoder.isSuccess()).toEqual(true);
-    const decoded = fountainDecoder.getDecodedResult();
-    const decodedUR = Ur.toUr(decoded.payload, { ...decoded.registryType });
+    const decodedUR = fountainDecoder.getUrResult()
     expect(decodedUR.type).toEqual(test.registryType.type);
     expect(decodedUR.payload).toEqual(test.payload);
   });
