@@ -221,10 +221,6 @@ export default class UrFountainDecoder<U> extends UrDecoder<string, U> {
     }
   }
 
-  public joinFragments = (fragments: Buffer[], messageLength: number) => {
-    return Buffer.concat(fragments).slice(0, messageLength);
-  };
-
   /**
    * validates the type of the UR part
    * @param type type of the UR part (e.g. "bytes")
@@ -284,7 +280,7 @@ export default class UrFountainDecoder<U> extends UrDecoder<string, U> {
 
     if (this.isSuccess()) {
       const decodedMessage = this.decodeCbor(this.result);
-      this.urDecoderResult = new Ur(decodedMessage.payload, { type });
+      this.urDecoderResult = new Ur(decodedMessage, { type });
     } else if (this.isFailure()) {
       this.urDecoderError = new InvalidSchemeError();
     }
@@ -353,12 +349,8 @@ export default class UrFountainDecoder<U> extends UrDecoder<string, U> {
     return this.isSuccess() ? this.result! : Buffer.from([]);
   }
 
-  public getDecodedResult(): any {
+  public getDecodedResult(): U {
     return this.isSuccess() ? this.decodeCbor(this.result)! : null;
-  }
-
-  public getRawResult(): Buffer {
-    return this.isSuccess() ? this.result! : null;
   }
 
   public isFailure() {

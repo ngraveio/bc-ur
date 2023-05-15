@@ -18,8 +18,8 @@ export class UrEncoder<T, U> extends Encoder<T, string> {
     super(encodingMethods);
   }
 
-  cborEncode(ur: Ur<T>): Buffer {
-    return this.encodingMethods[0].encode(ur);
+  cborEncode(payload: T): Buffer {
+    return this.encodingMethods[0].encode(payload);
   }
 
   /**
@@ -45,7 +45,7 @@ export class UrEncoder<T, U> extends Encoder<T, string> {
     minFragmentLength: number
   ): string[] {
     // encode first time to split the original payload up as cbor
-    const cborMessage = this.cborEncode(ur);
+    const cborMessage = this.cborEncode(ur.payload);
     const totalPayloadLength = cborMessage.length;
     const fragmentLength = this.findNominalFragmentLength(
       totalPayloadLength,
@@ -90,7 +90,7 @@ export class UrEncoder<T, U> extends Encoder<T, string> {
     redundancyRatio: number = 0
   ): string[] {
     // encode first time to split the original payload up as cbor
-    const cborMessage = this.cborEncode(ur);
+    const cborMessage = this.cborEncode(ur.payload);
     const messageLength = cborMessage.length;
     const fragmentLength = this.findNominalFragmentLength(
       messageLength,

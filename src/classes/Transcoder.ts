@@ -29,7 +29,7 @@ export interface ITranscoder<T, U> {
  * Transcoder used in the ngrave suite.
  * It implements the following encoding methods: cbor -> hex -> bytewords
  */
-export class NgraveTranscoder<T> implements ITranscoder<T, string> {
+export class NgraveTranscoder<T = any> implements ITranscoder<T, string> {
   encoder: UrEncoder<T, string>;
   decoder: UrDecoder<string,T>;
   /**

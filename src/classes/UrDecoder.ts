@@ -4,6 +4,8 @@ import { Ur } from "./Ur";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 import assert from "assert";
 import { RegistryType } from "../interfaces/RegistryType";
+import { getCRC } from "../utils";
+import { InvalidChecksumError } from "../errors";
 
 export type MultipartPayload = {
   seqNum: number;
@@ -18,7 +20,7 @@ export class UrDecoder<T,U> extends Decoder<string, U> {
     super(encodingMethods);
   }
 
-  decodeCbor(payload: Buffer): Ur<U> {
+  decodeCbor(payload: Buffer): U {
     return this.encodingMethods[this.encodingMethods.length - 1].decode(
       payload
     );
@@ -53,7 +55,7 @@ export class UrDecoder<T,U> extends Decoder<string, U> {
       fragmentLength: number;
     } = null;
 
-    const fragmentPayloads = fragments.map((fragment) => {
+    const fragmentPayloads: Buffer[] = fragments.map((fragment) => {
       const multipart = this.decodeMultipartUr(fragment);
       const validatedPayload = this.validateMultipartPayload(multipart.payload);
 
@@ -93,19 +95,35 @@ export class UrDecoder<T,U> extends Decoder<string, U> {
         // return default value.
         return Buffer.from([]);
       }
-      // fourth part of the array payload is the actual fragment.
-      // TODO: pass in a type of the payload
       return validatedPayload.fragment;
     });
 
     // concat all the buffer payloads to a single buffer
-    const cborPayload = Buffer.concat(fragmentPayloads);
+    const cborPayload = this.joinFragments(fragmentPayloads,expectedPayload.messageLength);
 
-    // decode the buffer as a whole.
-    const decoded = this.decodeCbor(cborPayload);
-    
-    return Ur.toUr(decoded.payload, { ...expectedRegistryType });
+    const checksum = getCRC(cborPayload);
+
+    if (checksum === expectedPayload.checksum) {
+      // decode the buffer as a whole.
+      const decoded = this.decodeCbor(cborPayload);
+
+      // convert to ur object
+      return Ur.toUr(decoded, { ...expectedRegistryType });
+    } else {
+      throw new InvalidChecksumError();
+    }
   }
+
+/**
+ * Join the fragments together.
+ * @param fragments fragments to join
+ * @param messageLength length of the expected message.
+ * @returns the concatenated fragments with the expected length.
+ */
+  protected joinFragments = (fragments: Buffer[], messageLength: number): Buffer => {
+    // with 'slice', we remove the additionally created buffer parts, needed to achieve the minimum fragment length.
+    return Buffer.concat(fragments).slice(0, messageLength);
+  };
 
   private compareMultipartUrPayload(
     expected: {
