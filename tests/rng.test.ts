@@ -1,9 +1,10 @@
-import FountainEncoder from "../src/fountainEncoder";
+import {UrEncoder} from "../src/classes/UrEncoder"
 import { chooseDegree, chooseFragments, shuffle } from "../src/fountainUtils";
 import { bufferXOR, getCRC, intToBytes } from "../src/utils";
 import Xoshiro from "../src/xoshiro";
 import { makeMessage } from "./utils";
 const randomSampler = require('@apocentre/alias-sampling');
+
 
 describe('Xoshiro rng', () => {
   test('1', () => {
@@ -67,11 +68,13 @@ describe('Random Sampler', () => {
   });
 });
 
+const encoder = new UrEncoder([]);
+
 describe('Degree', () => {
   test('choose degree', () => {
     const message = makeMessage(1024);
-    const fragmentLength = FountainEncoder.findNominalFragmentLength(message.length, 10, 100);
-    const fragments = FountainEncoder.partitionMessage(message, fragmentLength);
+    const fragmentLength = encoder.findNominalFragmentLength(message.length, 10, 100);
+    const fragments = encoder.partitionMessage(message, fragmentLength);
 
     const degrees = [...new Array(200)].map((_, index) => {
       const rng = new Xoshiro(Buffer.from(`Wolf-${index + 1}`))
@@ -87,8 +90,8 @@ describe('Fragments', () => {
   test('choose fragments', () => {
     const message = makeMessage(1024);
     const checksum = getCRC(message);
-    const fragmentLength = FountainEncoder.findNominalFragmentLength(message.length, 10, 100);
-    const fragments = FountainEncoder.partitionMessage(message, fragmentLength);
+    const fragmentLength = encoder.findNominalFragmentLength(message.length, 10, 100);
+    const fragments = encoder.partitionMessage(message, fragmentLength);
 
     const fragmentIndexes = [...new Array(30)].map((_, index) => {
       return chooseFragments(index + 1, fragments.length, checksum)
