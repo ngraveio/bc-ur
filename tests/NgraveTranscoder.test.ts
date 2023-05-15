@@ -34,4 +34,24 @@ describe("NgraveTranscoder", () => {
       expect(part).toBeDefined();
     }
   });
+  test("defining a type for the transcoder results in the correct input and output value.", () => {
+    class expectedType  { name: string; flag: boolean; value: number }
+    const input: expectedType = {
+      name: "name",
+      flag: false,
+      value: 420,
+    };
+
+    const { encoder, decoder } = new NgraveTranscoder<expectedType>();
+    const encodedPayload = encoder.encode(input);
+    const decodedPayload = decoder.decode(encodedPayload);
+
+    expect(decodedPayload).toEqual(input);
+
+    expect(typeof encodedPayload).toBe("string");
+    expect(typeof decodedPayload.name).toEqual("string");
+    expect(typeof decodedPayload.flag).toEqual("boolean");
+    expect(typeof decodedPayload.value).toEqual("number");
+
+  });
 });

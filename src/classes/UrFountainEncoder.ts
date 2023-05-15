@@ -8,7 +8,7 @@ import { UrEncoder } from "./UrEncoder";
 /**
  * Encode data on the fly. This encoder uses an internal state to keep generating ur fragments of the payload.
  */
-export default class UrFountainEncoder extends UrEncoder {
+export default class UrFountainEncoder<T> extends UrEncoder<T, string> {
   private _messageLength: number;
   private _fragments: Buffer[];
   private _nominalFragmentLength: number;
@@ -18,7 +18,7 @@ export default class UrFountainEncoder extends UrEncoder {
 
   constructor(
     encodingMethods: IEncodingMethod<any, any>[],
-    ur: Ur,
+    ur: Ur<T>,
     maxFragmentLength: number = 100,
     minFragmentLength: number = 10,
     firstSeqNum: number = 0,
@@ -28,7 +28,7 @@ export default class UrFountainEncoder extends UrEncoder {
     this._seqNum = toUint32(firstSeqNum);
 
     // We need to encode the message as a Buffer, because we mix them later on
-    const cborMessage = super.cborEncode(ur);
+    const cborMessage = super.cborEncode(ur.payload);
     this._messageLength = cborMessage.length;
     this._checksum = getCRC(cborMessage);
 
