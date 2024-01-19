@@ -25,7 +25,8 @@ const ur = UR.fromBuffer(messageBuffer)
 // Then, create the UREncoder object
 
 // The maximum amount of fragments to be generated in total
-const maxFragmentLength = 150
+// For NGRAVE ZERO support please keep to a maximum fragment size of 200
+const maxFragmentLength = 200
 
 // The index of the fragment that will be the first to be generated
 // If it's more than the "maxFragmentLength", then all the subsequent fragments will only be
