@@ -2,11 +2,6 @@
 # yarn lockfile v1
 
 
-"@apocentre/alias-sampling@^0.5.3":
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/@apocentre/alias-sampling/-/alias-sampling-0.5.3.tgz#897ff181b48ad7b2bcb4ecf29400214888244f08"
-  integrity sha512-7UDWIIF9hIeJqfKXkNIzkVandlwLf1FWTSdrb9iXvOP8oF544JRXQjCbiTmCv2c9n44n/FIWtehhBfNuAx2CZA==
-
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13":
   version "7.12.13"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.12.13.tgz#dcfc826beef65e75c50e21d3837d7d95798dd658"
@@ -469,6 +464,11 @@
     "@types/node" "*"
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
+
+"@keystonehq/alias-sampling@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@keystonehq/alias-sampling/-/alias-sampling-0.1.1.tgz#2022410e1e03019b04157659f8bdb810af6ccd07"
+  integrity sha512-lP3sYB4sLWD8ghlZEIg3upvoatz8TJMbrTABwvZHPjHgsOIbue9wLq71JlQ2dfmrC6xLw8/TMl8p3Z2ubsduTA==
 
 "@sinonjs/commons@^1.7.0":
   version "1.8.2"
