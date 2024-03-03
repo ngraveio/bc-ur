@@ -7,13 +7,13 @@ export default class UREncoder {
   private fountainEncoder: FountainEncoder;
 
   constructor(
-    _ur: UR,
+    ur: UR,
     maxFragmentLength?: number,
     firstSeqNum?: number,
     minFragmentLength?: number,
   ) {
-    this.ur = _ur;
-    this.fountainEncoder = new FountainEncoder(_ur.cbor, maxFragmentLength, firstSeqNum, minFragmentLength);
+    this.ur = ur;
+    this.fountainEncoder = new FountainEncoder(ur.cbor, maxFragmentLength, firstSeqNum, minFragmentLength);
   }
 
   public get fragmentsLength() { return this.fountainEncoder.fragmentsLength; }
