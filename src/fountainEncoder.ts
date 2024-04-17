@@ -62,9 +62,9 @@ export class FountainEncoderPart {
 export default class FountainEncoder {
   private _messageLength: number;
   private _fragments: Buffer[];
-  private fragmentLength: number;
-  private seqNum: number;
-  private checksum: number;
+  private _fragmentLength: number;
+  private _seqNum: number;
+  private _checksum: number;
 
   constructor(
     message: Buffer,
@@ -76,14 +76,20 @@ export default class FountainEncoder {
 
     this._messageLength = message.length;
     this._fragments = FountainEncoder.partitionMessage(message, fragmentLength);
-    this.fragmentLength = fragmentLength;
-    this.seqNum = toUint32(firstSeqNum);
-    this.checksum = getCRC(message)
+    this._fragmentLength = fragmentLength;
+    this._seqNum = toUint32(firstSeqNum);
+    this._checksum = getCRC(message)
   }
+
+
 
   public get fragmentsLength() { return this._fragments.length; }
   public get fragments() { return this._fragments; }
   public get messageLength() { return this._messageLength; }
+  public get fragmentLength() { return this._fragmentLength; }
+  public get seqNum() { return this._seqNum; }
+  public set seqNum(value) { this._seqNum = value; }
+  public get checksum() { return this._checksum; }
 
   public isComplete(): boolean {
     return this.seqNum >= this._fragments.length;
@@ -119,6 +125,13 @@ export default class FountainEncoder {
     )
   }
 
+  /**
+   * find fragment length that is between min and max and for all and last fragment (last fragment can be smaller)
+   * @param messageLength message length
+   * @param minFragmentLength minimum fragment length
+   * @param maxFragmentLength maximum fragment length
+   * @returns fragment length
+   */
   public static findNominalFragmentLength(
     messageLength: number,
     minFragmentLength: number,

@@ -22,16 +22,15 @@ export const intToBytes = (num: number): Buffer => {
   return Buffer.from(arr);
 }
 
+/**
+ * Checks if the given type is a valid UR type (consisting of lowercase letters, numbers or dashes)
+ * @param type the type to be checked
+ * @returns true if the type is a valid UR type
+ */
 export const isURType = (type: string): boolean => {
-  return type.split('').every((_, index) => {
-    let c = type.charCodeAt(index);
-
-    if ('a'.charCodeAt(0) <= c && c <= 'z'.charCodeAt(0)) return true;
-    if ('0'.charCodeAt(0) <= c && c <= '9'.charCodeAt(0)) return true;
-    if (c === '-'.charCodeAt(0)) return true;
-    return false;
-  })
-}
+  const pattern = /^[a-z0-9-]*$/;
+  return pattern.test(type);
+};
 
 export const hasPrefix = (s: string, prefix: string): boolean => s.indexOf(prefix) === 0;
 
