@@ -1,6 +1,6 @@
 {
   "name": "@ngraveio/bc-ur",
-  "version": "1.1.9",
+  "version": "1.1.13",
   "author": "Antonis Poulakis <antwnic4@gmail.com>",
   "description": "A JS implementation of the Uniform Resources (UR) specification from Blockchain Commons",
   "license": "MIT",
