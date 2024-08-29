@@ -3,11 +3,17 @@ import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 import { cborEncode, cborDecode } from './cbor';
 
 export class CborEncoding implements IEncodingMethod<any,Buffer> {
-    name: EncodingMethodName.cbor;
+    private _name: EncodingMethodName = EncodingMethodName.cbor;
+
+    get name(): EncodingMethodName {
+        return this._name;
+    }
+
     encode(payload: any): Buffer {
         return cborEncode(payload);
     }
-    decode(payload: Buffer):any {
+
+    decode(payload: Buffer): any {
         return cborDecode(payload);
     }
 }

@@ -3,9 +3,14 @@ import { EncodingMethodName } from "../enums/EncodingMethodName";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 
 export class BytewordEncoding implements IEncodingMethod<string, string> {
-  name: EncodingMethodName.bytewords;
+  private _name: EncodingMethodName = EncodingMethodName.bytewords;
+
   readonly _style: STYLES;
 
+  get name(): EncodingMethodName {
+      return this._name;
+  }
+  
   constructor(style: STYLES = STYLES.MINIMAL) {
     this._style = style;
   }
