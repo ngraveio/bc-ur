@@ -5,6 +5,7 @@ import { Ur, getUrString } from "./Ur";
 import { IMultipartUr, getMultipartUrString } from "./MultipartUr";
 import { chooseFragments, mixFragments } from "../fountainUtils";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
+import { EncodingMethodName } from "../enums/EncodingMethodName";
 
 /**
  * [seqNum, fragments.length, totalPayloadLength, checksum, fragment]
@@ -19,7 +20,11 @@ export class UrEncoder<T, U> extends Encoder<T, string> {
   }
 
   cborEncode(payload: T): Buffer {
-    return this.encodingMethods[0].encode(payload);
+    const cborEncoding = this.encodingMethods.find((method) => method.name === EncodingMethodName.cbor);
+    if(!cborEncoding) {
+      throw new Error("CBOR encoding method not found");
+    }
+    return cborEncoding.encode(payload);
   }
 
   /**

@@ -6,9 +6,8 @@ describe("HexEncoding", () => {
   test("should throw an error when decoding null", () => {
     expect(() => decode(null)).toThrowError();
   });
-  test("decoding a non hex string", () => {
-    const decoded = decode("ff22naber");
-    expect(decoded).toBeDefined();
+  test("decoding a non-hex string", () => {
+    expect(() => decode("ff22naber")).toThrow("Invalid hex string");
   });
   test("decoding the encoded result, should be the same as the input value", () => {
     const input = Buffer.from("🤏🤏🤏🤏🤏");

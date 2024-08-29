@@ -6,6 +6,7 @@ import assert from "assert";
 import { RegistryType } from "../interfaces/RegistryType";
 import { getCRC } from "../utils";
 import { InvalidChecksumError } from "../errors";
+import { EncodingMethodName } from "../enums/EncodingMethodName";
 
 export type MultipartPayload = {
   seqNum: number;
@@ -21,7 +22,12 @@ export class UrDecoder<T,U> extends Decoder<string, U> {
   }
 
   decodeCbor(payload: Buffer): U {
-    return this.encodingMethods[this.encodingMethods.length - 1].decode(
+    const cborEncoding = this.encodingMethods.find((method) => method.name === EncodingMethodName.cbor);
+    if(!cborEncoding) {
+      throw new Error("CBOR encoding method not found");
+    }
+
+    return cborEncoding.decode(
       payload
     );
   }
