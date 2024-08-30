@@ -17,7 +17,4 @@ export class UrEncoder<T, U> extends Encoder<T, string> {
     const encoded = super.encode(ur.payload);
     return getUrString(ur.registryType.type, encoded);
   }
-
-          // TODO: check this usage
-          // const parsed = urDecoder.resultUR().decodeCBOR();
 }

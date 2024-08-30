@@ -70,9 +70,6 @@ export class UrMultipartEncoder<T, U> extends Encoder<T, string> {
     return multipartUrStrings;
   }
 
-          // TODO: check this usage
-          // const parsed = urDecoder.resultUR().decodeCBOR();
-
   /**
    * Split the cbor encoded payload into multiple fragments.
    * @param message

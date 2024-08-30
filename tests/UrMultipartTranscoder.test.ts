@@ -1,5 +1,7 @@
+import { AssertionError } from "assert";
 import { Ur } from "../src/classes/Ur";
 import { createMultipartUrTranscoder } from "../src/ngraveTranscoder";
+import { makeCborUr } from "./utils";
 
 describe("MultipartUrTranscoder", () => {
     const { encoder, decoder } = createMultipartUrTranscoder()
@@ -21,5 +23,19 @@ describe("MultipartUrTranscoder", () => {
   
       const decoded = decoder.decodeUr(fragments);
       expect(decoded.payload).toEqual(ur.payload);
+    });
+    describe("validateMultipartPayload", () => {
+      const ur = makeCborUr(100);
+      const multipartFragments = encoder.encodeUr(ur, 50, 10);
+  
+      test("Should validate a correctly generated fragment", () => {
+        const decodedFragment = decoder.decodeMultipartUr(multipartFragments[0]);
+        const result = decoder.validateMultipartPayload(decodedFragment.payload);
+        expect(result).toBeDefined();
+      });
+      test("Should throw an error when a multipart payload is not validated correctly", () => {
+        const nonValidPayload = Buffer.from("foobar");
+        expect(() => decoder.validateMultipartPayload(nonValidPayload)).toThrow(AssertionError);
+      });
     });
   });
