@@ -8,8 +8,8 @@ import {
   setDifference,
 } from "../utils";
 import { MultipartUr } from "./MultipartUr";
+import { MultipartPayload, UrMultipartDecoder } from "./UrMultipartDecoder";
 import { Ur } from "./Ur";
-import { MultipartPayload, UrDecoder } from "./UrDecoder";
 
 class FountainDecoderPart {
   constructor(private _indexes: number[], private _fragment: Buffer) {}
@@ -32,7 +32,7 @@ interface PartDict {
   value: FountainDecoderPart;
 }
 
-export default class UrFountainDecoder<U> extends UrDecoder<string, U> {
+export default class UrFountainDecoder<U> extends UrMultipartDecoder<string, U> {
   private error: Error | undefined;
   private urDecoderError: any;
 
@@ -239,6 +239,7 @@ export default class UrFountainDecoder<U> extends UrDecoder<string, U> {
 
     return true;
   }
+
 
   receivePart(s: string): boolean {
     // If we already have a result, we're done

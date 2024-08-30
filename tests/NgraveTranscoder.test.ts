@@ -1,31 +1,30 @@
-import { NgraveTranscoder } from "../src/classes/Transcoder";
 import { Ur } from "../src/classes/Ur";
+import { createFountainUrTranscoder, createUrTranscoder } from "../src/ngraveTranscoder";
 
 describe("NgraveTranscoder", () => {
   test("encoder encode/decode a primitive value", () => {
     const input = "test";
-    const { encoder, decoder } = new NgraveTranscoder();
+    const { encoder, decoder } = createUrTranscoder();
     const encodedPayload = encoder.encode(input);
     const decodedPayload = decoder.decode(encodedPayload);
     expect(decodedPayload).toEqual(input);
   });
   test("encoder encode/decode an object", () => {
     const input = { value: "this is a test value" };
-    const { encoder, decoder } = new NgraveTranscoder();
+    const { encoder, decoder } = createUrTranscoder();
     const encodedPayload = encoder.encode(input);
     const decodedPayload = decoder.decode(encodedPayload);
     expect(decodedPayload).toEqual(input);
   });
   test("encoder encode/decode an array", () => {
     const input = [1, 2, 3, 4, 5];
-    const { encoder, decoder } = new NgraveTranscoder();
+    const { encoder, decoder } = createUrTranscoder();
     const encodedPayload = encoder.encode(input);
     const decodedPayload = decoder.decode(encodedPayload);
     expect(decodedPayload).toEqual(input);
   });
   test("Transcoder creates Fountain encoder", () => {
-    const transcoder = new NgraveTranscoder();
-    const { fountainEncoderCreator } = transcoder;
+    const { fountainEncoderCreator } = createFountainUrTranscoder();
     expect(fountainEncoderCreator).toBeInstanceOf(Function);
 
     if (fountainEncoderCreator) {
@@ -42,7 +41,7 @@ describe("NgraveTranscoder", () => {
       value: 420,
     };
 
-    const { encoder, decoder } = new NgraveTranscoder<expectedType>();
+    const { encoder, decoder } = createUrTranscoder<expectedType>();
     const encodedPayload = encoder.encode(input);
     const decodedPayload = decoder.decode(encodedPayload);
 

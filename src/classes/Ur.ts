@@ -12,12 +12,12 @@ export interface IUr<T> {
  * Based on the bc definition. TODO: add link to bc ur registry
  */
 export class Ur<T> implements IUr<T> {
-  payload: T;
+  payload: T; // TODO: this is a dataItem object
   registryType: RegistryType;
 
   constructor(
     payload: T,
-    registryType: RegistryType = { type: "bytes" }
+    registryType: RegistryType = { type: "bytes", tag: undefined }
   ) {
     if (!Ur.isURType(registryType.type)) {
       throw new InvalidTypeError();
@@ -32,6 +32,10 @@ export class Ur<T> implements IUr<T> {
    */
   get type(): string {
     return this.registryType.type;
+  }
+
+  get tag(): number | undefined {
+    return this.registryType.tag;
   }
 
   /**

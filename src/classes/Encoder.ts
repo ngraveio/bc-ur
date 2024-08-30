@@ -25,4 +25,5 @@ export class Encoder<T, U> implements IEncoder<T, U> {
 
     return encodedValue;
   }
+
 }

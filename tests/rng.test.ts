@@ -1,3 +1,4 @@
+import { MultipartUrEncoder } from "../src/classes/MultipartUrEncoder";
 import {UrEncoder} from "../src/classes/UrEncoder"
 import { chooseDegree, chooseFragments, shuffle } from "../src/fountainUtils";
 import { bufferXOR, getCRC, intToBytes } from "../src/utils";
@@ -68,7 +69,7 @@ describe('Random Sampler', () => {
   });
 });
 
-const encoder = new UrEncoder([]);
+const encoder = new MultipartUrEncoder([]);
 
 describe('Degree', () => {
   test('choose degree', () => {
