@@ -1,12 +1,8 @@
-import assert from "assert";
 import { InvalidPathLengthError, InvalidSchemeError, InvalidTypeError } from "../errors";
-import { RegistryItem } from "./RegistryItem";
 
-// TODO: remove class and only have static functions
 /**
  * Class that represents the structure of the data we encode/decode in this package.
  * e.g. 'ur:bytes/lpamcmcfatrdcyzcpldpgwhdhtiaiaecgyktgsflguhshthfghjtjngrhsfegtiafegaktgugui'
- * Based on the bc definition. TODO: add link to bc ur registry
  */
 export class Ur {
 
