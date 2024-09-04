@@ -1,11 +1,6 @@
 import assert from "assert";
 import { InvalidPathLengthError, InvalidSchemeError, InvalidTypeError } from "../errors";
-import { IRegistryType } from "../interfaces/IRegistryType";
 import { RegistryItem } from "./RegistryItem";
-
-export interface IUr<T extends RegistryItem = RegistryItem> {
-  registryItem: T;
-}
 
 // TODO: remove class and only have static functions
 /**
@@ -13,22 +8,7 @@ export interface IUr<T extends RegistryItem = RegistryItem> {
  * e.g. 'ur:bytes/lpamcmcfatrdcyzcpldpgwhdhtiaiaecgyktgsflguhshthfghjtjngrhsfegtiafegaktgugui'
  * Based on the bc definition. TODO: add link to bc ur registry
  */
-export class Ur<T extends RegistryItem = RegistryItem> implements IUr {
-  registryItem: T;
-  payload: any;
-  constructor(
-    registryItem: T,
-  ) {
-    if (!Ur.isURType(registryItem.type)) {
-      throw new InvalidTypeError();
-    }
-    this.registryItem = registryItem;
-    this.payload = registryItem.data;
-  }
-
-  toCBOR = (): Buffer => {
-    return this.registryItem.toCBOR();
-  }
+export class Ur {
 
   /**
    * Checks if the given type is a valid UR type (consisting of lowercase letters, numbers or dashes)
@@ -67,12 +47,12 @@ export class Ur<T extends RegistryItem = RegistryItem> implements IUr {
    * @param tag tag of the ur registry
    * @returns 
    */
-  static toUr<T extends RegistryItem>(registryItem: T): Ur<T> {
-    const {type} = registryItem
-    assert(typeof type === 'string', "registry type should be included in the ur payload");
+  // static toUr<T extends RegistryItem>(registryItem: T): Ur<T> {
+  //   const {type} = registryItem
+  //   assert(typeof type === 'string', "registry type should be included in the ur payload");
 
-    return new Ur<T>(registryItem);
-  }
+  //   return new Ur<T>(registryItem);
+  // }
 
     /**
    * Parses a UR and performs basic validation

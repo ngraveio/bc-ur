@@ -1,3 +1,4 @@
+import { RegistryItem } from "../src";
 import { Ur } from "../src/classes/Ur";
 import { InvalidTypeError } from "../src/errors";
 import {createUrTranscoder} from "../src/ngraveTranscoder";
@@ -6,17 +7,16 @@ describe("UrEncoder", () => {
   const { encoder, decoder } = createUrTranscoder()
 
   test("should encode/decode a ur", () => {
-    const ur = new Ur({ name: "Pieter"}, { type: "custom" });
-    const encodedUr = encoder.encodeUr(ur);
+    const registryItem = new RegistryItem("custom", 0, { name: "Pieter"});
+    const encodedUr = encoder.encodeUr(registryItem);
 
-    const decodedFragment = decoder.decodeUr(encodedUr);
+    const decodedItem = decoder.decodeUr(encodedUr);
 
-    expect(decodedFragment.payload).toEqual(ur.payload);
+    expect(decodedItem.data).toEqual(registryItem.data);
   });
   test("should throw invalid type error for invalid ur type", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
-    ur.registryType.type = "è";
-    const encodedUr = encoder.encodeUr(ur);
+    const registryItem = new RegistryItem("è", 0, { name: "Pieter"});
+    const encodedUr = encoder.encodeUr(registryItem);
 
     expect(() => decoder.decodeUr(encodedUr)).toThrow(InvalidTypeError);
   });

@@ -3,7 +3,7 @@ import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 import { toUint32, getCRC } from "../utils";
 import { getMultipartUrString } from "./MultipartUr";
 import { UrMultipartEncoder } from "./UrMultipartEncoder";
-import { Ur } from "./Ur";
+import { RegistryItem } from "./RegistryItem";
 
 /**
  * Encode data on the fly. This encoder uses an internal state to keep generating ur fragments of the payload.
@@ -20,17 +20,17 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
 
   constructor(
     encodingMethods: IEncodingMethod<any, any>[],
-    ur: Ur,
+    registryItem: RegistryItem,
     maxFragmentLength: number = 100,
     minFragmentLength: number = 10,
     firstSeqNum: number = 0,
   ) {
     super(encodingMethods);
-    this._type = ur.registryItem.type;
+    this._type = registryItem.type;
     this._seqNum = toUint32(firstSeqNum);
 
     // We need to encode the message as a Buffer, because we mix them later on
-    const cborMessage = ur.toCBOR();
+    const cborMessage = registryItem.toCBOR();
     this._messageLength = cborMessage.length;
     this._checksum = getCRC(cborMessage);
 
@@ -58,9 +58,9 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
 * @param redundancyRatio ratio of additional generated fragments
 * @returns the encoded payload as an array of ur strings
 */
-  encodeUr(ur: Ur, redundancyRatio: number = 0): string[] {
+  encodeUr<T extends RegistryItem>(registryItem: T, redundancyRatio: number = 0): string[] {
     // encode first time to split the original payload up as cbor
-    const cborMessage = ur.toCBOR();
+    const cborMessage = registryItem.toCBOR();
     const messageLength = cborMessage.length;
     const fragmentLength = this.findNominalFragmentLength(
       messageLength,
@@ -84,7 +84,7 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
         mixed,
       ]);
       return getMultipartUrString(
-        ur.registryItem.type,
+        registryItem.type,
         seqNum,
         fragments.length,
         encodedFragment

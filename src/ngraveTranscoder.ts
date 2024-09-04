@@ -8,6 +8,7 @@ import { HexEncoding } from "./encodingMethods/HexEncoding";
 import { BytewordEncoding } from "./encodingMethods/BytewordEncoding";
 import { UrMultipartEncoder } from "./classes/UrMultipartEncoder";
 import { UrMultipartDecoder } from "./classes/UrMultipartDecoder";
+import { RegistryItem } from "./classes/RegistryItem";
 
 /**
  * Factory function to create a transcoder used in the ngrave suite.
@@ -62,7 +63,7 @@ export function createMultipartUrTranscoder(): {
  */
 export function createFountainUrTranscoder(): {
   fountainEncoderCreator: (
-    ur: Ur,
+    registryItem: RegistryItem,
     maxFragmentLength?: number,
     minFragmentLength?: number,
     firstSeqNum?: number
@@ -77,14 +78,14 @@ export function createFountainUrTranscoder(): {
 
   const fountainDecoderCreator = () => new UrFountainDecoder(methods);
   const fountainEncoderCreator = (
-    ur: Ur,
+    registryItem: RegistryItem,
     maxFragmentLength?: number,
     minFragmentLength?: number,
     firstSeqNum?: number
   ) =>
     new UrFountainEncoder(
       methods,
-      ur,
+      registryItem,
       maxFragmentLength,
       minFragmentLength,
       firstSeqNum

@@ -5,7 +5,7 @@ import { IRegistryType } from '../interfaces/IRegistryType';
 export class RegistryItem {
 
  private _registryType: IRegistryType;
- private _data: string | Buffer;
+ private _data: any;
 
  get tag(): number | undefined {
     return this._registryType.tag;
@@ -15,16 +15,17 @@ export class RegistryItem {
     return this._registryType.type;
   }
 
-  get data(): string | Buffer {
+  get data(): any {
     return this._data;
   }
 
-  set data(data: string | Buffer) {
+  set data(data: any) {
     this._data = data;
   }
 
-constructor(type: string, tag?: number) {
+constructor(type: string, tag?: number, dataRaw?: any) {
     this._registryType = new RegistryType(type, tag);
+    this.data = dataRaw;
 }
 
 public toCBOR = (): Buffer => {
@@ -32,7 +33,7 @@ public toCBOR = (): Buffer => {
 };
 
 public static fromCBOR = (data: Buffer): any => {
-  return new RegistryItem(new CborEncoding().decode(data));
+  return new RegistryItem("BASE_REGISTRY_ITEM", -1, new CborEncoding().decode(data));
 };
 
 }

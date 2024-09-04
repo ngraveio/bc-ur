@@ -6,6 +6,7 @@ import { IMultipartUr, MultipartUr, getMultipartUrString } from "./MultipartUr";
 import { chooseFragments, mixFragments } from "../fountainUtils";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 import { EncodingMethodName } from "../enums/EncodingMethodName";
+import { RegistryItem } from "./RegistryItem";
 
 /**
  * [seqNum, fragments.length, totalPayloadLength, checksum, fragment]
@@ -27,12 +28,12 @@ export class UrMultipartEncoder extends Encoder<Buffer, string> {
    * and force the multipart and fountain UR to be cbor encoded.
    */
   encodeUr(
-    ur: Ur,
+    registryItem: RegistryItem,
     maxFragmentLength: number,
     minFragmentLength: number
   ): string[] {
     // encode first time to split the original payload up as cbor
-    const cborMessage = ur.toCBOR();
+    const cborMessage = registryItem.toCBOR();
     const totalPayloadLength = cborMessage.length;
     const fragmentLength = this.findNominalFragmentLength(
       totalPayloadLength,
@@ -52,7 +53,7 @@ export class UrMultipartEncoder extends Encoder<Buffer, string> {
         fragment,
       ]);
       return getMultipartUrString(
-        ur.registryItem.type,
+        registryItem.type,
         seqNum,
         fragments.length,
         encodedFragment

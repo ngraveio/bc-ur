@@ -20,11 +20,8 @@ import { CborEncoding } from "./encodingMethods/CborEncoding";
  * Example implementation of a RegistryItem
  */
 export class Bytes extends RegistryItem {
-  constructor(dataRaw?: Buffer | string) {
-    super("bytes", 0);
-    if (dataRaw) {
-      this.data = dataRaw;
-    }
+  constructor(dataRaw?: any) {
+    super("bytes", 0, dataRaw);
   }
 
   public static fromCBOR = (data: Buffer): Bytes => {
@@ -42,9 +39,13 @@ export const registry: { [type: string]: RegistryItemClass<any> } = {
   bytes: Bytes,
 };
 
-export const getFromRegistryByUrString = (urString: string): RegistryItemClass<any> => {
+export function getRegistryItemClass(type: string): RegistryItemClass<any> {
+  return registry[type] || RegistryItem;
+}
+
+export const getRegistryItemClassByUrString = (urString: string): RegistryItemClass<any> => {
   const {registryType: {type}} = Ur.parseUr(urString);
-  return registry[type];
+  return getRegistryItemClass(type);
 }
 
 export {

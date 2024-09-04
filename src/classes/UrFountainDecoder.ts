@@ -10,7 +10,7 @@ import {
 import { MultipartUr } from "./MultipartUr";
 import { MultipartPayload, UrMultipartDecoder } from "./UrMultipartDecoder";
 import { Ur } from "./Ur";
-import { registry } from "..";
+import { getRegistryItemClass, RegistryItem } from "..";
 
 class FountainDecoderPart {
   constructor(private _indexes: number[], private _fragment: Buffer) {}
@@ -39,7 +39,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
 
   private result: Buffer | undefined = undefined;
 
-  private urDecoderResult: Ur | undefined = undefined;
+  private urDecoderResult: RegistryItem | undefined = undefined;
   private expectedType: string;
 
   private expectedMessageLength: number = 0;
@@ -281,8 +281,8 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     }
 
     if (this.isSuccess()) {
-      const decodedMessage = registry[type].fromCBOR(this.result);
-      this.urDecoderResult = new Ur(decodedMessage);
+      const decodedMessage = getRegistryItemClass(type).fromCBOR(this.result);
+      this.urDecoderResult = decodedMessage;
     } else if (this.isFailure()) {
       this.urDecoderError = new InvalidSchemeError();
     }
@@ -325,13 +325,13 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
   }
 
   public isUrDecoderComplete(): boolean {
-    if (this.urDecoderResult && this.urDecoderResult.payload) {
+    if (this.urDecoderResult) {
         return true;
     }
     return false;
   }
 
-  public getUrResult(): Ur {
+  public getResultRegistryItem(): RegistryItem {
     return this.urDecoderResult;
   }
 

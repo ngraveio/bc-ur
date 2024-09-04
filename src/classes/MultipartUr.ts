@@ -1,5 +1,5 @@
 import assert from "assert";
-import { IUr, Ur } from "./Ur";
+import { Ur } from "./Ur";
 import {
   InvalidSchemeError,
   InvalidPathLengthError,
@@ -9,7 +9,7 @@ import {
 import { toUint32 } from "../utils";
 import { RegistryItem } from "./RegistryItem";
 
-export interface IMultipartUr extends IUr {
+export interface IMultipartUr {
   seqNum: number;
   seqLength: number;
 }
@@ -18,17 +18,20 @@ export interface IMultipartUr extends IUr {
  * Extends the basic Ur class to add support for a Ur splitted into multiple parts.
  * e.g. 'ur:bytes/6-22/lpamcmcfatrdcyzcpldpgwhdhtiaiaecgyktgsflguhshthfghjtjngrhsfegtiafegaktgugui'
  */
-export class MultipartUr<T extends RegistryItem = RegistryItem> extends Ur implements IMultipartUr {
+export class MultipartUr<T extends RegistryItem = RegistryItem> implements IMultipartUr {
+  payload: any;
+  type: string;
   seqNum: number;
   seqLength: number;
   constructor(registryItem: T, seqNum: number, seqLength: number) {
-    super(registryItem);
     this.seqNum = seqNum;
     this.seqLength = seqLength;
+    this.type = registryItem.type;
+    this.payload = registryItem.data;
   }
 
   get description(): string {
-    return `type: ${this.registryItem.type} seqNum:${this.seqNum} seqLen:${this.seqLength} data:${this.payload}`;
+    return `type: ${this.type} seqNum:${this.seqNum} seqLen:${this.seqLength} data:${this.payload}`;
   }
 
   static toMultipartUr<T extends RegistryItem>(
@@ -47,7 +50,7 @@ export class MultipartUr<T extends RegistryItem = RegistryItem> extends Ur imple
   }
 
   static fromMultipartUr(ur: MultipartUr): string {
-    return getMultipartUrString(ur.registryItem.type, ur.seqNum, ur.seqLength, ur.payload);
+    return getMultipartUrString(ur.type, ur.seqNum, ur.seqLength, ur.payload);
   }
 
   /**
