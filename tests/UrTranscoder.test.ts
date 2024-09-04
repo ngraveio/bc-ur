@@ -1,5 +1,4 @@
 import { RegistryItem } from "../src";
-import { Ur } from "../src/classes/Ur";
 import { InvalidTypeError } from "../src/errors";
 import {createUrTranscoder} from "../src/ngraveTranscoder";
 

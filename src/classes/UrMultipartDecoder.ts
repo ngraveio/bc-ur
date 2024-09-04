@@ -7,7 +7,7 @@ import { getCRC } from "../utils";
 import { InvalidChecksumError } from "../errors";
 import { EncodingMethodName } from "../enums/EncodingMethodName";
 import { RegistryItem } from "./RegistryItem";
-import { getRegistryItemClass } from "..";
+import { getItemFromRegistry } from "../registry";
 
 export type MultipartPayload = {
   seqNum: number;
@@ -99,7 +99,7 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
 
     if (checksum === expectedPayload.checksum) {
       // decode the buffer as a whole.
-      const registryItem = getRegistryItemClass(expectedRegistryType).fromCBOR(cborPayload);
+      const registryItem = getItemFromRegistry(expectedRegistryType).fromCBOR(cborPayload);
       return registryItem;
     } else {
       throw new InvalidChecksumError();
@@ -151,14 +151,14 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
   decodeMultipartUr(payload: string): MultipartUr {
     const {
       payload: bytewords,
-      registryType,
+      type,
       seqNum,
       seqLength,
     } = MultipartUr.parseUr(payload);
 
     const decoded = this.decode<Buffer>(bytewords); // {"_checksum": 556878893, "_fragment": [Object] (type of Buffer), "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
 
-    return MultipartUr.toMultipartUr({data: decoded, ...registryType} as RegistryItem, seqNum, seqLength);
+    return MultipartUr.toMultipartUr({data: decoded, type} as RegistryItem, seqNum, seqLength);
   }
 
   public validateMultipartPayload(decoded: Buffer): MultipartPayload {

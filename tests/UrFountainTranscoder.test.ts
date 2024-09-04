@@ -6,7 +6,8 @@ import {
   createUrTranscoder,
 } from "../src/ngraveTranscoder";
 import { MultipartUr } from "../src/classes/MultipartUr";
-import { Bytes, RegistryItem } from "../src";
+import { RegistryItem } from "../src/classes/RegistryItem";
+import { Bytes } from "../src/registry";
 
 describe("FountainUrTranscoder", () => {
   const { fountainEncoderCreator, fountainDecoderCreator } =

@@ -94,7 +94,7 @@ export class MultipartUr<T extends RegistryItem = RegistryItem> implements IMult
       components[1]
     );
     return {
-      registryType: { type },
+      type,
       seqNum,
       seqLength,
       payload: components[2],

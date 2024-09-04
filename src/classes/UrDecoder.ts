@@ -2,8 +2,7 @@ import { Decoder } from "./Decoder";
 import { Ur } from "./Ur";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 import { RegistryItem } from "./RegistryItem";
-import { getRegistryItemClassByUrString } from "..";
-
+import { getItemFromRegistry } from "../registry";
 
 export class UrDecoder extends Decoder<string, Buffer> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
@@ -16,9 +15,9 @@ export class UrDecoder extends Decoder<string, Buffer> {
    * @returns original encoded Ur.
    */
   decodeUr<T extends RegistryItem>(ur: string): T {
-    const { payload} = Ur.parseUr(ur);
+    const { payload, type} = Ur.parseUr(ur);
     const decoded = super.decode(payload);
-    const registryItem = getRegistryItemClassByUrString(ur).fromCBOR(decoded);
+    const registryItem = getItemFromRegistry(type).fromCBOR(decoded);
     return registryItem;
   }
 }

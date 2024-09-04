@@ -88,7 +88,7 @@ export class Ur {
 
     // singlePart ur
     return {
-      registryType: {type},
+      type,
       payload: components[1],
     };
   }

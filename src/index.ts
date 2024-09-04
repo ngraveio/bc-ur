@@ -14,41 +14,10 @@ import { UrMultipartDecoder } from "./classes/UrMultipartDecoder";
 import UrFountainDecoder from "./classes/UrFountainDecoder";
 import UrFountainEncoder from "./classes/UrFountainEncoder";
 import { RegistryItem } from "./classes/RegistryItem";
-import { CborEncoding } from "./encodingMethods/CborEncoding";
-
-/**
- * Example implementation of a RegistryItem
- */
-export class Bytes extends RegistryItem {
-  constructor(dataRaw?: any) {
-    super("bytes", 0, dataRaw);
-  }
-
-  public static fromCBOR = (data: Buffer): Bytes => {
-    return new Bytes(new CborEncoding().decode(data));
-  };
-}
-
-// RegistryItemClass is a type that enforces that the class has a static method fromCBOR
-type RegistryItemClass<T extends RegistryItem> = {
-  new (...args: any[]): RegistryItem;
-  fromCBOR(data: Buffer): T;
-};
-
-export const registry: { [type: string]: RegistryItemClass<any> } = {
-  bytes: Bytes,
-};
-
-export function getRegistryItemClass(type: string): RegistryItemClass<any> {
-  return registry[type] || RegistryItem;
-}
-
-export const getRegistryItemClassByUrString = (urString: string): RegistryItemClass<any> => {
-  const {registryType: {type}} = Ur.parseUr(urString);
-  return getRegistryItemClass(type);
-}
+import { registry } from "./registry";
 
 export {
+  registry,
   RegistryItem,
   Ur,
   MultipartUr,

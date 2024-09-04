@@ -1,8 +1,7 @@
 import { AssertionError } from "assert";
-import { Ur } from "../src/classes/Ur";
 import { createMultipartUrTranscoder } from "../src/ngraveTranscoder";
 import { makeMessage } from "./utils";
-import { createUrTranscoder, RegistryItem } from "../src";
+import { RegistryItem } from "../src/classes/RegistryItem";
 
 describe("MultipartUrTranscoder", () => {
   const { encoder, decoder } = createMultipartUrTranscoder();
