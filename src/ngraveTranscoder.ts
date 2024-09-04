@@ -8,15 +8,16 @@ import { HexEncoding } from "./encodingMethods/HexEncoding";
 import { BytewordEncoding } from "./encodingMethods/BytewordEncoding";
 import { UrMultipartEncoder } from "./classes/UrMultipartEncoder";
 import { UrMultipartDecoder } from "./classes/UrMultipartDecoder";
+import { RegistryItem } from "./classes/RegistryItem";
 
 /**
  * Factory function to create a transcoder used in the ngrave suite.
  * It implements the following encoding methods: cbor -> hex -> bytewords
  * Using encoders and decoders that originate from the same Transcoder makes sure that the encoded is decoded correctly and vice versa
  */
-export function createUrTranscoder<T = any>(): {
-  encoder: UrEncoder<T, string>;
-  decoder: UrDecoder<string, T>;
+export function createUrTranscoder(): {
+  encoder: UrEncoder;
+  decoder: UrDecoder;
 } {
   const methods = [
     new CborEncoding(),
@@ -24,8 +25,8 @@ export function createUrTranscoder<T = any>(): {
     new BytewordEncoding(),
   ];
 
-  const encoder = new UrEncoder<T, string>(methods);
-  const decoder = new UrDecoder<string, T>(methods);
+  const encoder = new UrEncoder(methods);
+  const decoder = new UrDecoder(methods);
 
   return {
     encoder,
@@ -37,9 +38,9 @@ export function createUrTranscoder<T = any>(): {
  * Factory function to create a transcoder used in the ngrave suite.
  * It implements the following encoding methods: cbor -> hex -> bytewords
  */
-export function createMultipartUrTranscoder<T = any>(): {
-  encoder: UrMultipartEncoder<T, string>;
-  decoder: UrMultipartDecoder<string, T>;
+export function createMultipartUrTranscoder(): {
+  encoder: UrMultipartEncoder;
+  decoder: UrMultipartDecoder;
 } {
   const methods = [
     new CborEncoding(),
@@ -47,8 +48,8 @@ export function createMultipartUrTranscoder<T = any>(): {
     new BytewordEncoding(),
   ];
 
-  const encoder = new UrMultipartEncoder<T, string>(methods);
-  const decoder = new UrMultipartDecoder<string, T>(methods);
+  const encoder = new UrMultipartEncoder(methods);
+  const decoder = new UrMultipartDecoder(methods);
 
   return {
     encoder,
@@ -60,14 +61,14 @@ export function createMultipartUrTranscoder<T = any>(): {
  * Factory function to create a transcoder used in the ngrave suite.
  * It implements the following encoding methods: cbor -> hex -> bytewords
  */
-export function createFountainUrTranscoder<T = any>(): {
+export function createFountainUrTranscoder(): {
   fountainEncoderCreator: (
-    ur: Ur<T>,
+    registryItem: RegistryItem,
     maxFragmentLength?: number,
     minFragmentLength?: number,
     firstSeqNum?: number
-  ) => UrFountainEncoder<T>;
-  fountainDecoderCreator: () => UrFountainDecoder<any>;
+  ) => UrFountainEncoder;
+  fountainDecoderCreator: () => UrFountainDecoder;
 } {
   const methods = [
     new CborEncoding(),
@@ -77,14 +78,14 @@ export function createFountainUrTranscoder<T = any>(): {
 
   const fountainDecoderCreator = () => new UrFountainDecoder(methods);
   const fountainEncoderCreator = (
-    ur: Ur<T>,
+    registryItem: RegistryItem,
     maxFragmentLength?: number,
     minFragmentLength?: number,
     firstSeqNum?: number
   ) =>
     new UrFountainEncoder(
       methods,
-      ur,
+      registryItem,
       maxFragmentLength,
       minFragmentLength,
       firstSeqNum

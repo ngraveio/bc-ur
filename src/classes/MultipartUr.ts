@@ -1,6 +1,5 @@
 import assert from "assert";
-import { IUr, Ur } from "./Ur";
-import { RegistryType } from "../interfaces/RegistryType";
+import { Ur } from "./Ur";
 import {
   InvalidSchemeError,
   InvalidPathLengthError,
@@ -8,8 +7,9 @@ import {
   InvalidSequenceComponentError,
 } from "../errors";
 import { toUint32 } from "../utils";
+import { RegistryItem } from "./RegistryItem";
 
-export interface IMultipartUr<T> extends IUr<T> {
+export interface IMultipartUr {
   seqNum: number;
   seqLength: number;
 }
@@ -18,28 +18,27 @@ export interface IMultipartUr<T> extends IUr<T> {
  * Extends the basic Ur class to add support for a Ur splitted into multiple parts.
  * e.g. 'ur:bytes/6-22/lpamcmcfatrdcyzcpldpgwhdhtiaiaecgyktgsflguhshthfghjtjngrhsfegtiafegaktgugui'
  */
-export class MultipartUr<T> extends Ur<T> implements IMultipartUr<T> {
+export class MultipartUr<T extends RegistryItem = RegistryItem> implements IMultipartUr {
+  payload: any;
+  type: string;
   seqNum: number;
   seqLength: number;
-  constructor(payload: T, registryType: RegistryType, seqNum: number, seqLength: number) {
-    super(payload, registryType);
+  constructor(registryItem: T, seqNum: number, seqLength: number) {
     this.seqNum = seqNum;
     this.seqLength = seqLength;
+    this.type = registryItem.type;
+    this.payload = registryItem.data;
   }
 
   get description(): string {
     return `type: ${this.type} seqNum:${this.seqNum} seqLen:${this.seqLength} data:${this.payload}`;
   }
 
-  static toMultipartUr<T>(
-    payload: T,
-    registryType: RegistryType,
+  static toMultipartUr<T extends RegistryItem>(
+    registryItem: T,
     seqNum: number,
     seqLength: number
   ): MultipartUr<T> {
-    // first validate the basic ur
-    const ur = Ur.toUr(payload, registryType);
-    const { registryType: validatedRegistryType } = ur;
     // validated Multipart ur
     assert(typeof seqNum === "number");
     assert(typeof seqLength === "number");
@@ -47,10 +46,10 @@ export class MultipartUr<T> extends Ur<T> implements IMultipartUr<T> {
     // FIXME: multipart is inherently encoded with cbor and so the payload is a buffer.
     // assert(Buffer.isBuffer(payload) && payload.length > 0);
     // return combined result
-    return new MultipartUr(payload, validatedRegistryType, seqNum, seqLength);
+    return new MultipartUr(registryItem, seqNum, seqLength);
   }
 
-  static fromMultipartUr(ur: MultipartUr<string>): string {
+  static fromMultipartUr(ur: MultipartUr): string {
     return getMultipartUrString(ur.type, ur.seqNum, ur.seqLength, ur.payload);
   }
 
@@ -70,7 +69,7 @@ export class MultipartUr<T> extends Ur<T> implements IMultipartUr<T> {
     seqLength: 23
   } 
    */
-  static parseUr(message: string): IMultipartUr<string> {
+  static parseUr(message: string){
     const lowercase = message.toLowerCase(); // e.g. "ur:bytes/6-23/lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
     const prefix = lowercase.slice(0, 3);
 
@@ -95,7 +94,7 @@ export class MultipartUr<T> extends Ur<T> implements IMultipartUr<T> {
       components[1]
     );
     return {
-      registryType: { type },
+      type,
       seqNum,
       seqLength,
       payload: components[2],

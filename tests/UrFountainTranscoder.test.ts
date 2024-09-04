@@ -1,81 +1,95 @@
-import { Ur } from "../src/classes/Ur";
-import { makeCborUr, makeMessage } from "./utils";
+import { makeMessage } from "./utils";
 import { InvalidChecksumError, InvalidPathLengthError } from "../src/errors";
-import { createFountainUrTranscoder, createMultipartUrTranscoder, createUrTranscoder } from "../src/ngraveTranscoder";
+import {
+  createFountainUrTranscoder,
+  createMultipartUrTranscoder,
+  createUrTranscoder,
+} from "../src/ngraveTranscoder";
 import { MultipartUr } from "../src/classes/MultipartUr";
+import { RegistryItem } from "../src/classes/RegistryItem";
+import { Bytes } from "../src/registry";
 
 describe("FountainUrTranscoder", () => {
-  const { fountainEncoderCreator, fountainDecoderCreator } = createFountainUrTranscoder();
+  const { fountainEncoderCreator, fountainDecoderCreator } =
+    createFountainUrTranscoder();
   test("should create 3 fragments when payloadlength is 13 and min/max fragment size is 5, with default redundancy of 0", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
+    const registryItem = new Bytes({ name: "Pieter" });
     const fragmentLength = 5;
-    const fountainEncoder = fountainEncoderCreator(ur, fragmentLength, fragmentLength);
-    const payloadLength = fountainEncoder.cborEncode(ur.payload).length;
-    const expectedFragmentLength = Math.ceil(payloadLength / fragmentLength);;
-
-    const fountainFragments = fountainEncoder.encodeUr(
-      ur
+    const fountainEncoder = fountainEncoderCreator(
+      registryItem,
+      fragmentLength,
+      fragmentLength
     );
+    const payloadLength = registryItem.toCBOR().length;
+    const expectedFragmentLength = Math.ceil(payloadLength / fragmentLength);
+
+    const fountainFragments = fountainEncoder.encodeUr(registryItem);
     expect(fountainFragments.length).toEqual(expectedFragmentLength);
   });
   test("should have twice the amount of fragments for a ratio of 1", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
+    const registryItem = new Bytes({ name: "Pieter" });
     const fragmentLength = 5;
-    const fountainEncoder = fountainEncoderCreator(ur, fragmentLength, fragmentLength);
+    const fountainEncoder = fountainEncoderCreator(
+      registryItem,
+      fragmentLength,
+      fragmentLength
+    );
 
     const ratio = 1;
-    const payloadLength = fountainEncoder.cborEncode(ur.payload).length;
-    const expectedFragmentLength = Math.ceil(payloadLength / fragmentLength) * 2;;
+    const payloadLength = registryItem.toCBOR().length;
+    const expectedFragmentLength =
+      Math.ceil(payloadLength / fragmentLength) * 2;
 
-    const fountainFragments = fountainEncoder.encodeUr(
-      ur,
-      ratio
-    );
+    const fountainFragments = fountainEncoder.encodeUr(registryItem, ratio);
     expect(fountainFragments.length).toEqual(expectedFragmentLength);
   });
   test("should be able to fountain encode/decode the payload", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
-    const fountainEncoder = fountainEncoderCreator(ur, 10, 5);
-const fountainDecoder = fountainDecoderCreator();
-    const fountainFragments = fountainEncoder.encodeUr(ur);
+    const registryItem = new Bytes({ name: "Pieter" });
+    const fountainEncoder = fountainEncoderCreator(registryItem, 10, 5);
+    const fountainDecoder = fountainDecoderCreator();
+    const fountainFragments = fountainEncoder.encodeUr(registryItem);
     fountainDecoder.decodeUr(fountainFragments);
     const decoded = fountainDecoder.decodeUr(fountainFragments);
 
-    expect(decoded.payload).toEqual(ur.payload);
+    expect(decoded.data).toEqual(registryItem.data);
   });
   test("should be able to fountain encode/decode the payload with a small maxFragmentLength", () => {
     const message = makeMessage(30);
-    const ur = new Ur(message, { type: "custom" });
+    const registryItem = new Bytes(message);
     const maxFragmentLength = 1;
-    const fountainEncoder = fountainEncoderCreator(ur, maxFragmentLength, maxFragmentLength);
-const fountainDecoder = fountainDecoderCreator();
-
-    const fountainFragments = fountainEncoder.encodeUr(
-      ur,
+    const fountainEncoder = fountainEncoderCreator(
+      registryItem,
+      maxFragmentLength,
+      maxFragmentLength
     );
+    const fountainDecoder = fountainDecoderCreator();
+
+    const fountainFragments = fountainEncoder.encodeUr(registryItem);
 
     const decoded = fountainDecoder.decodeUr(fountainFragments);
 
-    expect(decoded.payload).toEqual(ur.payload);
+    expect(decoded.data).toEqual(registryItem.data);
   });
 
   test("should be able to encode and decode cbor payload", () => {
     const message = makeMessage(250);
-    const ur = new Ur(message, { type: "custom" });
-    const fountainEncoder = fountainEncoderCreator(ur, 50, 5, 5);
+    const registryItem = new Bytes(message);
+    const fountainEncoder = fountainEncoderCreator(registryItem, 50, 5, 5);
     const fountainDecoder = fountainDecoderCreator();
 
-    const fountainFragments = fountainEncoder.encodeUr(ur,5);
+    const fountainFragments = fountainEncoder.encodeUr(registryItem, 5);
     const decoded = fountainDecoder.decodeUr(fountainFragments);
 
-    expect(decoded.payload).toEqual(ur.payload);
+    expect(decoded.data).toEqual(registryItem.data);
   });
 });
 describe("FountainEncoder", () => {
-  const { fountainEncoderCreator, fountainDecoderCreator } = createFountainUrTranscoder();
+  const { fountainEncoderCreator, fountainDecoderCreator } =
+    createFountainUrTranscoder();
 
   describe("finds fragment length", () => {
-    const fountainEncoder = fountainEncoderCreator(new Ur(null));
+    const registryItem = new RegistryItem("custom", 0, null);
+    const fountainEncoder = fountainEncoderCreator(registryItem);
 
     const messageLength = 12345;
     const minFragmentLength = 1005;
@@ -98,23 +112,24 @@ describe("FountainEncoder", () => {
 
   test("is complete", () => {
     const message = makeMessage(256);
-    const encoder = fountainEncoderCreator(new Ur(message),30);
+    const registryItem = new RegistryItem("custom", 0, message);
+
+    const encoder = fountainEncoderCreator(registryItem, 30);
     let generatedParts = 0;
-    let part = ""
+    let part = "";
     while (!encoder.isComplete()) {
       part = encoder.nextPart();
       generatedParts += 1;
     }
-    const parsedPart = MultipartUr.parseUr(part)
+    const parsedPart = MultipartUr.parseUr(part);
 
     expect(parsedPart.seqLength).toBe(generatedParts);
   });
 
   test("using nextpart keeps generating multipart Ur's", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
-    const fountainEncoder = fountainEncoderCreator(ur,
-      10,
-      10);
+    const registryItem = new RegistryItem("custom", 0, { name: "Pieter" });
+
+    const fountainEncoder = fountainEncoderCreator(registryItem, 10, 10);
     const fountainDecoder = fountainDecoderCreator();
     const count = 10;
     const parts: string[] = [];
@@ -125,13 +140,11 @@ describe("FountainEncoder", () => {
     expect(parts.length).toEqual(count);
 
     const decoded = fountainDecoder.decodeUr(parts);
-    expect(decoded.payload).toEqual(ur.payload);
+    expect(decoded.data).toEqual(registryItem.data);
   });
   test("encoded ur should be equal to input ur", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
-    const fountainEncoder = fountainEncoderCreator(ur,
-      10,
-      10);
+    const registryItem = new Bytes({ name: "Pieter" });
+    const fountainEncoder = fountainEncoderCreator(registryItem, 10, 10);
     const fountainDecoder = fountainDecoderCreator();
     const parts: string[] = [];
 
@@ -143,13 +156,13 @@ describe("FountainEncoder", () => {
     }
 
     const decoded = fountainDecoder.decodeUr(parts);
-    expect(decoded).toEqual(ur);
+    expect(decoded.data).toEqual(registryItem.data);
+    expect(decoded.type).toEqual(registryItem.type);
+    expect(decoded.tag).toEqual(registryItem.tag);
   });
   test("should not be able to decode when the generated fragments are too little, checksum unequal", () => {
-    const ur = new Ur({ name: "Pieter" }, { type: "custom" });
-    const fountainEncoder = fountainEncoderCreator(ur,
-      5,
-      5);
+    const registryItem = new RegistryItem("custom", 0, { name: "Pieter" });
+    const fountainEncoder = fountainEncoderCreator(registryItem, 5, 5);
     const fountainDecoder = fountainDecoderCreator();
     const count = 1;
     const parts: string[] = [];
@@ -164,12 +177,13 @@ describe("FountainEncoder", () => {
 });
 
 describe("FountainDecoder", () => {
-  const { fountainDecoderCreator, fountainEncoderCreator } = createFountainUrTranscoder();
-  const {encoder} = createUrTranscoder();
+  const { fountainDecoderCreator, fountainEncoderCreator } =
+    createFountainUrTranscoder();
+  const { encoder } = createUrTranscoder();
 
   test("Should be able to encode/decode when the payload is an object", () => {
-    const ur = new Ur({ text: "hello world" });
-    const fountainEncoder = fountainEncoderCreator(ur);
+    const registryItem = new RegistryItem("custom", 0, { text: "hello world" });
+    const fountainEncoder = fountainEncoderCreator(registryItem);
     const fountainDecoder = fountainDecoderCreator();
 
     do {
@@ -178,13 +192,13 @@ describe("FountainDecoder", () => {
     } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
 
     expect(fountainDecoder.isSuccess()).toEqual(true);
-    const result = fountainDecoder.getUrResult();
-    expect(result.payload).toEqual(ur.payload);
+    const result = fountainDecoder.getResultRegistryItem();
+    expect(result.data).toEqual(registryItem.data);
   });
 
   test("Should be able to encode/decode a simple string with default values", () => {
-    const ur = new Ur("thisIsATest");
-    const fountainEncoder = fountainEncoderCreator(ur);
+    const registryItem = new RegistryItem("custom", 0, "thisIsATest");
+    const fountainEncoder = fountainEncoderCreator(registryItem);
     const fountainDecoder = fountainDecoderCreator();
 
     do {
@@ -193,12 +207,11 @@ describe("FountainDecoder", () => {
     } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
 
     expect(fountainDecoder.isSuccess()).toEqual(true);
-    const result = fountainDecoder.getUrResult();
-    expect(result.payload).toEqual(ur.payload);
+    const result = fountainDecoder.getResultRegistryItem();
+    expect(result.data).toEqual(registryItem.data);
   });
   test("Should be able to encode/decode a text", () => {
-    const testUr = new Ur(
-      `The standard Lorem Ipsum passage, used since the 1500s
+    const message = `The standard Lorem Ipsum passage, used since the 1500s
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     
     Section 1.10.32 of "de Finibus Bonorum et Malorum", written by Cicero in 45 BC
@@ -211,11 +224,13 @@ describe("FountainDecoder", () => {
     "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat."
     
     1914 translation by H. Rackham
-    "On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures, or else he endures pains to avoid worse pains."`,
-      { type: "test" }
-    );
+    "On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures, or else he endures pains to avoid worse pains."`;
+    const registryItem = new RegistryItem("test", 0, message);
     const maxFragmentLength = 500;
-    const fountainEncoder = fountainEncoderCreator(testUr, maxFragmentLength);
+    const fountainEncoder = fountainEncoderCreator(
+      registryItem,
+      maxFragmentLength
+    );
     const fountainDecoder = fountainDecoderCreator();
     do {
       const part = fountainEncoder.nextPart();
@@ -223,12 +238,12 @@ describe("FountainDecoder", () => {
     } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
 
     expect(fountainDecoder.isSuccess()).toEqual(true);
-    expect(fountainDecoder.getDecodedResult()).toEqual(testUr.payload);
+    expect(fountainDecoder.getDecodedResult()).toEqual(registryItem.data);
   });
   test("Should throw an error when decoding a simple ur", () => {
     const message = makeMessage(30);
-    const ur = new Ur(message);
-    const singleEncodedUR = encoder.encodeUr(ur);
+    const registryItem = new RegistryItem("test", 0, message);
+    const singleEncodedUR = encoder.encodeUr(registryItem);
     const fountainDecoder = fountainDecoderCreator();
 
     expect(() => fountainDecoder.receivePart(singleEncodedUR)).toThrow(
@@ -237,10 +252,10 @@ describe("FountainDecoder", () => {
   });
   test("Should be able to encode/decode a buffer with a small fragment length", () => {
     const message = makeMessage(30);
-    const ur = new Ur(message);
+    const registryItem = new RegistryItem("test", 0, message);
     const maxFragmentLength = 1;
     const fountainEncoder = fountainEncoderCreator(
-      ur,
+      registryItem,
       maxFragmentLength,
       maxFragmentLength
     );
@@ -252,14 +267,16 @@ describe("FountainDecoder", () => {
     } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
 
     expect(fountainDecoder.isSuccess()).toBe(true);
-    expect(fountainDecoder.getDecodedResult()).toEqual(ur.payload);
-    expect(fountainDecoder.getUrResult()).toEqual(ur);
-
+    expect(fountainDecoder.getDecodedResult()).toEqual(registryItem.data);
   });
   test("Should be able to encode/decode a buffer", () => {
-    const ur = makeCborUr(250);
+    const message = makeMessage(250);
+    const registryItem = new RegistryItem("test", 0, message);
     const maxFragmentLength = 50;
-    const fountainEncoder = fountainEncoderCreator(ur, maxFragmentLength);
+    const fountainEncoder = fountainEncoderCreator(
+      registryItem,
+      maxFragmentLength
+    );
     const fountainDecoder = fountainDecoderCreator();
 
     do {
@@ -268,13 +285,16 @@ describe("FountainDecoder", () => {
     } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
 
     expect(fountainDecoder.isSuccess()).toEqual(true);
-    expect(fountainDecoder.getDecodedResult()).toEqual(ur.payload);
-    expect(fountainDecoder.getUrResult()).toEqual(ur);
+    expect(fountainDecoder.getDecodedResult()).toEqual(registryItem.data);
   });
   test("Should keep the registryType while decoding", () => {
-    const test = makeCborUr(250, { type: "custom-crypto" });
+    const message = makeMessage(250);
+    const registryItem = new Bytes(message);
     const maxFragmentLength = 100;
-    const fountainEncoder = fountainEncoderCreator(test, maxFragmentLength);
+    const fountainEncoder = fountainEncoderCreator(
+      registryItem,
+      maxFragmentLength
+    );
     const fountainDecoder = fountainDecoderCreator();
 
     do {
@@ -283,20 +303,21 @@ describe("FountainDecoder", () => {
     } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
 
     expect(fountainDecoder.isSuccess()).toEqual(true);
-    const decodedUR = fountainDecoder.getUrResult()
-    expect(decodedUR.type).toEqual(test.registryType.type);
-    expect(decodedUR.payload).toEqual(test.payload);
+    const decodedUR = fountainDecoder.getResultRegistryItem();
+    expect(decodedUR.type).toEqual(registryItem.type);
+    expect(decodedUR.data).toEqual(registryItem.data);
   });
 });
 
 describe("GetProgress", () => {
-  const { fountainDecoderCreator, fountainEncoderCreator } = createFountainUrTranscoder();
+  const { fountainDecoderCreator, fountainEncoderCreator } =
+    createFountainUrTranscoder();
 
   test("Should get the expected and recieved parts as an array of indexes", () => {
     const message = makeMessage(300);
-    const ur = new Ur(message);
+    const registryItem = new Bytes(message);
     //Will generate 4 parts, based on the 300 sized message and additional ur characters
-    const fountainEncoder = fountainEncoderCreator(ur, 100, 10);
+    const fountainEncoder = fountainEncoderCreator(registryItem, 100, 10);
     const fountainDecoder = fountainDecoderCreator();
 
     for (let index = 0; index <= 1; index++) {
@@ -315,14 +336,15 @@ describe("GetProgress", () => {
 });
 
 describe("Passing wrong encoded data into the FountainDecoder", () => {
-  const { fountainDecoderCreator, fountainEncoderCreator } = createFountainUrTranscoder();
-  const {encoder} = createMultipartUrTranscoder();
+  const { fountainDecoderCreator, fountainEncoderCreator } =
+    createFountainUrTranscoder();
+  const { encoder } = createMultipartUrTranscoder();
 
   test("Should ignore ur parts that have a different ur type", () => {
-    const ur = makeCborUr(40, { type: "1" });
-    const ur2 = makeCborUr(20, { type: "2" });
-    const differentFragments = encoder.encodeUr(ur2, 5, 5);
-    const fountainEncoder = fountainEncoderCreator(ur, 5, 5);
+    const registryItem = new Bytes(makeMessage(40));
+    const registryItem2 = new RegistryItem("test", 0, makeMessage(20));
+    const differentFragments = encoder.encodeUr(registryItem2, 5, 5);
+    const fountainEncoder = fountainEncoderCreator(registryItem, 5, 5);
     const fountainDecoder = fountainDecoderCreator();
 
     for (
@@ -338,14 +360,14 @@ describe("Passing wrong encoded data into the FountainDecoder", () => {
       }
       fountainDecoder.receivePart(part);
     }
-    const result = fountainDecoder.getUrResult();
-    expect(result.payload).toEqual(ur.payload);
+    const result = fountainDecoder.getResultRegistryItem();
+    expect(result.data).toEqual(registryItem.data);
   });
   test("Should ignore ur parts that have a different sequenceLength then the first read QR code", () => {
-    const ur = makeCborUr(40, { type: "pieter" });
-    const ur2 = makeCborUr(20, { type: "pieter" });
-    const differentFragments = encoder.encodeUr(ur2, 5, 5);
-    const fountainEncoder = fountainEncoderCreator(ur, 5, 5);
+    const registryItem = new Bytes(makeMessage(40));
+    const registryItem2 = new Bytes(makeMessage(20));
+    const differentFragments = encoder.encodeUr(registryItem2, 5, 5);
+    const fountainEncoder = fountainEncoderCreator(registryItem, 5, 5);
     const fountainDecoder = fountainDecoderCreator();
 
     for (
@@ -361,14 +383,14 @@ describe("Passing wrong encoded data into the FountainDecoder", () => {
       }
       fountainDecoder.receivePart(part);
     }
-    const result = fountainDecoder.getUrResult();
-    expect(result.payload).toEqual(ur.payload);
+    const result = fountainDecoder.getResultRegistryItem();
+    expect(result.data).toEqual(registryItem.data);
   });
   test("Should ignore ur parts that have a different payload then the first read QR code. This is checked by the checksum", () => {
-    const ur = makeCborUr(40, { type: "pieter" });
-    const ur2 = makeCborUr(40, { type: "pieter" }, "Pieter");
-    const differentFragments = encoder.encodeUr(ur2, 5, 5);
-    const fountainEncoder = fountainEncoderCreator(ur, 5, 5);
+    const registryItem = new Bytes(makeMessage(40));
+    const registryItem2 = new Bytes(makeMessage(40, "Pieter"));
+    const differentFragments = encoder.encodeUr(registryItem2, 5, 5);
+    const fountainEncoder = fountainEncoderCreator(registryItem, 5, 5);
     const fountainDecoder = fountainDecoderCreator();
 
     for (
@@ -384,23 +406,22 @@ describe("Passing wrong encoded data into the FountainDecoder", () => {
       }
       fountainDecoder.receivePart(part);
     }
-    const result = fountainDecoder.getUrResult();
-    expect(result.payload).toEqual(ur.payload);
+    const result = fountainDecoder.getResultRegistryItem();
+    expect(result.data).toEqual(registryItem.data);
   });
   test("Should ignore ur parts of the second ur, that have a different ur types and return the correct result", () => {
-    const ur = makeCborUr(40, { type: "1" });
-    const ur2 = makeCborUr(20, { type: "2" });
-    const fountainEncoder = fountainEncoderCreator(ur,
-      5,
-      5);
+    const registryItem = new RegistryItem("1", 0, makeMessage(40));
+    const registryItem2 = new RegistryItem("2", 0, makeMessage(20));
+
+    const fountainEncoder = fountainEncoderCreator(registryItem, 5, 5);
     const fountainDecoder = fountainDecoderCreator();
-    const fragments1 = fountainEncoder.encodeUr(ur);
-    const fragments2 = fountainEncoder.encodeUr(ur2);
+    const fragments1 = fountainEncoder.encodeUr(registryItem);
+    const fragments2 = fountainEncoder.encodeUr(registryItem2);
     // insert elements of the second ur fragments into the first one
     fragments1.splice(1, 0, ...fragments2.slice(0, 3));
 
     const result = fountainDecoder.decodeUr(fragments1);
 
-    expect(result.payload).toEqual(ur.payload);
+    expect(result.data).toEqual(registryItem.data);
   });
 });

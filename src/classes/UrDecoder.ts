@@ -1,22 +1,23 @@
 import { Decoder } from "./Decoder";
 import { Ur } from "./Ur";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
+import { RegistryItem } from "./RegistryItem";
+import { getItemFromRegistry } from "../registry";
 
-export class UrDecoder<T,U> extends Decoder<string, U> {
+export class UrDecoder extends Decoder<string, Buffer> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
     super(encodingMethods);
   }
 
   /**
    * Decode single fragment into the original Ur.
-   * @param fragment stringified Ur
+   * @param ur stringified Ur
    * @returns original encoded Ur.
    */
-  decodeUr(fragment: string): Ur<T> {
-    const { registryType, payload } = Ur.parseUr(fragment);
-    const { type } = registryType;
-    const decoded = super.decode<T>(payload);
-
-    return new Ur(decoded, { type });
+  decodeUr<T extends RegistryItem>(ur: string): T {
+    const { payload, type} = Ur.parseUr(ur);
+    const decoded = super.decode(payload);
+    const registryItem = getItemFromRegistry(type).fromCBOR(decoded);
+    return registryItem;
   }
 }

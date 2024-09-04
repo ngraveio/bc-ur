@@ -1,5 +1,4 @@
-import { MultipartUrEncoder } from "../src/classes/MultipartUrEncoder";
-import {UrEncoder} from "../src/classes/UrEncoder"
+import { MultipartUrEncoder } from "../src";
 import { chooseDegree, chooseFragments, shuffle } from "../src/fountainUtils";
 import { bufferXOR, getCRC, intToBytes } from "../src/utils";
 import Xoshiro from "../src/xoshiro";

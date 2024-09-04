@@ -1,42 +1,10 @@
-import assert from "assert";
 import { InvalidPathLengthError, InvalidSchemeError, InvalidTypeError } from "../errors";
-import { RegistryType } from "../interfaces/RegistryType";
 
-export interface IUr<T> {
-  payload: T;
-  registryType: RegistryType;
-}
 /**
  * Class that represents the structure of the data we encode/decode in this package.
  * e.g. 'ur:bytes/lpamcmcfatrdcyzcpldpgwhdhtiaiaecgyktgsflguhshthfghjtjngrhsfegtiafegaktgugui'
- * Based on the bc definition. TODO: add link to bc ur registry
  */
-export class Ur<T> implements IUr<T> {
-  payload: T; // TODO: this is a dataItem object
-  registryType: RegistryType;
-
-  constructor(
-    payload: T,
-    registryType: RegistryType = { type: "bytes", tag: undefined }
-  ) {
-    if (!Ur.isURType(registryType.type)) {
-      throw new InvalidTypeError();
-    }
-    this.payload = payload;
-    this.registryType = registryType;
-  }
-
-  /**
-   * Gets the registry type of the UR.
-   * e.g. bytes
-   */
-  get type(): string {
-    return this.registryType.type;
-  }
-
-  get tag(): number | undefined {
-    return this.registryType.tag;
-  }
+export class Ur {
 
   /**
    * Checks if the given type is a valid UR type (consisting of lowercase letters, numbers or dashes)
@@ -75,12 +43,12 @@ export class Ur<T> implements IUr<T> {
    * @param tag tag of the ur registry
    * @returns 
    */
-  static toUr<U>(payload: U, registryType: RegistryType): Ur<U> {
-    const {type} = registryType
-    assert(typeof type === 'string', "registry type should be included in the ur payload");
+  // static toUr<T extends RegistryItem>(registryItem: T): Ur<T> {
+  //   const {type} = registryItem
+  //   assert(typeof type === 'string', "registry type should be included in the ur payload");
 
-    return new Ur(payload, { type });
-  }
+  //   return new Ur<T>(registryItem);
+  // }
 
     /**
    * Parses a UR and performs basic validation
@@ -94,7 +62,7 @@ export class Ur<T> implements IUr<T> {
     bytewords: "lpamchcfatttcyclehgsdphdhgehfghkkkdl..."",
   } 
    */
-  static parseUr(message: string): IUr<string>{
+  static parseUr(message: string){
     const lowercase = message.toLowerCase(); // e.g. "ur:bytes/6-23/lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
     const prefix = lowercase.slice(0, 3);
 
@@ -116,7 +84,7 @@ export class Ur<T> implements IUr<T> {
 
     // singlePart ur
     return {
-      registryType: {type},
+      type,
       payload: components[1],
     };
   }

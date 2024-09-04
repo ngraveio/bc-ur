@@ -11,7 +11,7 @@ describe("parseUr()", () => {
     const message = "UR:BYTES/LPAMCHCFATTTCYCLEHGSDPHDHGEHFGHKKKDL";
     const {
       payload: bytewords,
-      registryType: { type },
+      type,
       seqLength,
       seqNum,
     } = Ur.parseUr(message) as any;
@@ -30,7 +30,7 @@ describe("parseUr()", () => {
     const message = "UR:BYTES/6-23/LPAMCHCFATTTCYCLEHGSDPHDHGEHFGHKKKDL";
     const {
       payload: bytewords,
-      registryType: { type },
+      type,
       seqLength,
       seqNum,
     } = MultipartUr.parseUr(message);
