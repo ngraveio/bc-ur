@@ -8,7 +8,7 @@ import { Ur } from "./Ur";
 /**
  * Encode data on the fly. This encoder uses an internal state to keep generating ur fragments of the payload.
  */
-export default class UrFountainEncoder<T> extends UrMultipartEncoder<T, string> {
+export default class UrFountainEncoder extends UrMultipartEncoder {
   private _messageLength: number;
   private _maxFragmentLength: number;
   private _minFragmentLength: number;
@@ -20,17 +20,17 @@ export default class UrFountainEncoder<T> extends UrMultipartEncoder<T, string> 
 
   constructor(
     encodingMethods: IEncodingMethod<any, any>[],
-    ur: Ur<T>,
+    ur: Ur,
     maxFragmentLength: number = 100,
     minFragmentLength: number = 10,
     firstSeqNum: number = 0,
   ) {
     super(encodingMethods);
-    this._type = ur.type;
+    this._type = ur.registryItem.type;
     this._seqNum = toUint32(firstSeqNum);
 
     // We need to encode the message as a Buffer, because we mix them later on
-    const cborMessage = super.cborEncode(ur.payload);
+    const cborMessage = ur.toCBOR();
     this._messageLength = cborMessage.length;
     this._checksum = getCRC(cborMessage);
 
@@ -58,9 +58,9 @@ export default class UrFountainEncoder<T> extends UrMultipartEncoder<T, string> 
 * @param redundancyRatio ratio of additional generated fragments
 * @returns the encoded payload as an array of ur strings
 */
-  encodeUr(ur: Ur<T>, redundancyRatio: number = 0): string[] {
+  encodeUr(ur: Ur, redundancyRatio: number = 0): string[] {
     // encode first time to split the original payload up as cbor
-    const cborMessage = this.cborEncode(ur.payload);
+    const cborMessage = ur.toCBOR();
     const messageLength = cborMessage.length;
     const fragmentLength = this.findNominalFragmentLength(
       messageLength,
@@ -84,7 +84,7 @@ export default class UrFountainEncoder<T> extends UrMultipartEncoder<T, string> 
         mixed,
       ]);
       return getMultipartUrString(
-        ur.type,
+        ur.registryItem.type,
         seqNum,
         fragments.length,
         encodedFragment

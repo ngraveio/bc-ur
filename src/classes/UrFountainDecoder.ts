@@ -10,6 +10,7 @@ import {
 import { MultipartUr } from "./MultipartUr";
 import { MultipartPayload, UrMultipartDecoder } from "./UrMultipartDecoder";
 import { Ur } from "./Ur";
+import { registry } from "..";
 
 class FountainDecoderPart {
   constructor(private _indexes: number[], private _fragment: Buffer) {}
@@ -32,13 +33,13 @@ interface PartDict {
   value: FountainDecoderPart;
 }
 
-export default class UrFountainDecoder<U> extends UrMultipartDecoder<string, U> {
+export default class UrFountainDecoder extends UrMultipartDecoder {
   private error: Error | undefined;
   private urDecoderError: any;
 
   private result: Buffer | undefined = undefined;
 
-  private urDecoderResult: Ur<U> | undefined = undefined;
+  private urDecoderResult: Ur | undefined = undefined;
   private expectedType: string;
 
   private expectedMessageLength: number = 0;
@@ -280,8 +281,8 @@ export default class UrFountainDecoder<U> extends UrMultipartDecoder<string, U> 
     }
 
     if (this.isSuccess()) {
-      const decodedMessage = this.decodeCbor(this.result);
-      this.urDecoderResult = new Ur(decodedMessage, { type });
+      const decodedMessage = registry[type].fromCBOR(this.result);
+      this.urDecoderResult = new Ur(decodedMessage);
     } else if (this.isFailure()) {
       this.urDecoderError = new InvalidSchemeError();
     }
@@ -330,7 +331,7 @@ export default class UrFountainDecoder<U> extends UrMultipartDecoder<string, U> 
     return false;
   }
 
-  public getUrResult(): Ur<U> {
+  public getUrResult(): Ur {
     return this.urDecoderResult;
   }
 
@@ -350,7 +351,7 @@ export default class UrFountainDecoder<U> extends UrMultipartDecoder<string, U> 
     return this.isSuccess() ? this.result! : Buffer.from([]);
   }
 
-  public getDecodedResult(): U {
+  public getDecodedResult() {
     return this.isSuccess() ? this.decodeCbor(this.result)! : null;
   }
 

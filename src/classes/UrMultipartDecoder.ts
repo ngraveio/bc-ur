@@ -3,10 +3,12 @@ import { MultipartUr } from "./MultipartUr";
 import { Ur } from "./Ur";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 import assert from "assert";
-import { RegistryType } from "../interfaces/RegistryType";
+import { IRegistryType } from "../interfaces/IRegistryType";
 import { getCRC } from "../utils";
 import { InvalidChecksumError } from "../errors";
 import { EncodingMethodName } from "../enums/EncodingMethodName";
+import { RegistryItem } from "./RegistryItem";
+import { registry } from "..";
 
 export type MultipartPayload = {
   seqNum: number;
@@ -16,12 +18,12 @@ export type MultipartPayload = {
   fragment: Buffer;
 };
 
-export class UrMultipartDecoder<T,U> extends Decoder<string, U> {
+export class UrMultipartDecoder extends Decoder<string, Buffer> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
     super(encodingMethods);
   }
 
-  decodeCbor(payload: Buffer): U {
+  decodeCbor(payload: Buffer): string {
     const cborEncoding = this.encodingMethods.find((method) => method.name === EncodingMethodName.cbor);
     if(!cborEncoding) {
       throw new Error("CBOR encoding method not found");
@@ -39,8 +41,8 @@ export class UrMultipartDecoder<T,U> extends Decoder<string, U> {
    * @param fragments array of stringified Ur's, in the correct order.
    * @returns original encoded Ur.
    */
-  decodeUr(fragments: string[]): Ur<U> {
-    let expectedRegistryType = null;
+  decodeUr<T extends RegistryItem>(fragments: string[]): Ur<T> {
+    let expectedRegistryType: IRegistryType = null;
     let expectedPayload: {
       indexes: number[];
       messageLength: number;
@@ -53,8 +55,8 @@ export class UrMultipartDecoder<T,U> extends Decoder<string, U> {
       const validatedPayload = this.validateMultipartPayload(multipart.payload);
 
       // set expected registryType if it does not exist
-      if (!expectedRegistryType && Ur.isURType(multipart?.registryType?.type)) {
-        expectedRegistryType = multipart.registryType;
+      if (!expectedRegistryType && Ur.isURType(multipart?.registryItem?.type)) {
+        expectedRegistryType = multipart.registryItem;
       }
 
       // set expected payload if it does not exist
@@ -72,7 +74,7 @@ export class UrMultipartDecoder<T,U> extends Decoder<string, U> {
       // compare expected type with the received the fragment
       if (
         expectedRegistryType &&
-        !this.compareRegistryType(expectedRegistryType, multipart.registryType)
+        !this.compareRegistryType(expectedRegistryType, multipart.registryItem)
       ) {
         console.warn("Did not expect this ur type");
         // return default value.
@@ -98,10 +100,10 @@ export class UrMultipartDecoder<T,U> extends Decoder<string, U> {
 
     if (checksum === expectedPayload.checksum) {
       // decode the buffer as a whole.
-      const decoded = this.decodeCbor(cborPayload);
+      const decoded = registry[expectedRegistryType.type].fromCBOR(cborPayload);
 
       // convert to ur object
-      return Ur.toUr(decoded, { ...expectedRegistryType });
+      return Ur.toUr(decoded);
     } else {
       throw new InvalidChecksumError();
     }
@@ -149,7 +151,7 @@ export class UrMultipartDecoder<T,U> extends Decoder<string, U> {
    * @param payload
    * @returns
    */
-  decodeMultipartUr(payload: string): MultipartUr<Buffer> {
+  decodeMultipartUr(payload: string): MultipartUr {
     const {
       payload: bytewords,
       registryType,
@@ -159,7 +161,7 @@ export class UrMultipartDecoder<T,U> extends Decoder<string, U> {
 
     const decoded = this.decode<Buffer>(bytewords); // {"_checksum": 556878893, "_fragment": [Object] (type of Buffer), "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
 
-    return MultipartUr.toMultipartUr<Buffer>(decoded, registryType, seqNum, seqLength);
+    return MultipartUr.toMultipartUr({data: decoded, ...registryType} as RegistryItem, seqNum, seqLength);
   }
 
   public validateMultipartPayload(decoded: Buffer): MultipartPayload {
@@ -180,8 +182,8 @@ export class UrMultipartDecoder<T,U> extends Decoder<string, U> {
    * @returns true if the type is valid and matches the expected type
    */
   private compareRegistryType(
-    expectedRegistryType: RegistryType,
-    registryType: RegistryType
+    expectedRegistryType: IRegistryType,
+    registryType: IRegistryType
   ): boolean {
     const { type: expectedType } = expectedRegistryType;
     const { type } = registryType;

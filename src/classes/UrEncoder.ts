@@ -3,7 +3,7 @@ import { Ur, getUrString } from "./Ur";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 
 
-export class UrEncoder<T, U> extends Encoder<T, string> {
+export class UrEncoder extends Encoder<Buffer, string> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
     super(encodingMethods);
   }
@@ -13,8 +13,8 @@ export class UrEncoder<T, U> extends Encoder<T, string> {
    * @param ur ur that needs to be encoded.
    * @returns the encoded payload as a ur string
    */
-  encodeUr(ur: Ur<T>): string {
-    const encoded = super.encode(ur.payload);
-    return getUrString(ur.registryType.type, encoded);
+  encodeUr(ur: Ur): string {
+    const encoded = super.encode(ur.toCBOR());
+    return getUrString(ur.registryItem.type, encoded);
   }
 }

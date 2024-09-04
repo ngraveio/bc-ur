@@ -2,7 +2,7 @@ import assert from "assert";
 import { getCRC, split, toUint32 } from "../utils";
 import { Encoder } from "./Encoder";
 import { Ur, getUrString } from "./Ur";
-import { IMultipartUr, getMultipartUrString } from "./MultipartUr";
+import { IMultipartUr, MultipartUr, getMultipartUrString } from "./MultipartUr";
 import { chooseFragments, mixFragments } from "../fountainUtils";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 import { EncodingMethodName } from "../enums/EncodingMethodName";
@@ -12,20 +12,11 @@ import { EncodingMethodName } from "../enums/EncodingMethodName";
  */
 export type IMultipartUrPayload = [number, number, number, number, Buffer];
 
-export type MultipartUrEncoderPart = IMultipartUr<IMultipartUrPayload>;
-
-export class UrMultipartEncoder<T, U> extends Encoder<T, string> {
+export class UrMultipartEncoder extends Encoder<Buffer, string> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
     super(encodingMethods);
   }
 
-  cborEncode(payload: T): Buffer {
-    const cborEncoding = this.encodingMethods.find((method) => method.name === EncodingMethodName.cbor);
-    if(!cborEncoding) {
-      throw new Error("CBOR encoding method not found");
-    }
-    return cborEncoding.encode(payload);
-  }
 
   /**
    * get an array of encoded fragments, based on the payload length, max and min fragment length.
@@ -36,12 +27,12 @@ export class UrMultipartEncoder<T, U> extends Encoder<T, string> {
    * and force the multipart and fountain UR to be cbor encoded.
    */
   encodeUr(
-    ur: Ur<T>,
+    ur: Ur,
     maxFragmentLength: number,
     minFragmentLength: number
   ): string[] {
     // encode first time to split the original payload up as cbor
-    const cborMessage = this.cborEncode(ur.payload);
+    const cborMessage = ur.toCBOR();
     const totalPayloadLength = cborMessage.length;
     const fragmentLength = this.findNominalFragmentLength(
       totalPayloadLength,
@@ -61,7 +52,7 @@ export class UrMultipartEncoder<T, U> extends Encoder<T, string> {
         fragment,
       ]);
       return getMultipartUrString(
-        ur.type,
+        ur.registryItem.type,
         seqNum,
         fragments.length,
         encodedFragment
