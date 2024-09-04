@@ -33,7 +33,9 @@ public toCBOR = (): Buffer => {
 };
 
 public static fromCBOR = (data: Buffer): any => {
-  return new RegistryItem("BASE_REGISTRY_ITEM", -1, new CborEncoding().decode(data));
+  const decoded = new CborEncoding().decode(data);
+  // NOTE: 'type' and 'tag' should be defined in the constructor of the class that extends RegistryItem
+  return new RegistryItem("BASE_REGISTRY_ITEM", -1, decoded);
 };
 
 }
