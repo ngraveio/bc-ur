@@ -23,7 +23,7 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
     registryItem: RegistryItem,
     maxFragmentLength: number = 100,
     minFragmentLength: number = 10,
-    firstSeqNum: number = 0,
+    firstSeqNum: number = 0
   ) {
     super(encodingMethods);
     this._type = registryItem.type;
@@ -58,7 +58,10 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
 * @param redundancyRatio ratio of additional generated fragments
 * @returns the encoded payload as an array of ur strings
 */
-  encodeUr<T extends RegistryItem>(registryItem: T, redundancyRatio: number = 0): string[] {
+  encodeUr<T extends RegistryItem>(
+    registryItem: T,
+    redundancyRatio: number = 0
+  ): string[] {
     // encode first time to split the original payload up as cbor
     const cborMessage = registryItem.toCBOR();
     const messageLength = cborMessage.length;
@@ -114,7 +117,7 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
    * @returns The count of the "pure" fragments.
    */
   public getPureFragmentCount(): number {
-    return this._fragments.length
+    return this._fragments.length;
   }
 
   /**
@@ -124,12 +127,21 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
   public nextPart(): string {
     this._seqNum = toUint32(this._seqNum + 1);
 
+    // when the seqnum restarts because of a number bigger than Uint32, we need to make sure to skip 0 to prevent invalid Multipart URs.
+    if (this._seqNum === 0) {
+      this._seqNum = toUint32(this._seqNum + 1);
+    }
+
     const indexes = chooseFragments(
       this._seqNum,
       this._fragments.length,
       this._checksum
     );
-    const mixed = mixFragments(indexes, this._fragments,this._nominalFragmentLength);
+    const mixed = mixFragments(
+      indexes,
+      this._fragments,
+      this._nominalFragmentLength
+    );
 
     const encodedFragment = super.encode([
       this._seqNum,
