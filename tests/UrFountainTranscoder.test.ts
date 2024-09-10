@@ -142,6 +142,24 @@ describe("FountainEncoder", () => {
     const decoded = fountainDecoder.decodeUr(parts);
     expect(decoded.data).toEqual(registryItem.data);
   });
+  test("fountainEncoder nextPart() should restart at seqNum 0 when the seqnum is bigger than uint32", () => {
+    const registryItem = new RegistryItem("custom", 0, { name: "Pieter" });
+
+    let _seqNum = 4294967295; // Maximum value for uint32
+    const fountainEncoder = fountainEncoderCreator(
+      registryItem,
+      10,
+      10,
+      _seqNum
+    );
+
+    const part1 = fountainEncoder.nextPart();
+    const part2 = fountainEncoder.nextPart();
+
+    expect(MultipartUr.parseUr(part1).seqNum).toBe(1);
+    expect(MultipartUr.parseUr(part2).seqNum).toBe(2);
+  });
+
   test("encoded ur should be equal to input ur", () => {
     const registryItem = new Bytes({ name: "Pieter" });
     const fountainEncoder = fountainEncoderCreator(registryItem, 10, 10);
