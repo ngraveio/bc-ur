@@ -1,11 +1,8 @@
 import assert from "assert";
 import { getCRC, split, toUint32 } from "../utils";
 import { Encoder } from "./Encoder";
-import { Ur, getUrString } from "./Ur";
-import { IMultipartUr, MultipartUr, getMultipartUrString } from "./MultipartUr";
-import { chooseFragments, mixFragments } from "../fountainUtils";
+import { getMultipartUrString } from "./MultipartUr";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
-import { EncodingMethodName } from "../enums/EncodingMethodName";
 import { RegistryItem } from "./RegistryItem";
 
 /**
@@ -17,7 +14,6 @@ export class UrMultipartEncoder extends Encoder<Buffer, string> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
     super(encodingMethods);
   }
-
 
   /**
    * get an array of encoded fragments, based on the payload length, max and min fragment length.

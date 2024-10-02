@@ -1,5 +1,8 @@
 import { RegistryItem } from "../src";
-import { createFountainUrTranscoder, createUrTranscoder } from "../src/ngraveTranscoder";
+import {
+  createFountainUrTranscoder,
+  createUrTranscoder,
+} from "../src/ngraveTranscoder";
 
 describe("NgraveTranscoder", () => {
   test("encoder encode/decode a primitive value", () => {

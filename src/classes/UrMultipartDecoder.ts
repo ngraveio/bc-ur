@@ -23,14 +23,14 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
   }
 
   decodeCbor(payload: Buffer): string {
-    const cborEncoding = this.encodingMethods.find((method) => method.name === EncodingMethodName.cbor);
-    if(!cborEncoding) {
+    const cborEncoding = this.encodingMethods.find(
+      (method) => method.name === EncodingMethodName.cbor
+    );
+    if (!cborEncoding) {
       throw new Error("CBOR encoding method not found");
     }
 
-    return cborEncoding.decode(
-      payload
-    );
+    return cborEncoding.decode(payload);
   }
 
   /**
@@ -93,26 +93,33 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
     });
 
     // concat all the buffer payloads to a single buffer
-    const cborPayload = this.joinFragments(fragmentPayloads,expectedPayload.messageLength);
+    const cborPayload = this.joinFragments(
+      fragmentPayloads,
+      expectedPayload.messageLength
+    );
 
     const checksum = getCRC(cborPayload);
 
     if (checksum === expectedPayload.checksum) {
       // decode the buffer as a whole.
-      const registryItem = getItemFromRegistry(expectedRegistryType).fromCBOR(cborPayload);
+      const registryItem =
+        getItemFromRegistry(expectedRegistryType).fromCBOR(cborPayload);
       return registryItem;
     } else {
       throw new InvalidChecksumError();
     }
   }
 
-/**
- * Join the fragments together.
- * @param fragments fragments to join
- * @param messageLength length of the expected message.
- * @returns the concatenated fragments with the expected length.
- */
-  protected joinFragments = (fragments: Buffer[], messageLength: number): Buffer => {
+  /**
+   * Join the fragments together.
+   * @param fragments fragments to join
+   * @param messageLength length of the expected message.
+   * @returns the concatenated fragments with the expected length.
+   */
+  protected joinFragments = (
+    fragments: Buffer[],
+    messageLength: number
+  ): Buffer => {
     // with 'slice', we remove the additionally created buffer parts, needed to achieve the minimum fragment length.
     return Buffer.concat(fragments).slice(0, messageLength);
   };
@@ -158,7 +165,11 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
 
     const decoded = this.decode<Buffer>(bytewords); // {"_checksum": 556878893, "_fragment": [Object] (type of Buffer), "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
 
-    return MultipartUr.toMultipartUr({data: decoded, type} as RegistryItem, seqNum, seqLength);
+    return MultipartUr.toMultipartUr(
+      { data: decoded, type } as RegistryItem,
+      seqNum,
+      seqLength
+    );
   }
 
   public validateMultipartPayload(decoded: Buffer): MultipartPayload {
