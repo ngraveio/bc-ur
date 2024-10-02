@@ -242,7 +242,6 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     return true;
   }
 
-
   receivePart(s: string): boolean {
     // If we already have a result, we're done
     if (this.urDecoderResult !== undefined) {
@@ -250,11 +249,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     }
 
     // e.g bytes ["6-23", "lpamchcfatttcyclehgsdphdhgehfghkkkdl..."]
-    const {
-      type,
-      payload: bytewords,
-      seqLength,
-    } = MultipartUr.parseUr(s);
+    const { type, payload: bytewords, seqLength } = MultipartUr.parseUr(s);
 
     if (!this.validateUrType(type)) {
       return false;
@@ -327,7 +322,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
 
   public isUrDecoderComplete(): boolean {
     if (this.urDecoderResult) {
-        return true;
+      return true;
     }
     return false;
   }

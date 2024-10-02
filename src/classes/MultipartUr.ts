@@ -18,7 +18,9 @@ export interface IMultipartUr {
  * Extends the basic Ur class to add support for a Ur splitted into multiple parts.
  * e.g. 'ur:bytes/6-22/lpamcmcfatrdcyzcpldpgwhdhtiaiaecgyktgsflguhshthfghjtjngrhsfegtiafegaktgugui'
  */
-export class MultipartUr<T extends RegistryItem = RegistryItem> implements IMultipartUr {
+export class MultipartUr<T extends RegistryItem = RegistryItem>
+  implements IMultipartUr
+{
   payload: any;
   type: string;
   seqNum: number;
@@ -69,7 +71,7 @@ export class MultipartUr<T extends RegistryItem = RegistryItem> implements IMult
     seqLength: 23
   } 
    */
-  static parseUr(message: string){
+  static parseUr(message: string) {
     const lowercase = message.toLowerCase(); // e.g. "ur:bytes/6-23/lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
     const prefix = lowercase.slice(0, 3);
 
