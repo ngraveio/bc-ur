@@ -1,13 +1,12 @@
-import { RegistryType } from '../classes/RegistryType';
-import { CborEncoding } from '../encodingMethods/CborEncoding';
-import { IRegistryType } from '../interfaces/IRegistryType';
+import { RegistryType } from "../classes/RegistryType";
+import { IRegistryType } from "../interfaces/IRegistryType";
+import { Tagged } from "cbor";
 
 export class RegistryItem {
+  private _registryType: IRegistryType;
+  private _data: any;
 
- private _registryType: IRegistryType;
- private _data: any;
-
- get tag(): number | undefined {
+  get tag(): number | undefined {
     return this._registryType.tag;
   }
 
@@ -23,19 +22,17 @@ export class RegistryItem {
     this._data = data;
   }
 
-constructor(type: string, tag?: number, dataRaw?: any) {
+  constructor(type: string, tag: number = 99999, dataRaw?: any) {
     this._registryType = new RegistryType(type, tag);
     this.data = dataRaw;
-}
+  }
 
-public toCBOR = (): Buffer => {
-  return new CborEncoding().encode(this.data)
-};
+  public encodeCBOR = (encoder) => {
+    const tagged = new Tagged(this.tag, this.data);
+    return encoder.pushAny(tagged);
+  };
 
-public static fromCBOR = (data: Buffer): any => {
-  const decoded = new CborEncoding().decode(data);
-  // NOTE: 'type' and 'tag' should be defined in the constructor of the class that extends RegistryItem
-  return new RegistryItem("BASE_REGISTRY_ITEM", -1, decoded);
-};
-
+  public fromCBOR = () => ({
+    [this.tag]: (val) => new RegistryItem(this.type, this.tag, val),
+  });
 }

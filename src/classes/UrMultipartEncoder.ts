@@ -4,6 +4,7 @@ import { Encoder } from "./Encoder";
 import { getMultipartUrString } from "./MultipartUr";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
 import { RegistryItem } from "./RegistryItem";
+import { CborEncoding } from "../encodingMethods/CborEncoding";
 
 /**
  * [seqNum, fragments.length, totalPayloadLength, checksum, fragment]
@@ -29,7 +30,7 @@ export class UrMultipartEncoder extends Encoder<Buffer, string> {
     minFragmentLength: number
   ): string[] {
     // encode first time to split the original payload up as cbor
-    const cborMessage = registryItem.toCBOR();
+    const cborMessage = new CborEncoding().encode(registryItem);
     const totalPayloadLength = cborMessage.length;
     const fragmentLength = this.findNominalFragmentLength(
       totalPayloadLength,

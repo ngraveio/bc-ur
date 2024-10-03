@@ -7,7 +7,7 @@ import { getCRC } from "../utils";
 import { InvalidChecksumError } from "../errors";
 import { EncodingMethodName } from "../enums/EncodingMethodName";
 import { RegistryItem } from "./RegistryItem";
-import { getItemFromRegistry } from "../registry";
+import { CborEncoding } from "../encodingMethods/CborEncoding";
 
 export type MultipartPayload = {
   seqNum: number;
@@ -102,9 +102,7 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
 
     if (checksum === expectedPayload.checksum) {
       // decode the buffer as a whole.
-      const registryItem =
-        getItemFromRegistry(expectedRegistryType).fromCBOR(cborPayload);
-      return registryItem;
+      return new CborEncoding<T>().decode(cborPayload);
     } else {
       throw new InvalidChecksumError();
     }
