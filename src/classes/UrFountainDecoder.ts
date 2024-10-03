@@ -10,8 +10,8 @@ import {
 import { MultipartUr } from "./MultipartUr";
 import { MultipartPayload, UrMultipartDecoder } from "./UrMultipartDecoder";
 import { Ur } from "./Ur";
-import { getItemFromRegistry } from "../registry";
 import { RegistryItem } from "./RegistryItem";
+import { CborEncoding } from "../encodingMethods/CborEncoding";
 
 class FountainDecoderPart {
   constructor(private _indexes: number[], private _fragment: Buffer) {}
@@ -277,7 +277,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     }
 
     if (this.isSuccess()) {
-      const decodedMessage = getItemFromRegistry(type).fromCBOR(this.result);
+      const decodedMessage = new CborEncoding().decode(this.result);
       this.urDecoderResult = decodedMessage;
     } else if (this.isFailure()) {
       this.urDecoderError = new InvalidSchemeError();

@@ -4,6 +4,7 @@ import { toUint32, getCRC } from "../utils";
 import { getMultipartUrString } from "./MultipartUr";
 import { UrMultipartEncoder } from "./UrMultipartEncoder";
 import { RegistryItem } from "./RegistryItem";
+import { CborEncoding } from "../encodingMethods/CborEncoding";
 
 /**
  * Encode data on the fly. This encoder uses an internal state to keep generating ur fragments of the payload.
@@ -23,14 +24,15 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
     registryItem: RegistryItem,
     maxFragmentLength: number = 100,
     minFragmentLength: number = 10,
-    firstSeqNum: number = 0,
+    firstSeqNum: number = 0
   ) {
     super(encodingMethods);
     this._type = registryItem.type;
     this._seqNum = toUint32(firstSeqNum);
 
     // We need to encode the message as a Buffer, because we mix them later on
-    const cborMessage = registryItem.toCBOR();
+    const cborMessage = new CborEncoding().encode(registryItem);
+
     this._messageLength = cborMessage.length;
     this._checksum = getCRC(cborMessage);
 
@@ -58,9 +60,12 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
 * @param redundancyRatio ratio of additional generated fragments
 * @returns the encoded payload as an array of ur strings
 */
-  encodeUr<T extends RegistryItem>(registryItem: T, redundancyRatio: number = 0): string[] {
+  encodeUr<T extends RegistryItem>(
+    registryItem: T,
+    redundancyRatio: number = 0
+  ): string[] {
     // encode first time to split the original payload up as cbor
-    const cborMessage = registryItem.toCBOR();
+    const cborMessage = new CborEncoding().encode(registryItem);
     const messageLength = cborMessage.length;
     const fragmentLength = this.findNominalFragmentLength(
       messageLength,
@@ -114,7 +119,7 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
    * @returns The count of the "pure" fragments.
    */
   public getPureFragmentCount(): number {
-    return this._fragments.length
+    return this._fragments.length;
   }
 
   /**
@@ -129,7 +134,11 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
       this._fragments.length,
       this._checksum
     );
-    const mixed = mixFragments(indexes, this._fragments,this._nominalFragmentLength);
+    const mixed = mixFragments(
+      indexes,
+      this._fragments,
+      this._nominalFragmentLength
+    );
 
     const encodedFragment = super.encode([
       this._seqNum,
