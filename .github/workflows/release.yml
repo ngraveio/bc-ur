@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ['Test']
+    types:
+      - completed
+    branches:
+      - main
+      - beta
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run build
+        run: yarn build
+
+      - name: Publish to NPM
+        run: |
+          if [[ "${GITHUB_REF}" == *"/beta" ]]; then
+            echo "Publishing beta version..."
+            yarn publish --tag beta
+          else
+            echo "Publishing stable version..."
+            yarn publish
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create release on GitHub
+        run: |
+          current_version=$(node -p "require('./package.json').version")
+          previous_stable_version=$(git tag --sort=-v:refname | grep -v 'beta' | head -n 1)
+          previous_version=$(git tag --sort=-v:refname | head -n 1)
+
+          if [[ "${GITHUB_REF}" == *"/beta" ]]; then
+            notes_from="$previous_version"
+            is_prerelease="--prerelease"
+          else
+            notes_from="$previous_stable_version"
+            is_prerelease=""
+          fi
+
+          gh release create "v$current_version" \
+          --title "$current_version" \
+          --target ${{ github.sha }} \
+          --generate-notes \
+          ${notes_from:+--notes-from-tag "$notes_from"} \
+          $is_prerelease
+
