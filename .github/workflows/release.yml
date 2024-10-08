@@ -15,9 +15,13 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -31,9 +35,40 @@ jobs:
       - name: Run build
         run: yarn build
 
+      - name: Set release vars
+        run: |
+          git fetch --tags origin
+
+          head_branch="${{ github.event.workflow_run.head_branch }}"
+          current_version=$(node -p "require('./package.json').version")
+          previous_stable_version=$(git tag --sort=-v:refname | grep -v 'beta' | head -n 1)
+          previous_version=$(git tag --sort=-v:refname | head -n 1)
+
+          if [[ "$head_branch" == "beta" ]]; then
+            notes_from="${previous_version:-$previous_stable_version}"
+            is_prerelease="--prerelease"
+          else
+            notes_from="$previous_stable_version"
+            is_prerelease=""
+          fi
+
+          echo "head_branch=$head_branch"
+          echo "current_version=$current_version"
+          echo "previous_stable_version=$previous_stable_version"
+          echo "previous_version=$previous_version"
+          echo "notes_from=$notes_from"
+          echo "is_prerelease=$is_prerelease"
+
+          echo "head_branch=$head_branch" >> $GITHUB_ENV
+          echo "current_version=$current_version" >> $GITHUB_ENV
+          echo "previous_stable_version=$previous_stable_version" >> $GITHUB_ENV
+          echo "previous_version=$previous_version" >> $GITHUB_ENV
+          echo "notes_from=$notes_from" >> $GITHUB_ENV
+          echo "is_prerelease=$is_prerelease" >> $GITHUB_ENV
+
       - name: Publish to NPM
         run: |
-          if [[ "${GITHUB_REF}" == *"/beta" ]]; then
+          if [[ "$head_branch" == "beta" ]]; then
             echo "Publishing beta version..."
             yarn publish --tag beta
           else
@@ -45,22 +80,20 @@ jobs:
 
       - name: Create release on GitHub
         run: |
-          current_version=$(node -p "require('./package.json').version")
-          previous_stable_version=$(git tag --sort=-v:refname | grep -v 'beta' | head -n 1)
-          previous_version=$(git tag --sort=-v:refname | head -n 1)
+          command="gh release create \"v$current_version\""
+          command+=" --title \"$current_version\""
+          command+=" --target ${{ github.sha }}"
+          command+=" --generate-notes"
 
-          if [[ "${GITHUB_REF}" == *"/beta" ]]; then
-            notes_from="$previous_version"
-            is_prerelease="--prerelease"
-          else
-            notes_from="$previous_stable_version"
-            is_prerelease=""
+          if [[ -n "$notes_from" ]]; then
+            command+=" --notes-start-tag \"$notes_from\""
           fi
 
-          gh release create "v$current_version" \
-          --title "$current_version" \
-          --target ${{ github.sha }} \
-          --generate-notes \
-          ${notes_from:+--notes-from-tag "$notes_from"} \
-          $is_prerelease
+          if [[ -n "$is_prerelease" ]]; then
+            command+=" $is_prerelease"
+          fi
 
+          echo "Executing command: $command"
+          eval $command
+        env:
+          GH_TOKEN: ${{ github.token }}
