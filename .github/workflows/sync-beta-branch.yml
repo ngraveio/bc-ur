@@ -1,0 +1,34 @@
+name: Sync beta with main
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  sync-beta-with-main:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Create pull request to beta
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Check if a pull request already exists from main to beta
+          if gh pr list --head main --base beta | grep -q "main -> beta"; then
+            echo "PR already exists!"
+          else
+            gh pr create \
+              --base beta \
+              --head main \
+              --title "Sync beta with main" \
+              --body "Automatically created pull request to merge changes from main into development."
+          fi
