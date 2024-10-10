@@ -1,4 +1,4 @@
-name: Sync beta with main
+name: Sync development with main
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
       - closed
 
 jobs:
-  sync-beta-with-main:
+  sync-development-with-main:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-22.04
     permissions:
@@ -18,17 +18,17 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Create pull request to beta
+      - name: Create pull request to development
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Check if a pull request already exists from main to beta
-          if gh pr list --head main --base beta | grep -q "main -> beta"; then
+          # Check if a pull request already exists from main to development
+          if gh pr list --head main --base development | grep -q "main -> development"; then
             echo "PR already exists!"
           else
             gh pr create \
-              --base beta \
+              --base development \
               --head main \
-              --title "Sync beta with main" \
+              --title "Sync development with main" \
               --body "Automatically created pull request to merge changes from main into development."
           fi

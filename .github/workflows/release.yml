@@ -7,7 +7,7 @@ on:
       - completed
     branches:
       - main
-      - beta
+      - development
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -44,8 +44,8 @@ jobs:
           previous_stable_version=$(git tag --sort=-v:refname | grep -v 'beta' | head -n 1)
           previous_version=$(git tag --sort=-v:refname | head -n 1)
 
-          if [[ "$head_branch" == "beta" ]]; then
-            notes_from="${previous_version:-$previous_stable_version}"
+          if [[ "$head_branch" == "development" ]]; then
+            notes_from="$previous_version"
             is_prerelease="--prerelease"
           else
             notes_from="$previous_stable_version"
@@ -68,7 +68,7 @@ jobs:
 
       - name: Publish to NPM
         run: |
-          if [[ "$head_branch" == "beta" ]]; then
+          if [[ "$head_branch" == "development" ]]; then
             echo "Publishing beta version..."
             yarn publish --tag beta
           else
