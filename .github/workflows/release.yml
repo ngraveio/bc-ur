@@ -1,10 +1,7 @@
 name: Release
 
 on:
-  workflow_run:
-    workflows: ['Test']
-    types:
-      - completed
+  push:
     branches:
       - main
       - development
@@ -15,13 +12,15 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-22.04
+    # GH Token permissions as required by semantic-release
+    # https://github.com/semantic-release/github?tab=readme-ov-file#github-authentication
     permissions:
       contents: write
+      issues: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -35,65 +34,11 @@ jobs:
       - name: Run build
         run: yarn build
 
-      - name: Set release vars
-        run: |
-          git fetch --tags origin
+      - name: Run test
+        run: yarn test
 
-          head_branch="${{ github.event.workflow_run.head_branch }}"
-          current_version=$(node -p "require('./package.json').version")
-          previous_stable_version=$(git tag --sort=-v:refname | grep -v 'beta' | head -n 1)
-          previous_version=$(git tag --sort=-v:refname | head -n 1)
-
-          if [[ "$head_branch" == "development" ]]; then
-            notes_from="$previous_version"
-            is_prerelease="--prerelease"
-          else
-            notes_from="$previous_stable_version"
-            is_prerelease=""
-          fi
-
-          echo "head_branch=$head_branch"
-          echo "current_version=$current_version"
-          echo "previous_stable_version=$previous_stable_version"
-          echo "previous_version=$previous_version"
-          echo "notes_from=$notes_from"
-          echo "is_prerelease=$is_prerelease"
-
-          echo "head_branch=$head_branch" >> $GITHUB_ENV
-          echo "current_version=$current_version" >> $GITHUB_ENV
-          echo "previous_stable_version=$previous_stable_version" >> $GITHUB_ENV
-          echo "previous_version=$previous_version" >> $GITHUB_ENV
-          echo "notes_from=$notes_from" >> $GITHUB_ENV
-          echo "is_prerelease=$is_prerelease" >> $GITHUB_ENV
-
-      - name: Publish to NPM
-        run: |
-          if [[ "$head_branch" == "development" ]]; then
-            echo "Publishing beta version..."
-            yarn publish --tag beta
-          else
-            echo "Publishing stable version..."
-            yarn publish
-          fi
+      - name: Publish to NPM and create a GitHub release
+        run: npx semantic-release
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Create release on GitHub
-        run: |
-          command="gh release create \"v$current_version\""
-          command+=" --title \"$current_version\""
-          command+=" --target ${{ github.sha }}"
-          command+=" --generate-notes"
-
-          if [[ -n "$notes_from" ]]; then
-            command+=" --notes-start-tag \"$notes_from\""
-          fi
-
-          if [[ -n "$is_prerelease" ]]; then
-            command+=" $is_prerelease"
-          fi
-
-          echo "Executing command: $command"
-          eval $command
-        env:
           GH_TOKEN: ${{ github.token }}
