@@ -1,4 +1,4 @@
-name: Sync development with main
+name: Sync main with release
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  sync-development:
+  sync-main-branch:
     runs-on: ubuntu-22.04
     permissions:
       contents: read
@@ -15,21 +15,21 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Create PR from main to development
+      - name: Create PR from release to main
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Check if a pull request already exists from main to development
-          pr_url=$(gh pr list --head main --base development --json url --jq '.[0].url')
+          # Check if a pull request already exists from release to main
+          pr_url=$(gh pr list --head release --base main --json url --jq '.[0].url')
           
           if [ -n "$pr_url" ]; then
             echo "PR already exists: $pr_url"
           else
             pr_url=$(gh pr create \
-              --base development \
-              --head main \
-              --title "[skip ci][skip release] Sync development with main" \
-              --body "Auto-created pull request to merge changes from main into development."
+              --head release \
+              --base main \
+              --title "[skip ci][skip release] Sync main with the release branch" \
+              --body "Auto-created pull request to merge changes from release into main."
             )
             echo "Created PR: $pr_url"
           fi
