@@ -1,0 +1,38 @@
+name: Sync main with release
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  sync-main-branch:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Create PR from release to main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Check if a pull request already exists from release to main
+          pr_url=$(gh pr list --head release --base main --json url --jq '.[0].url')
+          
+          if [ -n "$pr_url" ]; then
+            echo "PR already exists: $pr_url"
+          else
+            pr_url=$(gh pr create \
+              --head release \
+              --base main \
+              --title "[skip ci][skip release] Sync main with the release branch" \
+              --body "Auto-created pull request to merge changes from release into main."
+            )
+            echo "Created PR: $pr_url"
+          fi
+
+          # Attempt to merge the pull request (Fails, investigate later)
+          # gh pr merge "$pr_url" --merge --auto
