@@ -3,7 +3,7 @@ name: Sync main with release
 on:
   push:
     branches:
-      - main
+      - release
 
 jobs:
   sync-main-branch:
