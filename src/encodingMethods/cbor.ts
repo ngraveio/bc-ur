@@ -1,6 +1,6 @@
 import * as cbor from "cbor";
 
-export default (data: any): Buffer => {
+export const cborEncode = (data: any): Buffer => {
   return cbor.encode(data);
 };
 
@@ -9,3 +9,5 @@ export const cborDecode = (data: string | Buffer): any => {
     Buffer.isBuffer(data) ? data : Buffer.from(data as string, "hex")
   );
 };
+
+export default cbor;

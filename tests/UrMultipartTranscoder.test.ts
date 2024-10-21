@@ -32,11 +32,11 @@ describe("MultipartUrTranscoder", () => {
       const result = decoder.validateMultipartPayload(decodedFragment.payload);
       expect(result).toBeDefined();
     });
-    // test("Should throw an error when a multipart payload is not validated correctly", () => {
-    //   const nonValidPayload = Buffer.from("foobar");
-    //   expect(() =>
-    //     decoder.validateMultipartPayload(nonValidPayload as any)
-    //   ).toThrow(AssertionError);
-    // });
+    test("Should throw an error when a multipart payload is not validated correctly", () => {
+      const nonValidPayload = Buffer.from("foobar");
+      expect(() =>
+        decoder.validateMultipartPayload(nonValidPayload as any)
+      ).toThrow(AssertionError);
+    });
   });
 });

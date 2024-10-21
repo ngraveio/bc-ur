@@ -1,6 +1,6 @@
 import { EncodingMethodName } from "../enums/EncodingMethodName";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
-import cborEncode, { cborDecode } from "./cbor";
+import { cborDecode, cborEncode } from "./cbor";
 
 export class CborEncoding implements IEncodingMethod<any, Buffer> {
   private _name: EncodingMethodName = EncodingMethodName.cbor;
