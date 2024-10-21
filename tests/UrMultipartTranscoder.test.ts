@@ -16,7 +16,7 @@ describe("MultipartUrTranscoder", () => {
     expect(fragments.length).toEqual(expectedFragmentLength);
   });
   test("should encode/decode multipart ur's", () => {
-    const item = new RegistryItem("custom",0,  makeMessage(100));
+    const item = new RegistryItem("custom", 0, makeMessage(100));
     const fragmentLength = 5;
     const fragments = encoder.encodeUr(item, fragmentLength, fragmentLength);
 
@@ -24,7 +24,7 @@ describe("MultipartUrTranscoder", () => {
     expect(decoded.data).toEqual(item.data);
   });
   describe("validateMultipartPayload", () => {
-    const item = new RegistryItem("custom",0,  makeMessage(100));
+    const item = new RegistryItem("custom", 0, makeMessage(100));
     const multipartFragments = encoder.encodeUr(item, 50, 10);
 
     test("Should validate a correctly generated fragment", () => {
@@ -34,9 +34,9 @@ describe("MultipartUrTranscoder", () => {
     });
     test("Should throw an error when a multipart payload is not validated correctly", () => {
       const nonValidPayload = Buffer.from("foobar");
-      expect(() => decoder.validateMultipartPayload(nonValidPayload)).toThrow(
-        AssertionError
-      );
+      expect(() =>
+        decoder.validateMultipartPayload(nonValidPayload as any)
+      ).toThrow(AssertionError);
     });
   });
 });
