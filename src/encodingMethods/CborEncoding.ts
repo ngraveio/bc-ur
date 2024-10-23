@@ -1,7 +1,7 @@
 import { RegistryItem } from "../classes/RegistryItem";
 import { EncodingMethodName } from "../enums/EncodingMethodName";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
-import cborEncode, { cborDecode } from "./cbor";
+import { cborDecode, cborEncode } from "./cbor";
 
 export class CborEncoding<T extends RegistryItem>
   implements IEncodingMethod<T, Buffer>

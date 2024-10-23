@@ -2,7 +2,7 @@ import * as cbor from "cbor";
 import { DecoderOptions } from "cbor/types/lib/decoder";
 import { getRegistryTags } from "../registry";
 
-export default (data: any): Buffer => {
+export const cborEncode = (data: any): Buffer => {
   return cbor.encode(data);
 };
 
@@ -18,3 +18,5 @@ export const cborDecode = (
     { ...options, tags }
   );
 };
+
+export default cbor;
