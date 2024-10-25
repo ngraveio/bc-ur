@@ -15,6 +15,6 @@ export class UrEncoder extends Encoder<RegistryItem, string> {
    */
   encodeUr(item: RegistryItem): string {
     const encoded = super.encode(item);
-    return getUrString(item.type, encoded);
+    return getUrString(item.registryType.type, encoded);
   }
 }

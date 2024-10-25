@@ -50,7 +50,7 @@ export class UrMultipartEncoder extends Encoder<Buffer, string> {
         fragment,
       ]);
       return getMultipartUrString(
-        registryItem.type,
+        registryItem.registryType.type,
         seqNum,
         fragments.length,
         encodedFragment

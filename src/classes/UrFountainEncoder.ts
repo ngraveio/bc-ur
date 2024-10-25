@@ -27,7 +27,7 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
     firstSeqNum: number = 0
   ) {
     super(encodingMethods);
-    this._type = registryItem.type;
+    this._type = registryItem.registryType.type;
     this._seqNum = toUint32(firstSeqNum);
 
     // We need to encode the message as a Buffer, because we mix them later on
@@ -89,7 +89,7 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
         mixed,
       ]);
       return getMultipartUrString(
-        registryItem.type,
+        registryItem.registryType.type,
         seqNum,
         fragments.length,
         encodedFragment

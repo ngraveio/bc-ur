@@ -28,7 +28,7 @@ export class MultipartUr<T extends RegistryItem = RegistryItem>
   constructor(registryItem: T, seqNum: number, seqLength: number) {
     this.seqNum = seqNum;
     this.seqLength = seqLength;
-    this.type = registryItem.type;
+    this.type = registryItem.registryType.type;
     this.payload = registryItem.data;
   }
 
