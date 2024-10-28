@@ -42,8 +42,8 @@ console.log(encode2.toString("hex"));
 const decode2 = cborDecode2(encode2);
 console.log(decode2);
 
-
-const coininfo = new CoinInfo({type: 5});
+//@ts-ignore
+const coininfo = new CoinInfo({type: 5, extraData: "my extra data"});
 const encoded3 = cborEncode(coininfo);
 console.log(encoded3.toString("hex"));
 // decode

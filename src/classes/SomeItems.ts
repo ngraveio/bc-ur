@@ -1,5 +1,5 @@
 import { Tagged } from "cbor";
-import { dataToMapHelper, IRegistryItem, registryType } from "./RegistryItem";
+import { dataToMapHelper, IRegistryItem, mapToDataHelper, registryType } from "./RegistryItem";
 
 interface ICborTest {
   'bool'?: boolean;
@@ -103,14 +103,15 @@ interface ICoinInfo {
   anahtar?: string;
 }
 
-enum Keys {
-  type = 1,
-  network = 2,
-}
 
 export class CoinInfo extends registryType({
   tag: 40305,
   type: "coin-info",
+  keyMap: {
+    type: 1,
+    network: 2,
+    anahtar: "anahtar"
+  },
   CDDL:`
     coininfo = #6.40305({
         ? type: uint .default 1, ; values from [SLIP44](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) with high bit turned off
@@ -122,38 +123,16 @@ export class CoinInfo extends registryType({
     network = 2
 `
 }) {
-
   constructor(data: ICoinInfo) {
-    // const defaultData: ICoinInfo = {
-    //   type: 1,
-    //   network: 1,
-    //   anahtar: "deneme"
-    // };
-
-    // const merged = { ...defaultData, ...data };
-
     super(data);
   }
 
   /** 
    * Here we convert our data to a map to keep order and convert keys
    */
-  toCBORData_() {
-    const map = new Map();
-
-    if(this.data.type) map.set(Keys.type, this.data.type);
-    if(this.data.network) map.set(Keys.network, this.data.network);
-    if(this.data.anahtar) map.set("anahtar", this.data.anahtar);
-
-    return map;
-  }
 
   toCBORData() {
-    return dataToMapHelper(this.data, {
-      type: Keys.type,
-      network: Keys.network,
-      anahtar: "anahtar"
-    })
+    return super.toCBORData();
   }
 
 
@@ -163,11 +142,7 @@ export class CoinInfo extends registryType({
    * @returns 
    */
   static fromCBORData = (map: Map<any, any>): CoinInfo => {
-    const input: ICoinInfo = {
-      type: map.get(Keys.type),
-      network: map.get(Keys.network),
-      anahtar: map.get("anahtar")
-    };
+    const input: ICoinInfo = mapToDataHelper(map, CoinInfo.keyMap)
 
     return new CoinInfo(input);
   } 
