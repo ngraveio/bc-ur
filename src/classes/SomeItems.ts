@@ -1,5 +1,5 @@
-import { Tagged } from "cbor";
-import { dataToMapHelper, IRegistryItem, mapToDataHelper, registryType } from "./RegistryItem";
+import { decodeKeys } from "./key.helper";
+import { registryItemFactory } from "./RegistryItem";
 
 interface ICborTest {
   'bool'?: boolean;
@@ -17,9 +17,9 @@ interface ICborTest {
   'rest'?: any;
 }
 
-export class CborTest extends registryType({
+export class CborTest extends registryItemFactory({
   tag: 666,
-  type: "CborTest",
+  URType: "CborTest",
   CDDL: ``,
 }) {
   constructor(data: ICborTest) {
@@ -42,9 +42,9 @@ interface IUser {
 }
 
 
-export class User extends registryType({
+export class User extends registryItemFactory({
   tag: 1405,
-  type: "user",
+  URType: "user",
   CDDL: `
     user = #6.1405({
         id: uint,
@@ -58,15 +58,16 @@ export class User extends registryType({
   private user: IUser;
 
   constructor(user: IUser) {
+    // Validators
     super(user);
     this.user = user;
   }
 
-  static fromCBORData(val: any): User {
-    // Check some values if needed
-    console.log("User fromCBOR called", val);
-    return new User(val);
-  }
+  // static fromCBORData(val: any): User {
+  //   // Check some values if needed
+  //   console.log("User fromCBOR called", val);
+  //   return new User(val);
+  // }
 }
 
 interface IUserCollection {
@@ -76,7 +77,7 @@ interface IUserCollection {
 
 const UserCollectionType = {
   tag: 1406,
-  type: "user-collection",
+  URType: "user-collection",
   CDDL: `
     user-collection = #6.1406({
       name: text,
@@ -85,7 +86,7 @@ const UserCollectionType = {
   `,
 }
 
-export class UserCollection extends registryType(UserCollectionType) {
+export class UserCollection extends registryItemFactory(UserCollectionType) {
   constructor(private userCollection: IUserCollection) {
     super(userCollection);
   }
@@ -104,13 +105,12 @@ interface ICoinInfo {
 }
 
 
-export class CoinInfo extends registryType({
+export class CoinInfo extends registryItemFactory({
   tag: 40305,
-  type: "coin-info",
+  URType: "coin-info",
   keyMap: {
     type: 1,
     network: 2,
-    anahtar: "anahtar"
   },
   CDDL:`
     coininfo = #6.40305({
@@ -127,13 +127,10 @@ export class CoinInfo extends registryType({
     super(data);
   }
 
-  /** 
-   * Here we convert our data to a map to keep order and convert keys
-   */
-
-  toCBORData() {
-    return super.toCBORData();
-  }
+  // static postCBOR(data: any) {
+  //   console.log("Child CoinInfo postCBOR called", data);
+    
+  // }
 
 
   /**
@@ -141,17 +138,16 @@ export class CoinInfo extends registryType({
    * @param map 
    * @returns 
    */
-  static fromCBORData = (map: Map<any, any>): CoinInfo => {
-    const input: ICoinInfo = mapToDataHelper(map, CoinInfo.keyMap)
+  // static fromCBORData = (map: Map<any, any>): CoinInfo => {
+  //   const input: ICoinInfo = decodeKeys(map, CoinInfo.keyMap)
 
-    return new CoinInfo(input);
-  } 
-
+  //   return new CoinInfo(input);
+  // } 
 }
 
-export class myText extends registryType({
+export class myText extends registryItemFactory({
   tag: 777,
-  type: "myText",
+  URType: "myText",
   CDDL:`
     myText = text
 `

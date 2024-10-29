@@ -164,7 +164,7 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
     const decoded = this.decode<Buffer>(bytewords); // {"_checksum": 556878893, "_fragment": [Object] (type of Buffer), "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
 
     return MultipartUr.toMultipartUr(
-      { data: decoded, registryType: { type } } as RegistryItem,
+      { data: decoded, type: { URType: type } } as RegistryItem,
       seqNum,
       seqLength
     );

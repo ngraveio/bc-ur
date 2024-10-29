@@ -20,6 +20,7 @@ export function createUrTranscoder(): {
   decoder: UrDecoder;
 } {
   const methods = [
+    // TODO: check if we can add key-map converter here
     new CborEncoding(),
     new HexEncoding(),
     new BytewordEncoding(),

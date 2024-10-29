@@ -1,82 +1,101 @@
 import { Tagged } from "cbor";
 import { TagFunction } from "cbor/types/lib/tagged";
+import { encodeKeys, decodeKeys, IKeyMap } from "./key.helper";
 
+/**
+ * Static interface that RegistryItem classes should implement
+ */
 export interface IRegistryType {
   tag: number;
-  type: string;
-  CDDL?: string;
-  keyMap?: IKeyMap;
-}
-
-// Interface for the static method requirement
-export interface IRegistryItem<T> {
-  tag: number;
-  type: string;
+  URType: string;
   CDDL: string;
-  new (data: any): T;
-  fromCBORData(data: any): T;
   keyMap?: IKeyMap;
 }
 
-export type IKeyMap = Record<string, string|number>;
-
-// I want to be able to access the tag and UR type from the class
-// I want to be able to access UR properties from the instance
-// Note that data doesnt have to be a map or object, it can be just a string or number
 export abstract class RegistryItemBase { //extends Tagged {
-  readonly registryType: IRegistryType;
-  // If CDDL contains keys as numbers, map them to their respective values
+  readonly type: IRegistryType;
+  /** If CDDL contains keys as numbers, map them to their respective values */
   keyMap: IKeyMap;
-
+  /** Data that our item contains */
   // TODO: should we force this to be a map? It is much safer that way for injection attacks
-  rawData: any;
-
+  data: any; 
+  
   constructor(registryType: IRegistryType, data: any, keyMap?: IKeyMap) {
-    this.registryType = registryType;
-    this.rawData = data;
+    // super(registryType.tag, data);
+    this.type = registryType;
+    this.data = data;
     this.keyMap = keyMap;
   }
 
-  get data() {
-    return this.rawData;
-  };
-
   get Tagged() {
-    const converted = this.toCBORData();
-    return new Tagged(this.registryType.tag, converted);
+    const converted = this.preCBOR();
+    return new Tagged(this.type.tag, converted);
   }
 
   toString(): string {
-    return `${this.registryType.type}[${this.registryType.tag}](${JSON.stringify(this.data)})`;
+    return `${this.type.URType}[${this.type.tag}](${JSON.stringify(this.data)})`;
   }
 
   toJSON() {
     return {
-      type: this.registryType.type,
+      type: this.type.URType,
       ...this.Tagged.toJSON()
     };
   }
 
-  toCBORData() {
-    // If key map exists, convert the data to a map
+  /**
+   * Preprocess the data before encoding into CBOR Tagged instance
+   */
+  preCBOR() {
+    // If key-map exists, convert keys to integers
     if(this.keyMap) {
-      return dataToMapHelper(this.rawData, this.keyMap);
+      return encodeKeys(this.data, this.keyMap);
     }
-    return this.rawData;
-  }  
+    return this.data;
+  }
 
+  /**
+   * Post process the data after decoding CBOR
+   */
+  static postCBOR(val: any) {
+    throw new Error("PostCBOR needs to be implemented on the class as static method");
+  }
+
+
+  /**
+   * Called by the CBOR encoder for encoding the data
+   * 
+   * [CBOR Docs](https://github.com/hildjj/node-cbor/tree/main/packages/cbor#encodecbor-method)
+   * 
+   * This is the easiest approach, if you can modify the class being encoded.   
+   * Add an encodeCBOR method to your class, which takes a single parameter of the encoder currently being used.  
+   * Your method should return true on success, else false.  
+   * Your method may call encoder.push(buffer) or encoder.pushAny(any) as needed.  
+   * 
+   * @param encoder 
+   * @returns 
+   */
   encodeCBOR(encoder) {
     return encoder.pushAny(this.Tagged);
   };
 }
 
-export function registryType(input: IRegistryType) {
-  const { tag, type, CDDL, keyMap } = input;
+/**
+ * Factory function to create a new RegistryItem class
+ * 
+ * It injects static properties to the class and does preprocessing when needed
+ * 
+ * @param input 
+ * @returns 
+ */
+export function registryItemFactory(input: IRegistryType) {
+  const { tag, URType, CDDL, keyMap } = input;
   const _keyMap = keyMap;
-  abstract class RegistryItem extends RegistryItemBase {
+
+  return class extends RegistryItemBase {
     // Add static properties to the class
     static tag: number = tag;
-    static type: string = type;
+    static URType: string = URType;
     static CDDL: string = CDDL;
     static keyMap: IKeyMap = _keyMap;
 
@@ -84,58 +103,40 @@ export function registryType(input: IRegistryType) {
     constructor(data: any, keyMap: IKeyMap = _keyMap) {
       super(input, data, keyMap);
     }
+
+    /**
+     * Post process the data after decoding CBOR
+     */
+    static postCBOR(val: any) {
+      // If key-map exists, convert integer keys back to string keys
+      if(keyMap) {
+        return decodeKeys(val, keyMap);
+      }
+
+      // TODO: we can add type checking here
+      return val;
+    }
+
+
+    /**
+     * Static method to create an instance from CBOR data.
+     * It processes the raw CBOR data if needed and returns a new instance of the class.
+     */
+    static fromCBORData = (val: any, tagged: any) => {
+      console.log(`${URType} fromCBORData called`, val);
+      console.log("Tagged", tagged);
+      console.log("this", this)
+
+      // Do some post processing data coming from the cbor decoder
+      // @ts-ignore
+      const data = this.postCBOR(val);
+      
+      // Return an instance of the generated class
+      return new this(data); 
+    }
   }
 
-  return RegistryItem;
 }
 
-export type RegistryItemClass = ReturnType<typeof registryType> & {fromCBORData: TagFunction};
-export type RegistryItem = InstanceType<ReturnType<typeof registryType> & {fromCBORData: TagFunction}>;
-
-
-/** Helper function for encoding data to cbor */
-/** TODO: ask Pieter if we can put this into encoder process list */
-
-export function dataToMapHelper(data: object, keyMap: IKeyMap): Map<string|number, any> {
-  const map = new Map();
-  // If we have a mapping, use it to map the data
-  // Check if our data is an object
-  if(typeof data !== "object") return undefined;
-
-  // Create a set from the keys of the data
-  const keys = new Set(Object.keys(data));
-
-  // Add the keys in the correct order to the map
-  for (const key in keyMap) {
-    if(data[key]) map.set(keyMap[key], data[key]);
-    keys.delete(key);
-  }
-  
-  // Add other keys as string if they are not existent in the map
-  keys.forEach(key => {
-    map.set(key, data[key]);
-  });
-
-  return map;
-}
-
-export function mapToDataHelper(data: Map<string|number, any>, keyMap: IKeyMap): object {
-  const result = {};
-  // If we have a mapping, use it to map the data
-
-  // Get all the keys in the data
-  const keys = new Set(data.keys());
-
-  // Add the keys in the correct order
-  for (const key in keyMap) {
-    if (data.has(keyMap[key])) result[key] = data.get(keyMap[key]);
-    keys.delete(keyMap[key]);
-  }
-
-  // Add other keys as string if they are not existent in the map
-  keys.forEach(key => {
-    result[key] = data.get(key);
-  });
-
-  return result;
-}
+export type RegistryItemClass = ReturnType<typeof registryItemFactory> & {fromCBORData: TagFunction};
+export type RegistryItem = InstanceType<ReturnType<typeof registryItemFactory> & {fromCBORData: TagFunction}>;

@@ -1,6 +1,6 @@
 import { TagFunction } from "cbor/types/lib/tagged";
 import { CborTest, CoinInfo, myText, User, UserCollection } from "./classes/SomeItems";
-import { registryType, RegistryItem, RegistryItemClass } from "./classes/RegistryItem";
+import { RegistryItemClass } from "./classes/RegistryItem";
 
 export const registry: { [type: string]: RegistryItemClass } = {
   "user": User,
@@ -19,4 +19,8 @@ export function allDecoders() {
   });
 
   return myRegistry;
+}
+
+export function allEncoders() {
+  
 }
