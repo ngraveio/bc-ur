@@ -63,11 +63,12 @@ export class User extends registryItemFactory({
     this.user = user;
   }
 
-  // static fromCBORData(val: any): User {
-  //   // Check some values if needed
-  //   console.log("User fromCBOR called", val);
-  //   return new User(val);
-  // }
+  static fromCBORData(val: any): User {
+    // Check some values if needed
+    console.log("User fromCBOR called", val);
+    // throw new Error("Something happened");
+    return new User(val);
+  }
 }
 
 interface IUserCollection {
@@ -91,10 +92,32 @@ export class UserCollection extends registryItemFactory(UserCollectionType) {
     super(userCollection);
   }
 
-  static fromCBORData = (val: any): UserCollection => {
-    console.log("UserCollection fromCBOR called", val);
-    // Check some values
-    return new UserCollection(val);
+  verifyInput(input: any) {
+    let reasons: Error[] = [];
+
+    if (!input.name) {
+      reasons.push(new Error("Name is required"));
+    }
+
+    if (typeof input.name !== "string") {
+      reasons.push(new Error("Name should be a string"));
+    }
+
+    if(input.users) {
+      // Check its array
+      if (!Array.isArray(input.users)) {
+        reasons.push(new Error("Users should be an array"));
+      } else {
+        input.users.forEach((user: any) => {
+          if (!(user instanceof User)) {
+            reasons.push(new Error("Users should be an array of User"));
+          }
+        });
+      }
+    }
+
+    const valid = reasons.length === 0;
+    return { valid, reasons };
   }
 }
 

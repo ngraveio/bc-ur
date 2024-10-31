@@ -15,7 +15,7 @@ export function allDecoders() {
   const myRegistry: { [tag: number]: TagFunction} = {};
   // Return a map of tag and decoder
   Object.values(registry).forEach((item) => {
-    myRegistry[item.tag] = item.fromCBORData
+    myRegistry[item.tag] = item.fromCBORData.bind(item);
   });
 
   return myRegistry;

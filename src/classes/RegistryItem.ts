@@ -1,5 +1,4 @@
 import { Tagged } from "cbor";
-import { TagFunction } from "cbor/types/lib/tagged";
 import { encodeKeys, decodeKeys, IKeyMap } from "./key.helper";
 
 /**
@@ -23,8 +22,27 @@ export abstract class RegistryItemBase { //extends Tagged {
   constructor(registryType: IRegistryType, data: any, keyMap?: IKeyMap) {
     // super(registryType.tag, data);
     this.type = registryType;
-    this.data = data;
     this.keyMap = keyMap;
+
+    // Verify input
+    const { valid, reasons } = this.verifyInput(data);
+    if(!valid) {
+      throw new Error(`Invalid input: ${reasons?.map(r => r.message).join(", ")}`);
+    }
+    this.data = data;
+  }
+
+  /**
+   * Verify the input data 
+   * 
+   * @param input 
+   */
+  verifyInput(input: any): { valid: boolean, reasons?: Error[] } {
+    // This should be implemented by the child class
+    return {
+      valid: true,
+      reasons: undefined,
+    }
   }
 
   get Tagged() {
@@ -112,8 +130,6 @@ export function registryItemFactory(input: IRegistryType) {
       if(keyMap) {
         return decodeKeys(val, keyMap);
       }
-
-      // TODO: we can add type checking here
       return val;
     }
 
@@ -122,13 +138,8 @@ export function registryItemFactory(input: IRegistryType) {
      * Static method to create an instance from CBOR data.
      * It processes the raw CBOR data if needed and returns a new instance of the class.
      */
-    static fromCBORData = (val: any, tagged: any) => {
-      console.log(`${URType} fromCBORData called`, val);
-      console.log("Tagged", tagged);
-      console.log("this", this)
-
+    static fromCBORData(val: any, tagged?: any) {
       // Do some post processing data coming from the cbor decoder
-      // @ts-ignore
       const data = this.postCBOR(val);
       
       // Return an instance of the generated class
@@ -138,5 +149,5 @@ export function registryItemFactory(input: IRegistryType) {
 
 }
 
-export type RegistryItemClass = ReturnType<typeof registryItemFactory> & {fromCBORData: TagFunction};
-export type RegistryItem = InstanceType<ReturnType<typeof registryItemFactory> & {fromCBORData: TagFunction}>;
+export type RegistryItemClass = ReturnType<typeof registryItemFactory>;
+export type RegistryItem = InstanceType<RegistryItemClass>;
