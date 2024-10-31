@@ -11,7 +11,7 @@ export interface IRegistryType {
   keyMap?: IKeyMap;
 }
 
-export abstract class RegistryItemBase { //extends Tagged {
+export abstract class RegistryItemBase {
   readonly type: IRegistryType;
   /** If CDDL contains keys as numbers, map them to their respective values */
   keyMap: IKeyMap;
@@ -20,7 +20,6 @@ export abstract class RegistryItemBase { //extends Tagged {
   data: any; 
   
   constructor(registryType: IRegistryType, data: any, keyMap?: IKeyMap) {
-    // super(registryType.tag, data);
     this.type = registryType;
     this.keyMap = keyMap;
 
@@ -70,13 +69,6 @@ export abstract class RegistryItemBase { //extends Tagged {
       return encodeKeys(this.data, this.keyMap);
     }
     return this.data;
-  }
-
-  /**
-   * Post process the data after decoding CBOR
-   */
-  static postCBOR(val: any) {
-    throw new Error("PostCBOR needs to be implemented on the class as static method");
   }
 
 
