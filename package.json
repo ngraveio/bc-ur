@@ -19,7 +19,7 @@
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
     "build": "yarn clean && yarn compile",
     "compile": "tsc -p tsconfig.json -outDir ./dist",
-    "test": "jest",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "prepublish": "yarn build",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" --max-warnings=0"
   },

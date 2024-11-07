@@ -7,6 +7,9 @@ export default {
     'ts-jest': {
       useESM: true,
     },
+  },
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },  
   testPathIgnorePatterns: [
     '/node_modules/'
