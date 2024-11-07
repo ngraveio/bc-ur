@@ -1,10 +1,10 @@
-import { chooseFragments, mixFragments } from "../fountainUtils";
-import { IEncodingMethod } from "../interfaces/IEncodingMethod";
-import { toUint32, getCRC } from "../utils";
-import { getMultipartUrString } from "./MultipartUr";
-import { UrMultipartEncoder } from "./UrMultipartEncoder";
-import { RegistryItem } from "./RegistryItem";
-import { CborEncoding } from "../encodingMethods/CborEncoding";
+import { chooseFragments, mixFragments } from "../fountainUtils.js";
+import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
+import { toUint32, getCRC } from "../utils.js";
+import { getMultipartUrString } from "./MultipartUr.js";
+import { UrMultipartEncoder } from "./UrMultipartEncoder.js";
+import { RegistryItem } from "./RegistryItem.js";
+import { CborEncoding } from "../encodingMethods/CborEncoding.js";
 
 /**
  * Encode data on the fly. This encoder uses an internal state to keep generating ur fragments of the payload.

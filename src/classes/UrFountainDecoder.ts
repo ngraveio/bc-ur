@@ -1,17 +1,17 @@
-import { InvalidChecksumError, InvalidSchemeError } from "../errors";
-import { chooseFragments } from "../fountainUtils";
+import { InvalidChecksumError, InvalidSchemeError } from "../errors.js";
+import { chooseFragments } from "../fountainUtils.js";
 import {
   arrayContains,
   arraysEqual,
   bufferXOR,
   getCRC,
   setDifference,
-} from "../utils";
-import { MultipartUr } from "./MultipartUr";
-import { MultipartPayload, UrMultipartDecoder } from "./UrMultipartDecoder";
-import { Ur } from "./Ur";
-import { RegistryItem } from "./RegistryItem";
-import { CborEncoding } from "../encodingMethods/CborEncoding";
+} from "../utils.js";
+import { MultipartUr } from "./MultipartUr.js";
+import { MultipartPayload, UrMultipartDecoder } from "./UrMultipartDecoder.js";
+import { Ur } from "./Ur.js";
+import { RegistryItem } from "./RegistryItem.js";
+import { CborEncoding } from "../encodingMethods/CborEncoding.js";
 
 class FountainDecoderPart {
   constructor(private _indexes: number[], private _fragment: Buffer) {}

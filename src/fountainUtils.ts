@@ -1,5 +1,5 @@
-import { bufferXOR, intToBytes } from "./utils";
-import Xoshiro from "./xoshiro";
+import { bufferXOR, intToBytes } from "./utils.js";
+import Xoshiro from "./xoshiro.js";
 const randomSampler = require("@apocentre/alias-sampling");
 
 export const chooseDegree = (seqLenth: number, rng: Xoshiro): number => {

@@ -1,13 +1,13 @@
-import { Decoder } from "./Decoder";
-import { MultipartUr } from "./MultipartUr";
-import { Ur } from "./Ur";
-import { IEncodingMethod } from "../interfaces/IEncodingMethod";
+import { Decoder } from "./Decoder.js";
+import { MultipartUr } from "./MultipartUr.js";
+import { Ur } from "./Ur.js";
+import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
 import assert from "assert";
-import { getCRC } from "../utils";
-import { InvalidChecksumError } from "../errors";
-import { EncodingMethodName } from "../enums/EncodingMethodName";
-import { RegistryItem } from "./RegistryItem";
-import { CborEncoding } from "../encodingMethods/CborEncoding";
+import { getCRC } from "../utils.js";
+import { InvalidChecksumError } from "../errors.js";
+import { EncodingMethodName } from "../enums/EncodingMethodName.js";
+import { RegistryItem } from "./RegistryItem.js";
+import { CborEncoding } from "../encodingMethods/CborEncoding.js";
 
 export type MultipartPayload = {
   seqNum: number;

@@ -1,7 +1,7 @@
-import { Encoder } from "./Encoder";
-import { Ur, getUrString } from "./Ur";
-import { IEncodingMethod } from "../interfaces/IEncodingMethod";
-import { RegistryItem } from "./RegistryItem";
+import { Encoder } from "./Encoder.js";
+import { Ur, getUrString } from "./Ur.js";
+import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
+import { RegistryItem } from "./RegistryItem.js";
 
 export class UrEncoder extends Encoder<RegistryItem, string> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {

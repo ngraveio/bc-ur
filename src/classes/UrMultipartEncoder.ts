@@ -1,10 +1,10 @@
 import assert from "assert";
-import { getCRC, split, toUint32 } from "../utils";
-import { Encoder } from "./Encoder";
-import { getMultipartUrString } from "./MultipartUr";
-import { IEncodingMethod } from "../interfaces/IEncodingMethod";
-import { RegistryItem } from "./RegistryItem";
-import { CborEncoding } from "../encodingMethods/CborEncoding";
+import { getCRC, split, toUint32 } from "../utils.js";
+import { Encoder } from "./Encoder.js";
+import { getMultipartUrString } from "./MultipartUr.js";
+import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
+import { RegistryItem } from "./RegistryItem.js";
+import { CborEncoding } from "../encodingMethods/CborEncoding.js";
 
 /**
  * [seqNum, fragments.length, totalPayloadLength, checksum, fragment]

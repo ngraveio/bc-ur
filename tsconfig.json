@@ -1,10 +1,13 @@
 {
   "compilerOptions": {
+    "resolveJsonModule": true,    
     "declaration": true,
     "sourceMap": true,
+    "experimentalDecorators": true,    
+    "emitDecoratorMetadata": true,    
     "composite": true,
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "Node",    
     "rootDir": "./src",
     "outDir": "./dist",
     "target": "es2019",
@@ -13,6 +16,12 @@
     ],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "typeRoots": ["./node_modules/@types", "./node_modules/cbor2/lib"],
+    "baseUrl": "./",
+    "paths": {
+      "cbor2": ["./node_modules/cbor2/lib/index.d.ts"],
+      "cbor2/*": ["./node_modules/cbor2/lib/*"]
+    }    
   },
   "paths": {
     "*": [

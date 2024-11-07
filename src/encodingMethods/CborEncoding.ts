@@ -1,7 +1,7 @@
-import { RegistryItem } from "../classes/RegistryItem";
-import { EncodingMethodName } from "../enums/EncodingMethodName";
-import { IEncodingMethod } from "../interfaces/IEncodingMethod";
-import { cborDecode, cborEncode } from "./cbor";
+import { RegistryItem } from "../classes/RegistryItem.js";
+import { EncodingMethodName } from "../enums/EncodingMethodName.js";
+import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
+import { cborDecode, cborEncode } from "./cbor.js";
 
 export class CborEncoding<T extends RegistryItem>
   implements IEncodingMethod<T, Buffer>

@@ -1,66 +1,59 @@
-import * as cbor from "cbor";
-import { DecoderOptions } from "cbor/types/lib/decoder";
-import { allDecoders } from "../registry";
-import { User } from "../classes/SomeItems";
-import { RegistryItemClass } from "../classes/RegistryItem";
 
-// TODO: Check https://github.com/hildjj/node-cbor/tree/main/packages/cbor#addsemantictype
+import { decode, DecodeOptions, diagnose, encode } from 'cbor2';
+import { Tag } from 'cbor2/tag';
+import { registerEncoder } from 'cbor2/encoder.js';
+
+// let cbor2: any;
+// let Tag: any;
+// let registerEncoder: any;
+// let DecodeOptions: any;
+
+// Dynamically load `cbor2` modules
+// (async () => {
+//   cbor2 = await import("cbor2");
+//   Tag = await import("cbor2/tag");
+//   registerEncoder = await import("cbor2/encoder");
+//   DecodeOptions = cbor2.DecodeOptions;
+//   addDecoders();
+// })();
+
+import { registry } from "../registry.js";
+import { RegistryItemClass } from "../classes/RegistryItem.js";
+
+function addDecoders() {
+  for (const key in registry) {
+    const item = registry[key];
+    Tag.registerDecoder(item.tag, item.fromCBORData.bind(item));
+  }
+}
+
+addDecoders();
 
 export const cborEncode = (data: any): Buffer => {
-  return cbor.encode(data);
+  const encoded = encode(data);
+  return Buffer.from(encoded);
 };
 
 export const cborDecode = (
   data: string | Buffer,
-  options: DecoderOptions
+  options: DecodeOptions,
 ): any => {
-  // get all items from the registry and add them to the decoder
-  const tags = allDecoders();
-
-  return cbor.decode(
+  return decode(
     Buffer.isBuffer(data) ? data : Buffer.from(data as string, "hex"),
-    { ...options, tags }
+    { ...options }
   );
 };
 
 export const cborDecode2 = (
   data: string | Buffer,
-  options?: DecoderOptions,
+  options?: DecodeOptions,
   contiueOnErrors?: boolean,
   enforceType?: RegistryItemClass,
 ): any => {
-  // get all items from the registry and add them to the decoder
-  const decoders = allDecoders();
-
-  const decoded = cbor.decode(
+  const decoded = decode(
     Buffer.isBuffer(data) ? data : Buffer.from(data as string, "hex"),
-    { ...options, tags: {...decoders} }
+    { ...options }
   );
 
-  // Check if enforce type is given, if so then give the value to the enforced type
-  if(enforceType) {
-    // If we already have a tagged instance, then we need to check if the tag matches the enforced type
-    if(decoded instanceof cbor.Tagged) {
-      if(decoded.tag !== enforceType.tag) {
-        throw new Error(`Enforced type does not match the tag of ${enforceType.URType}:${enforceType.tag} !== ${decoded.tag}`);
-      }
-      // Try to create the instance of the enforced type
-      return enforceType.fromCBORData(decoded.value);
-    }
-    // If we dont have a tagged instance, then we need to create the instance of the enforced type
-    return enforceType.fromCBORData(decoded);
-  }
-
-  // Check if there are any errors, if so, return the error
-  if (decoded instanceof cbor.Tagged) {
-    // Check if tag contains an error
-    if (decoded.err) {
-      if(contiueOnErrors) {
-        return decoded;
-      }
-      throw decoded.err;
-    }
-  }
-
   return decoded;
-}
+};

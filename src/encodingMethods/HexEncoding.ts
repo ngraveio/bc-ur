@@ -1,5 +1,5 @@
-import { EncodingMethodName } from "../enums/EncodingMethodName";
-import { IEncodingMethod } from "../interfaces/IEncodingMethod";
+import { EncodingMethodName } from "../enums/EncodingMethodName.js";
+import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
 
 export class HexEncoding implements IEncodingMethod<Buffer, string> {
 

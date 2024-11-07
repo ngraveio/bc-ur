@@ -1,13 +1,13 @@
 import assert from "assert";
-import { Ur } from "./Ur";
+import { Ur } from "./Ur.js";
 import {
   InvalidSchemeError,
   InvalidPathLengthError,
   InvalidTypeError,
   InvalidSequenceComponentError,
-} from "../errors";
-import { toUint32 } from "../utils";
-import { RegistryItem } from "./RegistryItem";
+} from "../errors.js";
+import { toUint32 } from "../utils.js";
+import { RegistryItem } from "./RegistryItem.js";
 
 export interface IMultipartUr {
   seqNum: number;

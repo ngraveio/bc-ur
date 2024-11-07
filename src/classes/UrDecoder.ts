@@ -1,7 +1,7 @@
-import { Decoder } from "./Decoder";
-import { Ur } from "./Ur";
-import { IEncodingMethod } from "../interfaces/IEncodingMethod";
-import { RegistryItem } from "./RegistryItem";
+import { Decoder } from "./Decoder.js";
+import { Ur } from "./Ur.js";
+import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
+import { RegistryItem } from "./RegistryItem.js";
 
 export class UrDecoder extends Decoder<string, RegistryItem> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {

@@ -1,5 +1,5 @@
-import { decodeKeys } from "./key.helper";
-import { registryItemFactory } from "./RegistryItem";
+import { decodeKeys } from "./key.helper.js";
+import { registryItemFactory } from "./RegistryItem.js";
 
 interface ICborTest {
   'bool'?: boolean;

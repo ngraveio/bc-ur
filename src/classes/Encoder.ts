@@ -1,4 +1,4 @@
-import { IEncodingMethod } from "../interfaces/IEncodingMethod";
+import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
 
 export interface IEncoder<T, U> {
   encodingMethods: IEncodingMethod<any, any>[];

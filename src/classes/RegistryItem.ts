@@ -1,5 +1,4 @@
-import { Tagged } from "cbor";
-import { encodeKeys, decodeKeys, IKeyMap } from "./key.helper";
+import { encodeKeys, decodeKeys, IKeyMap } from "./key.helper.js";
 
 /**
  * Static interface that RegistryItem classes should implement
@@ -44,11 +43,6 @@ export abstract class RegistryItemBase {
     }
   }
 
-  get Tagged() {
-    const converted = this.preCBOR();
-    return new Tagged(this.type.tag, converted);
-  }
-
   toString(): string {
     return `${this.type.URType}[${this.type.tag}](${JSON.stringify(this.data)})`;
   }
@@ -56,7 +50,7 @@ export abstract class RegistryItemBase {
   toJSON() {
     return {
       type: this.type.URType,
-      ...this.Tagged.toJSON()
+      ...this.data,
     };
   }
 
@@ -75,18 +69,21 @@ export abstract class RegistryItemBase {
   /**
    * Called by the CBOR encoder for encoding the data
    * 
-   * [CBOR Docs](https://github.com/hildjj/node-cbor/tree/main/packages/cbor#encodecbor-method)
+   * [CBOR Docs](https://github.com/hildjj/cbor2?tab=readme-ov-file#tocbor-method)
    * 
-   * This is the easiest approach, if you can modify the class being encoded.   
-   * Add an encodeCBOR method to your class, which takes a single parameter of the encoder currently being used.  
-   * Your method should return true on success, else false.  
-   * Your method may call encoder.push(buffer) or encoder.pushAny(any) as needed.  
+   * This is the easiest approach, if you can modify the class being encoded. 
+   * Add a toCBOR() method to your class, which should return a two-element array containing the tag number and data item that encodes your class. 
+   * If the tag number is NaN, no tag will be written. If you return undefined, nothing will be written. 
+   * In this case you will likely write custom bytes to the Writer instance that is passed in, 
+   * perhaps using the encoding options.
    * 
    * @param encoder 
    * @returns 
    */
-  encodeCBOR(encoder) {
-    return encoder.pushAny(this.Tagged);
+  toCBOR(_writer, _options) {
+    // return encoder.pushAny(this.Tagged);
+    const processed = this.preCBOR();
+    return [this.type.tag, processed];
   };
 }
 

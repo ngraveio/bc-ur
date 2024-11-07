@@ -1,4 +1,4 @@
-import { EncodingMethodName } from "../enums/EncodingMethodName";
+import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 
 /**
  * Encoding method that defines the incoming type T and the outgoing type U

@@ -1,6 +1,6 @@
-import { STYLES, decode, encode } from "./bytewords";
-import { EncodingMethodName } from "../enums/EncodingMethodName";
-import { IEncodingMethod } from "../interfaces/IEncodingMethod";
+import { STYLES, decode, encode } from "./bytewords.js";
+import { EncodingMethodName } from "../enums/EncodingMethodName.js";
+import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
 
 export class BytewordEncoding implements IEncodingMethod<string, string> {
   private _name: EncodingMethodName = EncodingMethodName.bytewords;

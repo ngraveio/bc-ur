@@ -1,4 +1,4 @@
-import { IRegistryType } from "../interfaces/IRegistryType";
+import { IRegistryType } from "../interfaces/IRegistryType.js";
 
 export class RegistryType implements IRegistryType {
   constructor(private _type: string, private _tag?: number) {}
