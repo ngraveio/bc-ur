@@ -18,7 +18,7 @@ export abstract class RegistryItemBase {
   // TODO: should we force this to be a map? It is much safer that way for injection attacks
   data: any; 
   
-  constructor(registryType: IRegistryType, data: any, keyMap?: IKeyMap) {
+  constructor(registryType: IRegistryType, data?: any, keyMap?: IKeyMap) {
     this.type = registryType;
     this.keyMap = keyMap;
 
@@ -107,7 +107,7 @@ export function registryItemFactory(input: IRegistryType) {
     static keyMap: IKeyMap = _keyMap;
 
     // Initiate base class with the values
-    constructor(data: any, keyMap: IKeyMap = _keyMap) {
+    constructor(data?: any, keyMap: IKeyMap = _keyMap) {
       super(input, data, keyMap);
     }
 
@@ -115,6 +115,7 @@ export function registryItemFactory(input: IRegistryType) {
      * Post process the data after decoding CBOR
      */
     static postCBOR(val: any) {
+      // TODO: add ability to ignore the keys that are not in keymap
       // If key-map exists, convert integer keys back to string keys
       if(keyMap) {
         return decodeKeys(val, keyMap);
