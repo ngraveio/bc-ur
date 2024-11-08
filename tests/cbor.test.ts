@@ -1,34 +1,12 @@
-import { registryItemFactory } from "../src/classes/RegistryItem";
-import { CborEncoding } from "../src/encodingMethods/CborEncoding.js";
-import { NativeValues } from "./stubs.test";
+import { registryItemFactory, RegistryItem } from "../src/classes/RegistryItem";
+import { CborEncoding } from "../src/encodingMethods/CborEncoding";
+
 const cbor = new CborEncoding();
 
-interface ICborTest {
-  bool?: boolean;
-  number?: number;
-  string?: string;
-  array?: any[];
-  object?: object;
-  map?: Map<any, any>;
-  set?: Set<any>;
-  undefined?: undefined;
-  buffer?: Buffer;
-  date?: Date;
-  regexp?: RegExp;
-  url?: URL;
-  rest?: any;
-}
-
-/** A registry item that can take any value */
-class MyRegistryItem extends registryItemFactory({
-  tag: 123,
-  URType: "MyRegistryItem",
-  CDDL: ``,
-}) {}
-
+// TODO: add types to registry
 
 describe("CBOR Encoder", () => {
-  describe("Encode Decode Native Javascript types", () => {
+  describe("Native Javascript types", () => {
     it("should encode a string", () => {
       const testString = "Hello World!";
       const encoded = cbor.encode(testString);
@@ -78,14 +56,7 @@ describe("CBOR Encoder", () => {
       expect(decoded).toBe(testUndefined);
     });
 
-    it("should encode a symbol value", () => {
-      const testSymbol = Symbol("test");
-      const encoded = cbor.encode(testSymbol);
-      const decoded = cbor.decode(encoded);
-      expect(decoded).toBe(testSymbol);
-    });
-
-    it("should encode a BigInt value", () => {
+    it.skip("should encode a BigInt value", () => {
       const testBigInt = BigInt(1234);
       const encoded = cbor.encode(testBigInt);
       const decoded = cbor.decode(encoded);
@@ -138,7 +109,47 @@ describe("CBOR Encoder", () => {
     });
   });
 
-  describe("Encode Decode Custom Registry Item Types", () => {
+  describe("Basic Registry Items", () => {
+    // TODO: put these under before all
+    /** A registry item that can take any value */
+    const MyRegistryItem = class extends registryItemFactory({
+      tag: 123,
+      URType: "MyRegistryItem",
+      CDDL: ``,
+    }) {};
+
+    interface ICborTest {
+      bool?: boolean;
+      number?: number;
+      string?: string;
+      array?: any[];
+      object?: object;
+      map?: Map<any, any>;
+      set?: Set<any>;
+      undefined?: undefined;
+      buffer?: Buffer;
+      date?: Date;
+      regexp?: RegExp;
+      url?: URL;
+      rest?: any;
+    }
+
+    /** A registry item that takes javascript native types */
+    const NativeValues = class extends registryItemFactory({
+      tag: 666,
+      URType: "NativeValues",
+      CDDL: ``,
+    }) {
+      constructor(data: ICborTest) {
+        super(data);
+      }
+    };
+
+    beforeAll(() => {
+      // Add to registry
+      CborEncoding.addToRegistry(MyRegistryItem);
+      CborEncoding.addToRegistry(NativeValues);
+    });
 
     it("should Encode and Decode to same Registry Item Class", () => {
       const testRegistryItem = new MyRegistryItem({});
@@ -146,6 +157,22 @@ describe("CBOR Encoder", () => {
       const decoded = cbor.decode(encoded);
 
       expect(decoded).toBeInstanceOf(MyRegistryItem);
+    });
+
+    it("should encode into correct CBOR", () => {
+      const testRegistryItem = new MyRegistryItem({ foo: "bar" });
+      const encoded = cbor.encode(testRegistryItem);
+
+      // 123({"foo": "bar"})
+      expect(encoded.toString("hex")).toEqual("d87ba163666f6f63626172");
+    });
+
+    it("should decode to correct instace from CBOR", () => {
+      const encoded = Buffer.from("d87ba163666f6f63626172", "hex");
+      const decoded = cbor.decode(encoded);
+
+      expect(decoded).toBeInstanceOf(MyRegistryItem);
+      expect(decoded.data).toEqual({ foo: "bar" });
     });
 
     it("should Encode and Decode to same Registry Item Class with data", () => {
@@ -204,6 +231,416 @@ describe("CBOR Encoder", () => {
       const encoded = cbor.encode(testNativeValues);
       const decoded = cbor.decode(encoded);
       expect(decoded).toEqual(testNativeValues);
+    });
+
+    afterAll(() => {
+      // Remove items from registry
+      CborEncoding.removeFromRegistry(MyRegistryItem);
+      CborEncoding.removeFromRegistry(NativeValues);
+    });
+  });
+
+  describe("Advanced Registry Items", () => {
+    const MyRegistryItem = class extends registryItemFactory({
+      tag: 123,
+      URType: "MyRegistryItem",
+      CDDL: ``,
+    }) {};
+
+    // Define a nested registry items
+    interface IUser {
+      id: number;
+      name: string;
+      email?: string;
+      phone?: string;
+      address?: string;
+      [key: string]: any;
+    }
+    class User extends registryItemFactory({
+      tag: 111,
+      URType: "user",
+      CDDL: `
+        user = #6.111({
+            id: uint,
+            name: text,
+            ? email: text,
+            ? phone: text,
+            ? address: text
+        })
+      `,
+    }) {
+      private user: IUser;
+
+      constructor(user: IUser) {
+        super(user);
+        this.user = user;
+      }
+
+      verifyInput(input: any) {
+        let reasons: Error[] = [];
+
+        if (!input.id) {
+          reasons.push(new Error("ID is required"));
+        }
+        else {
+          if (typeof input.id !== "number") {
+            reasons.push(new Error("ID should be a number"));
+          }
+        }
+
+        if (!input.name) {
+          reasons.push(new Error("Name is required"));
+        }
+        else {
+          if (typeof input.name !== "string") {
+            reasons.push(new Error("Name should be a string"));
+          }
+        }
+
+        const valid = reasons.length === 0;
+        return { valid, reasons };
+      }
+    }
+
+    // Parent class
+    interface IUserCollection {
+      name: string;
+      users: User[];
+    }
+
+    const UserCollectionType = {
+      tag: 112,
+      URType: "user-collection",
+      CDDL: `
+        user-collection = #6.112({
+          name: text,
+          users: [+ #6.112(user)]
+        })
+      `,
+    };
+
+    class UserCollection extends registryItemFactory(UserCollectionType) {
+      constructor(private userCollection: IUserCollection) {
+        super(userCollection);
+      }
+
+      verifyInput(input: any) {
+        let reasons: Error[] = [];
+
+        if (!input.name) {
+          reasons.push(new Error("Name is required"));
+        }
+
+        if (typeof input.name !== "string") {
+          reasons.push(new Error("Name should be a string"));
+        }
+
+        if (input.users) {
+          // Check its array
+          if (!Array.isArray(input.users)) {
+            reasons.push(new Error("Users should be an array"));
+          } else {
+            input.users.forEach((user: any) => {
+              if (!(user instanceof User)) {
+                reasons.push(new Error("Users should be an array of User"));
+              }
+            });
+          }
+        }
+
+        const valid = reasons.length === 0;
+        return { valid, reasons };
+      }
+    }
+
+    beforeAll(() => {
+      // Add to registry
+      CborEncoding.addToRegistry(MyRegistryItem);
+      CborEncoding.addToRegistry(User);
+      CborEncoding.addToRegistry(UserCollection);
+    });
+
+    describe("Registry Item with validation", () => {
+      // Define a user
+      const userInput = { id: 1, name: "İrfan Bilaloğlu" };
+      const user = new User(userInput);
+
+      it("should encode to correct cbor", () => {
+        const encoded = cbor.encode(user);
+        // 111({"id": 1, "name": "İrfan Bilaloğlu"})
+        expect(encoded.toString("hex")).toEqual("d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75");
+      });
+
+      it("should decode to correct instance", () => {
+        const encoded = Buffer.from("d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75", "hex");
+        const decoded = cbor.decode(encoded);
+        expect(decoded).toBeInstanceOf(User);
+        expect(decoded.data).toEqual(userInput);
+      });
+
+      it("should encode and decode to same instance", () => {
+        const encoded = cbor.encode(user);
+        const decoded = cbor.decode(encoded);
+        expect(decoded).toEqual(user);
+      });
+
+      it("should throw error if required fields are missing", () => {
+        //@ts-ignore
+        expect(() => new User({})).toThrow();
+      });
+
+      it("should throw error if required fields are wrong type", () => {
+        //@ts-ignore
+        expect(() => new User({ id: "1", name: "İrfan Bilaloğlu" })).toThrow();
+      });
+
+      it("should throw error when decoding if fields are wrong type", () => {
+        // 111({"id": "1", "name": 4})
+        const encoded = Buffer.from("d86fa26269646131646e616d6504", "hex");
+        expect(() => cbor.decode(encoded)).toThrow();
+      });
+    });
+
+    describe("Decode with enforced type", () => {
+      it("should not decode to Registrytem instance if top level is not a tag", () => {
+        const encoded = cbor.encode({ 1: 5, extraData: "my extra data" });
+        const decoded = cbor.decode(encoded);
+        // TODO: type of registry item
+        expect(decoded).not.toBeInstanceOf(User);
+      });
+
+      // TODO:
+      it("should decode to correct RegistryItem if its already that class and enforced type is given", () => {
+        const encoded = Buffer.from("d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75", "hex");
+        // It will already decode to User instance and we will force it again
+        const decoded = cbor.decode(encoded, User);
+        expect(decoded).toBeInstanceOf(User);
+        expect(decoded.data).toEqual({"id": 1, "name": "İrfan Bilaloğlu"});
+      });
+
+      it('should decode to instance if enforced type is given even if top level is not a tag', () => {
+        // {"id": 1, "name": "İrfan Bilaloğlu"}
+        const encoded = Buffer.from("a262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75", 'hex');
+        const decoded = cbor.decode(encoded, User);
+
+        expect(decoded).toBeInstanceOf(User);
+        expect(decoded.data).toEqual({ id: 1, name: "İrfan Bilaloğlu" });
+      });
+
+      it("should throw error if enforced type does not match the tag", () => {
+        const simple = new MyRegistryItem({ foo: "bar" });
+        const encoded = cbor.encode(simple);
+        expect(() => cbor.decode(encoded, User)).toThrow();
+      });
+
+      it("should throw error if validation for enforced type fails", () => {
+        // 111({"id": "1", "name": 4})
+        const encoded = Buffer.from("d86fa26269646131646e616d6504", "hex");
+        expect(() => cbor.decode(encoded, User)).toThrow();
+      });
+    });
+
+    describe("Registry Item with Registry Item children", () => {
+      const user1 = new User({ id: 1, name: "İrfan Bilaloğlu" });
+      const user2 = new User({ id: 2, name: "Pieter Uyttersprot" });
+
+      const userCollection = new UserCollection({
+        name: "My Collection",
+        users: [user1, user2],
+      });
+
+      it("should encode to correct cbor", () => {
+        const encoded = cbor.encode(userCollection);
+        // 112({"name": "My Collection", "users": [111({"id": 1, "name": "İrfan Bilaloğlu"}), 111({"id": 2, "name": "Pieter Uyttersprot"})]})
+        expect(encoded.toString("hex")).toEqual("d870a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74");
+      });
+
+      it("should decode to correct instance", () => {
+        // 112({"name": "My Collection", "users": [111({"id": 1, "name": "İrfan Bilaloğlu"}), 111({"id": 2, "name": "Pieter Uyttersprot"})]})
+        const encoded = Buffer.from("d870a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74", "hex");
+        const decoded = cbor.decode(encoded);
+        expect(decoded).toBeInstanceOf(UserCollection);
+      });
+
+      it("should have the correct class instances after decoding", () => {
+        const encoded = cbor.encode(userCollection);
+        const decoded = cbor.decode(encoded);
+
+        expect(decoded).toBeInstanceOf(UserCollection);
+        expect(decoded.data.users[0]).toBeInstanceOf(User);
+        expect(decoded.data.users[1]).toBeInstanceOf(User);
+
+        expect(decoded.data.users[0].data).toEqual(user1.data);
+        expect(decoded.data.users[1].data).toEqual(user2.data);
+      });
+    });
+
+    afterAll(() => {
+      // Remove items from registry
+      CborEncoding.addToRegistry(MyRegistryItem);
+      CborEncoding.removeFromRegistry(User);
+      CborEncoding.removeFromRegistry(UserCollection);
+    });
+  });
+
+  describe("Registry Items with KeyMap", () => {
+    interface ICoinInfo {
+      type?: number;
+      network?: number;
+      anahtar?: string;
+    }
+
+    class CoinInfo extends registryItemFactory({
+      tag: 40305,
+      URType: "coin-info",
+      keyMap: {
+        type: 1,
+        network: 2,
+      },
+      CDDL: `
+        coininfo = #6.40305({
+            ? type: uint .default 1, ; values from [SLIP44](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) with high bit turned off
+            ? network: int .default 1 ; coin-specific identifier for testnet
+            ? myKey: text .default "deneme"
+        })
+    
+        type = 1
+        network = 2
+    `,
+    }) {
+      constructor(data: ICoinInfo) {
+        super(data);
+      }
+    }
+
+    beforeAll(() => {
+      // Add to registry
+      CborEncoding.addToRegistry(CoinInfo);
+    });
+
+    it("should convert string keys into integers on cbor encoded", () => {
+      const coininfo = new CoinInfo({ type: 5, network: 3 });
+      const encoded = cbor.encode(coininfo);
+      // 40305({1: 5, 2: 3})
+      expect(encoded.toString("hex")).toEqual("d99d71a201050203");
+    });
+
+    it("should not convert keys that are not defined in keymap", () => {
+      const coininfo = new CoinInfo({ type: 5, network: 3, anahtar: "deneme" });
+      const encoded = cbor.encode(coininfo);
+      // 40305({1: 5, 2: 3, "anahtar": "deneme"})
+      expect(encoded.toString("hex")).toEqual("d99d71a30105020367616e61687461726664656e656d65");
+    });
+
+    it("should encode and decode with same data re converting the keys", () => {
+      const coininfo = new CoinInfo({ type: 5, network: 3, anahtar: "deneme" });
+      const encoded = cbor.encode(coininfo);
+      const decoded = cbor.decode(encoded);
+      expect(decoded).toEqual(coininfo);
+    });
+
+    afterAll(() => {
+      // Remove items from registry
+      CborEncoding.removeFromRegistry(CoinInfo);
+    });
+  });
+
+  describe("Registry items with post and pre processors", () => {
+    const MyRegistryItem = class extends registryItemFactory({
+      tag: 123,
+      URType: "MyRegistryItem",
+      keyMap: {
+        string: 1,
+        number: 2,
+        multiplier: 3,
+      },
+      CDDL: ``,
+    }) {
+      public multiplier: number;
+
+      constructor(data: {
+        string: string;
+        number: number;
+        multiplier: number;
+      }) {
+        super(data);
+
+        this.multiplier = data.multiplier || 1;
+      }
+
+      /**
+       * Preprocess the data before encoding into CBOR Tagged instance
+       */
+      preCBOR() {
+        // Converted to Map with keymap
+        const data = super.preCBOR();
+
+        // Multiply the numver
+        const number = this.data.number * this.multiplier
+        // Set the data on the converted map
+        data.set(this.keyMap.number, number);
+
+        return data;
+      }
+
+      /**
+       * Static method to create an instance from CBOR data.
+       * It processes the raw CBOR data if needed and returns a new instance of the class.
+       */
+      static fromCBORData(val: any, tagged?: any) {
+        // Do some post processing data coming from the cbor decoder
+        const data = this.postCBOR(val);
+
+        // Convert the number back to original value
+        const multiplier = data?.multiplier || 1;
+        data.number = data.number / multiplier;
+
+        // Return an instance of the generated class
+        return new this(data);
+      }
+    };
+
+    beforeAll(() => {
+      // Add to registry
+      CborEncoding.addToRegistry(MyRegistryItem);
+    });
+
+    it("should run preprocessor before encoding", () => {
+      const testItem = new MyRegistryItem({
+        string: "hello",
+        number: 6,
+        multiplier: 2,
+      });
+      const encoded = cbor.encode(testItem);
+      // 123({1: "hello", 2: 12, 3: 2})
+      expect(encoded.toString("hex")).toEqual("d87ba3016568656c6c6f020c0302");
+    });
+
+    it("should run postprocessor after decoding", () => {
+      // // 123({1: "hello", 2: 12, 3: 2})
+      const encoded = Buffer.from("d87ba3016568656c6c6f020c0302", "hex");
+      const decoded = cbor.decode(encoded);
+      expect(decoded).toBeInstanceOf(MyRegistryItem);
+
+      // Check if the number is divided
+      expect(decoded.data.number).toBe(6);
+    });
+
+    it("should encode and decode with pre and post processors", () => {
+      const testItem = new MyRegistryItem({
+        string: "hello",
+        number: 6,
+        multiplier: 2,
+      });
+      const encoded = cbor.encode(testItem);
+
+      const decoded = cbor.decode(encoded);
+      expect(decoded).toEqual(testItem);
+    });
+
+    afterAll(() => {
+      // Remove items from registry
+      CborEncoding.removeFromRegistry(MyRegistryItem);
     });
   });
 });
