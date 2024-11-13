@@ -1,24 +1,31 @@
-import { Registry, registry as globalRegistry } from "../registry.js";
+import { URRegistry, globalUrRegistry } from "../registry.js";
 import { RegistryItem, RegistryItemClass } from "../classes/RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
 import { decode, DecodeOptions, encode, EncodeOptions } from "cbor2";
 import { Tag } from "cbor2/tag";
 
+interface inputOptions {
+  registry?: URRegistry;
+  cborLibEncoderOptions?: EncodeOptions;
+  cborLibDecoderOptions?: DecodeOptions;
+}
 
 export class CborEncoding<T extends RegistryItem>
   implements IEncodingMethod<T, Buffer>
 {
   private _name: EncodingMethodName = EncodingMethodName.cbor;
-  static registry: Registry = globalRegistry;
+  public registry: URRegistry;
 
   /** Decoding options for CBOR2 library */
   cborLibEncoderOptions: EncodeOptions;
   cborLibDecoderOptions: DecodeOptions;
 
-  constructor(cborLibEncoderOptions?: EncodeOptions, cborLibDecoderOptions?: DecodeOptions) {
-    this.cborLibEncoderOptions = cborLibEncoderOptions;
-    this.cborLibDecoderOptions = cborLibDecoderOptions;
+  constructor(options?: inputOptions) {
+    this.cborLibEncoderOptions = options?.cborLibEncoderOptions;
+    this.cborLibDecoderOptions = options?.cborLibDecoderOptions;
+    // If given registry, use that isolated one
+    this.registry = options?.registry || globalUrRegistry;
   }
 
   get name(): EncodingMethodName {
@@ -87,48 +94,4 @@ export class CborEncoding<T extends RegistryItem>
     return decoded as unknown as T;
   }
 
-
-  // ---- Static methods ----
-
-  /**
-   * Add all the items from the registry to CBOR registry
-   */
-  public static addAlltoRegistry(registry?: Registry) {
-    // If registry is given, use that isolated one
-    const myRegistry = registry || CborEncoding.registry;
-
-    for (const key in myRegistry) {
-      const item = myRegistry[key];
-      CborEncoding.addToRegistry(item);
-    }
-  }
-
-  /**
-   * Add single item to CBOR registry
-   * @param item @type RegistryItemClass
-   */
-  public static addToRegistry(item: RegistryItemClass) {
-    // Add to global registry
-    CborEncoding.registry[item.URType] = item;
-
-    // Add decoder to CBOR2
-    Tag.registerDecoder(item.tag, (tag: Tag, opts: DecodeOptions) => {
-      return item.fromCBORData.bind(item)(tag.contents, opts);
-    });
-  }
-
-  /**
-   * Remove single item from CBOR registry
-   * @param item @type RegistryItemClass
-   */
-  public static removeFromRegistry(item: RegistryItemClass) {
-    // Remove from global registry
-    delete CborEncoding.registry[item.URType];
-    // Remove decoder from CBOR2
-    Tag.clearDecoder(item.tag);
-  }
 }
-
-// Call first time to update the registry
-// TODO: find better approach
-CborEncoding.addAlltoRegistry();

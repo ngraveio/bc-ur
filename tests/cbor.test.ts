@@ -147,8 +147,8 @@ describe("CBOR Encoder", () => {
 
     beforeAll(() => {
       // Add to registry
-      CborEncoding.addToRegistry(MyRegistryItem);
-      CborEncoding.addToRegistry(NativeValues);
+      cbor.registry.addItem(MyRegistryItem);
+      cbor.registry.addItem(NativeValues);
     });
 
     it("should Encode and Decode to same Registry Item Class", () => {
@@ -235,8 +235,8 @@ describe("CBOR Encoder", () => {
 
     afterAll(() => {
       // Remove items from registry
-      CborEncoding.removeFromRegistry(MyRegistryItem);
-      CborEncoding.removeFromRegistry(NativeValues);
+      cbor.registry.removeItem(MyRegistryItem);
+      cbor.registry.removeItem(NativeValues);
     });
   });
 
@@ -355,9 +355,9 @@ describe("CBOR Encoder", () => {
 
     beforeAll(() => {
       // Add to registry
-      CborEncoding.addToRegistry(MyRegistryItem);
-      CborEncoding.addToRegistry(User);
-      CborEncoding.addToRegistry(UserCollection);
+      cbor.registry.addItem(MyRegistryItem);
+      cbor.registry.addItem(User);
+      cbor.registry.addItem(UserCollection);
     });
 
     describe("Registry Item with validation", () => {
@@ -477,9 +477,9 @@ describe("CBOR Encoder", () => {
 
     afterAll(() => {
       // Remove items from registry
-      CborEncoding.addToRegistry(MyRegistryItem);
-      CborEncoding.removeFromRegistry(User);
-      CborEncoding.removeFromRegistry(UserCollection);
+      cbor.registry.addItem(MyRegistryItem);
+      cbor.registry.removeItem(User);
+      cbor.registry.removeItem(UserCollection);
     });
   });
 
@@ -515,7 +515,7 @@ describe("CBOR Encoder", () => {
 
     beforeAll(() => {
       // Add to registry
-      CborEncoding.addToRegistry(CoinInfo);
+      cbor.registry.addItem(CoinInfo);
     });
 
     it("should convert string keys into integers on cbor encoded", () => {
@@ -541,7 +541,7 @@ describe("CBOR Encoder", () => {
 
     afterAll(() => {
       // Remove items from registry
-      CborEncoding.removeFromRegistry(CoinInfo);
+      cbor.registry.removeItem(CoinInfo);
     });
   });
 
@@ -602,7 +602,7 @@ describe("CBOR Encoder", () => {
 
     beforeAll(() => {
       // Add to registry
-      CborEncoding.addToRegistry(MyRegistryItem);
+      cbor.registry.addItem(MyRegistryItem);
     });
 
     it("should run preprocessor before encoding", () => {
@@ -640,7 +640,7 @@ describe("CBOR Encoder", () => {
 
     afterAll(() => {
       // Remove items from registry
-      CborEncoding.removeFromRegistry(MyRegistryItem);
+      cbor.registry.removeItem(MyRegistryItem);
     });
   });
 });

@@ -14,10 +14,10 @@ import { UrMultipartDecoder } from "./classes/UrMultipartDecoder.js";
 import UrFountainDecoder from "./classes/UrFountainDecoder.js";
 import UrFountainEncoder from "./classes/UrFountainEncoder.js";
 import { RegistryItem } from "./classes/RegistryItem.js";
-import { registry } from "./registry.js";
+import { globalUrRegistry } from "./registry.js";
 
 export {
-  registry,
+  globalUrRegistry,
   RegistryItem,
   Ur,
   MultipartUr,
