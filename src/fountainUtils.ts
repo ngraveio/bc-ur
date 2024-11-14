@@ -1,6 +1,6 @@
 import { bufferXOR, intToBytes } from "./utils.js";
 import Xoshiro from "./xoshiro.js";
-const randomSampler = require("@apocentre/alias-sampling");
+import * as randomSampler from "@apocentre/alias-sampling";
 
 export const chooseDegree = (seqLenth: number, rng: Xoshiro): number => {
   const degreeProbabilities = [...new Array(seqLenth)].map(

@@ -1,4 +1,4 @@
-import { makeMessage } from "./utils.js";
+import { makeMessage } from "../src/utils.js";
 import { InvalidChecksumError, InvalidPathLengthError } from "../src/errors.js";
 import {
   createFountainUrTranscoder,
