@@ -50,44 +50,44 @@ export class URRegistry {
 
   /**
    * Removes an item from the registry based on its URType, tag, or item instance.
-   * @param item - The item to be removed. It can be an instance of RegistryItemClass, a URType string, or a tag number.
+   * @param findItem - The item to be removed. It can be an instance of RegistryItemClass, a URType string, or a tag number.
    */
-  public removeItem(item: RegistryItemClass | string | number): void {
-    if (typeof item === "string") {
-      // If the item is a URType string, remove the corresponding item
-      if (this.registry.has(item)) {
-        const removedItem = this.registry.get(item);
-        this.registry.delete(item);
-        if (removedItem) {
-          const tag = removedItem.tag;
-          this.tagMap.delete(tag);
-        }
-      } else {
-        this.log(`Warning: No item found with URType: ${item}`);
+  public removeItem(findItem: RegistryItemClass | string | number): void {
+    let foundItem: RegistryItemClass | undefined;
+    if (typeof findItem === "string") {
+      foundItem = this.queryByURType(findItem);
+      if (!foundItem) {
+        this.log(`Warning: No item found with URType: ${findItem}`);
+        return;
       }
-    } else if (typeof item === "number") {
-      // If the item is a tag number, remove the corresponding item
-      const URType = this.tagMap.get(item);
-      if (URType) {
-        this.registry.delete(URType);
-        this.tagMap.delete(item);
-      } else {
-        this.log(`Warning: No item found with tag: ${item}`);
+    } else if (typeof findItem === "number") {
+      foundItem = this.queryByTag(findItem);
+      if (!foundItem) {
+        this.log(`Warning: No item found with tag: ${findItem}`);
+        return;
       }
     } else {
-      // If the item is an instance of RegistryItemClass, remove it based on its URType
-      const URType = item.URType;
+      // Check if the item is in the registry
+      const URType = findItem.URType;
       if (this.registry.has(URType)) {
-        this.registry.delete(URType);
-        const tag = item.tag;
-        this.tagMap.delete(tag);
-      } else {
-        this.log(`Warning: No item found with URType: ${URType}`);
+        foundItem = findItem;
+      }
+      else {
+        this.log(`Warning: Item not found in registry with type: ${URType}`);
+        return;
       }
     }
+
+    // Remove it from registry
+    this.registry.delete(foundItem.URType);
+    this.tagMap.delete(foundItem.tag);
+    Tag.clearDecoder(foundItem.tag);
   }
 
   public clearRegistry(): void {
+    this.registry.forEach((item) => {
+      Tag.clearDecoder(item.tag);
+    });
     this.registry.clear();
     this.tagMap.clear();
   }
