@@ -2,7 +2,8 @@ import { URRegistry, globalUrRegistry } from "../registry.js";
 import { RegistryItem, RegistryItemClass } from "../classes/RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
-import { decode, DecodeOptions, encode, EncodeOptions } from "cbor2";
+import { decode, DecodeOptions, encode, EncodeOptions, } from "cbor2";
+import {registerEncoder, writeUint8Array} from 'cbor2/encoder';
 import { Tag } from "cbor2/tag";
 
 interface inputOptions {
@@ -10,6 +11,29 @@ interface inputOptions {
   cborLibEncoderOptions?: EncodeOptions;
   cborLibDecoderOptions?: DecodeOptions;
 }
+
+// Current CBOR2 functions
+function assertU8(contents: unknown): asserts contents is Uint8Array {
+  if (!(contents instanceof Uint8Array)) {
+    throw new Error(`Expected Uint8Array: ${contents}`);
+  }
+}
+
+// For Node.js we are going to convert buffer into Uint8Array
+// This code should only run in Node.js
+registerEncoder(Buffer, (b, _writer, _options) => {
+  // Conver buffer to Uint8Array
+  const u8 = new Uint8Array(b);
+  // This is a major type ( MT.BYTE_STRING ) so no tag is given
+  return [NaN, u8]
+});
+
+// Override existing Uint8Array decoder
+// Tag.registerDecoder(64, (tag: Tag): Uint8Array => {
+//   assertU8(tag.contents);
+//   return tag.contents;
+// }, 'uint8 Typed Array');
+
 
 export class CborEncoding<T extends RegistryItem>
   implements IEncodingMethod<T, Buffer>

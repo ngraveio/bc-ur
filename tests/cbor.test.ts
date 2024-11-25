@@ -80,11 +80,25 @@ describe("CBOR Encoder", () => {
       expect(decoded).toEqual(testSet);
     });
 
-    it("should encode a Buffer", () => {
-      const testBuffer = Buffer.from("hello world");
+    it("should encode a Buffer (only in nodejs)", () => {
+      const testBuffer = Buffer.from([1, 2, 3, 4]);
       const encoded = cbor.encode(testBuffer);
       const decoded = cbor.decode(encoded);
+      //@ts-ignore
+      expect(decoded.toString('hex')).toEqual(testBuffer.toString('hex'));
       expect(decoded).toEqual(testBuffer);
+    });
+
+    it("should encode a UInt8Array but decode as Buffer ( only in nodejs )", () => {
+      const testBuffer = new Uint8Array([1, 2, 3, 4]);
+      const encoded = cbor.encode(testBuffer);
+      const decoded = cbor.decode(encoded);
+      // Note by default Buffer is subclass of Uint8Array, so here NODE JS assumes it as Buffer
+      // We cannot have to Buffer and Uint8Array at the same time but
+      // Since buffer is subclass of Uint8Array every function that can be used with Uint8Array can be used with Buffer
+      // @ts-ignore
+      expect(Uint8Array.from(decoded)).toEqual(testBuffer);
+      expect(decoded).toEqual(Buffer.from(testBuffer));
     });
 
     it("should encode a Date", () => {
