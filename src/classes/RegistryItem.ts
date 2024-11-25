@@ -4,9 +4,25 @@ import { encodeKeys, decodeKeys, IKeyMap } from "./key.helper.js";
  * Static interface that RegistryItem classes should implement
  */
 export interface IRegistryType {
+  /** 
+   * Cbor Tags  
+   * Finalized versions defined in: https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml
+   */
   tag: number;
+  /** 
+   * Uniform Resource ID
+   * 
+   * Links:
+   * - https://developer.blockchaincommons.com/ur/
+   * - https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md
+   * - https://github.com/ngraveio/Research
+   * - https://github.com/KeystoneHQ/Keystone-developer-hub/tree/main/research
+   * 
+   */
   URType: string;
+  /** CDDL definition for CBOR encoding */
   CDDL: string;
+  /** Key name to key in integer map for smaller encoded data size */
   keyMap?: IKeyMap;
 }
 
@@ -81,7 +97,6 @@ export abstract class RegistryItemBase {
    * @returns 
    */
   toCBOR(_writer, _options) {
-    // return encoder.pushAny(this.Tagged);
     const processed = this.preCBOR();
     return [this.type.tag, processed];
   };

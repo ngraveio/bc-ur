@@ -409,8 +409,7 @@ describe("CBOR Encoder", () => {
         expect(decoded).not.toBeInstanceOf(User);
       });
 
-      // TODO:
-      it("should decode to correct RegistryItem if its already that class and enforced type is given", () => {
+      it("should decode to the correct RegistryItem when it's already that class and additionally the enforced type is given", () => {
         const encoded = Buffer.from("d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75", "hex");
         // It will already decode to User instance and we will force it again
         const decoded = cbor.decode(encoded, User);
@@ -440,7 +439,7 @@ describe("CBOR Encoder", () => {
       });
     });
 
-    describe("Registry Item with Registry Item children", () => {
+    describe("Embedding Registry Items", () => {
       const user1 = new User({ id: 1, name: "İrfan Bilaloğlu" });
       const user2 = new User({ id: 2, name: "Pieter Uyttersprot" });
 
@@ -518,7 +517,7 @@ describe("CBOR Encoder", () => {
       cbor.registry.addItem(CoinInfo);
     });
 
-    it("should convert string keys into integers on cbor encoded", () => {
+    it("should convert string keys into integers in cbor encoded data", () => {
       const coininfo = new CoinInfo({ type: 5, network: 3 });
       const encoded = cbor.encode(coininfo);
       // 40305({1: 5, 2: 3})
@@ -532,7 +531,7 @@ describe("CBOR Encoder", () => {
       expect(encoded.toString("hex")).toEqual("d99d71a30105020367616e61687461726664656e656d65");
     });
 
-    it("should encode and decode with same data re converting the keys", () => {
+    it("should encode and decode with same the same data, having the orginal keys", () => {
       const coininfo = new CoinInfo({ type: 5, network: 3, anahtar: "deneme" });
       const encoded = cbor.encode(coininfo);
       const decoded = cbor.decode(encoded);

@@ -55,7 +55,7 @@ export class CborEncoding<T extends RegistryItem>
   /**
    * Decode the CBOR encoded payload to the given type
    * @param payload @type Buffer
-   * @param enforceType @type RegistryItemClass
+   * @param enforceType Forces decoding into given type or throws error if it cannot be decoded @type RegistryItemClass
    * @param cborLibOptions @type DecodeOptions
    * @returns @type T
    */

@@ -1,7 +1,7 @@
 import { registryItemFactory } from "../src/classes/RegistryItem";
 
 describe("Registry Item", () => {
-  it("should define an registry item class that has static properties", () => {
+  it("should define a registry item class that has static properties", () => {
     class testItem1 extends registryItemFactory({
       tag: 123,
       URType: "testItem1",
