@@ -1,4 +1,4 @@
-import { sha256Hash } from "./utils";
+import { sha256Hash } from "./utils.js";
 import BigNumber from "bignumber.js";
 import JSBI from "jsbi";
 

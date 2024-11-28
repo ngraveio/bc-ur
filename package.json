@@ -1,11 +1,12 @@
 {
   "name": "@ngraveio/bc-ur",
   "version": "2.0.0",
-  "author": "Antonis Poulakis <antwnic4@gmail.com>, Pieter Uyttersprot <pieter.u@hotmail.com>",
+  "author": "Antonis Poulakis <antwnic4@gmail.com>, Irfan Bilaloğlu <irfanbilaloglu@gmail.com>, Pieter Uyttersprot <pieter.uyttersprot@ngrave.io>",
   "description": "A JS implementation of the Uniform Resources (UR) specification from Blockchain Commons",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "directories": {
     "lib": "src",
     "test": "tests"
@@ -18,7 +19,7 @@
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
     "build": "yarn clean && yarn compile",
     "compile": "tsc -p tsconfig.json -outDir ./dist",
-    "test": "jest",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "prepublish": "yarn build",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" --max-warnings=0"
   },
@@ -26,7 +27,7 @@
     "@apocentre/alias-sampling": "^0.5.3",
     "assert": "^2.1.0",
     "bignumber.js": "^9.1.2",
-    "cbor": "^9.0.2",
+    "cbor2": "^1.7.0",
     "crc": "^4.3.2",
     "jsbi": "^4.3.0",
     "sha.js": "^2.4.11"

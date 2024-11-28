@@ -1,4 +1,4 @@
-import { InvalidPathLengthError, InvalidSchemeError, InvalidTypeError } from "../errors";
+import { InvalidPathLengthError, InvalidSchemeError, InvalidTypeError } from "../errors.js";
 
 /**
  * Class that represents the structure of the data we encode/decode in this package.

@@ -1,9 +1,10 @@
-import { chooseFragments, mixFragments } from "../fountainUtils";
-import { IEncodingMethod } from "../interfaces/IEncodingMethod";
-import { toUint32, getCRC } from "../utils";
-import { getMultipartUrString } from "./MultipartUr";
-import { UrMultipartEncoder } from "./UrMultipartEncoder";
-import { RegistryItem } from "./RegistryItem";
+import { chooseFragments, mixFragments } from "../fountainUtils.js";
+import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
+import { toUint32, getCRC } from "../utils.js";
+import { getMultipartUrString } from "./MultipartUr.js";
+import { UrMultipartEncoder } from "./UrMultipartEncoder.js";
+import { RegistryItem } from "./RegistryItem.js";
+import { CborEncoding } from "../encodingMethods/CborEncoding.js";
 
 /**
  * Encode data on the fly. This encoder uses an internal state to keep generating ur fragments of the payload.
@@ -26,11 +27,12 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
     firstSeqNum: number = 0
   ) {
     super(encodingMethods);
-    this._type = registryItem.type;
+    this._type = registryItem.type.URType;
     this._seqNum = toUint32(firstSeqNum);
 
     // We need to encode the message as a Buffer, because we mix them later on
-    const cborMessage = registryItem.toCBOR();
+    const cborMessage = new CborEncoding().encode(registryItem);
+
     this._messageLength = cborMessage.length;
     this._checksum = getCRC(cborMessage);
 
@@ -63,7 +65,7 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
     redundancyRatio: number = 0
   ): string[] {
     // encode first time to split the original payload up as cbor
-    const cborMessage = registryItem.toCBOR();
+    const cborMessage = new CborEncoding().encode(registryItem);
     const messageLength = cborMessage.length;
     const fragmentLength = this.findNominalFragmentLength(
       messageLength,
@@ -87,7 +89,7 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
         mixed,
       ]);
       return getMultipartUrString(
-        registryItem.type,
+        registryItem.type.URType,
         seqNum,
         fragments.length,
         encodedFragment

@@ -1,9 +1,10 @@
 import assert from "assert";
-import { getCRC, split, toUint32 } from "../utils";
-import { Encoder } from "./Encoder";
-import { getMultipartUrString } from "./MultipartUr";
-import { IEncodingMethod } from "../interfaces/IEncodingMethod";
-import { RegistryItem } from "./RegistryItem";
+import { getCRC, split, toUint32 } from "../utils.js";
+import { Encoder } from "./Encoder.js";
+import { getMultipartUrString } from "./MultipartUr.js";
+import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
+import { RegistryItem } from "./RegistryItem.js";
+import { CborEncoding } from "../encodingMethods/CborEncoding.js";
 
 /**
  * [seqNum, fragments.length, totalPayloadLength, checksum, fragment]
@@ -29,7 +30,7 @@ export class UrMultipartEncoder extends Encoder<Buffer, string> {
     minFragmentLength: number
   ): string[] {
     // encode first time to split the original payload up as cbor
-    const cborMessage = registryItem.toCBOR();
+    const cborMessage = new CborEncoding().encode(registryItem);
     const totalPayloadLength = cborMessage.length;
     const fragmentLength = this.findNominalFragmentLength(
       totalPayloadLength,
@@ -49,7 +50,7 @@ export class UrMultipartEncoder extends Encoder<Buffer, string> {
         fragment,
       ]);
       return getMultipartUrString(
-        registryItem.type,
+        registryItem.type.URType,
         seqNum,
         fragments.length,
         encodedFragment

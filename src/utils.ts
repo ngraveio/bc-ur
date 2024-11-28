@@ -1,5 +1,6 @@
 import shajs from "sha.js";
 import { crc32 } from "crc";
+import Xoshiro from "./xoshiro.js";
 
 export const sha256Hash = (data: Buffer | string) =>
   shajs("sha256").update(data).digest();
@@ -62,3 +63,9 @@ export const bufferXOR = (a: Buffer, b: Buffer): Buffer => {
 
   return buffer;
 };
+
+export const makeMessage = (length: number, seed: string = 'Wolf'): Buffer => {
+  const rng = new Xoshiro(Buffer.from(seed));
+
+  return Buffer.from(rng.nextData(length));
+}

@@ -1,13 +1,13 @@
 import assert from "assert";
-import { Ur } from "./Ur";
+import { Ur } from "./Ur.js";
 import {
   InvalidSchemeError,
   InvalidPathLengthError,
   InvalidTypeError,
   InvalidSequenceComponentError,
-} from "../errors";
-import { toUint32 } from "../utils";
-import { RegistryItem } from "./RegistryItem";
+} from "../errors.js";
+import { toUint32 } from "../utils.js";
+import { RegistryItem } from "./RegistryItem.js";
 
 export interface IMultipartUr {
   seqNum: number;
@@ -28,7 +28,7 @@ export class MultipartUr<T extends RegistryItem = RegistryItem>
   constructor(registryItem: T, seqNum: number, seqLength: number) {
     this.seqNum = seqNum;
     this.seqLength = seqLength;
-    this.type = registryItem.type;
+    this.type = registryItem.type.URType;
     this.payload = registryItem.data;
   }
 

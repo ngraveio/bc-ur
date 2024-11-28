@@ -1,13 +1,13 @@
-import { Decoder } from "./Decoder";
-import { MultipartUr } from "./MultipartUr";
-import { Ur } from "./Ur";
-import { IEncodingMethod } from "../interfaces/IEncodingMethod";
+import { Decoder } from "./Decoder.js";
+import { MultipartUr } from "./MultipartUr.js";
+import { Ur } from "./Ur.js";
+import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
 import assert from "assert";
-import { getCRC } from "../utils";
-import { InvalidChecksumError } from "../errors";
-import { EncodingMethodName } from "../enums/EncodingMethodName";
-import { RegistryItem } from "./RegistryItem";
-import { getItemFromRegistry } from "../registry";
+import { getCRC } from "../utils.js";
+import { InvalidChecksumError } from "../errors.js";
+import { EncodingMethodName } from "../enums/EncodingMethodName.js";
+import { RegistryItem } from "./RegistryItem.js";
+import { CborEncoding } from "../encodingMethods/CborEncoding.js";
 
 export type MultipartPayload = {
   seqNum: number;
@@ -102,9 +102,7 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
 
     if (checksum === expectedPayload.checksum) {
       // decode the buffer as a whole.
-      const registryItem =
-        getItemFromRegistry(expectedRegistryType).fromCBOR(cborPayload);
-      return registryItem;
+      return new CborEncoding<T>().decode(cborPayload);
     } else {
       throw new InvalidChecksumError();
     }
@@ -166,7 +164,7 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
     const decoded = this.decode<Buffer>(bytewords); // {"_checksum": 556878893, "_fragment": [Object] (type of Buffer), "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
 
     return MultipartUr.toMultipartUr(
-      { data: decoded, type } as RegistryItem,
+      { data: decoded, type: { URType: type } } as RegistryItem,
       seqNum,
       seqLength
     );

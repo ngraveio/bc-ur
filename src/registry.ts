@@ -1,35 +1,100 @@
-import { RegistryItem } from "./classes/RegistryItem";
-import { CborEncoding } from "./encodingMethods/CborEncoding";
+import { RegistryItemClass } from "./classes/RegistryItem.js";
+import { Tag } from "cbor2/tag";
 
-/**
- * Example implementation of a RegistryItem
- */
-export class Bytes extends RegistryItem {
-  constructor(dataRaw?: any) {
-    super("bytes", 0, dataRaw);
+export type Registry = Map<string, RegistryItemClass>;
+
+export class URRegistry {
+  private registry: Registry = new Map();
+  private tagMap: Map<number, string> = new Map();
+  private loggingEnabled: boolean;
+
+  constructor(items: RegistryItemClass[] = [], loggingEnabled: boolean = true) {
+    this.loggingEnabled = loggingEnabled;
+    this.addItems(items);
   }
 
-  public static fromCBOR = (data: Buffer): Bytes => {
-    return new Bytes(new CborEncoding().decode(data));
-  };
+  private log(message: string): void {
+    if (this.loggingEnabled) {
+      console.warn(message);
+    }
+  }
+
+  public addItem(item: RegistryItemClass): void {
+    if (this.registry.has(item.URType)) {
+      this.log(
+        `Warning: Overwriting existing item with URType: ${item.URType}`
+      );
+    }
+    if (this.tagMap.has(item.tag)) {
+      this.log(`Warning: Tag collision detected for tag: ${item.tag}`);
+    }
+    this.registry.set(item.URType, item);
+    this.tagMap.set(item.tag, item.URType);
+    Tag.registerDecoder(item.tag, (tag: Tag, opts: any) => {
+      return item.fromCBORData.bind(item)(tag.contents, opts);
+    });
+  }
+
+  public addItems(items: RegistryItemClass[]): void {
+    items.forEach((item) => this.addItem(item));
+  }
+
+  public queryByTag(tag: number): RegistryItemClass | undefined {
+    const URType = this.tagMap.get(tag);
+    return URType ? this.registry.get(URType) : undefined;
+  }
+
+  public queryByURType(URType: string): RegistryItemClass | undefined {
+    return this.registry.get(URType);
+  }
+
+  /**
+   * Removes an item from the registry based on its URType, tag, or item instance.
+   * @param findItem - The item to be removed. It can be an instance of RegistryItemClass, a URType string, or a tag number.
+   */
+  public removeItem(findItem: RegistryItemClass | string | number): void {
+    let foundItem: RegistryItemClass | undefined;
+    if (typeof findItem === "string") {
+      foundItem = this.queryByURType(findItem);
+      if (!foundItem) {
+        this.log(`Warning: No item found with URType: ${findItem}`);
+        return;
+      }
+    } else if (typeof findItem === "number") {
+      foundItem = this.queryByTag(findItem);
+      if (!foundItem) {
+        this.log(`Warning: No item found with tag: ${findItem}`);
+        return;
+      }
+    } else {
+      // Check if the item is in the registry
+      const URType = findItem.URType;
+      if (this.registry.has(URType)) {
+        foundItem = findItem;
+      }
+      else {
+        this.log(`Warning: Item not found in registry with type: ${URType}`);
+        return;
+      }
+    }
+
+    // Remove it from registry
+    this.registry.delete(foundItem.URType);
+    this.tagMap.delete(foundItem.tag);
+    Tag.clearDecoder(foundItem.tag);
+  }
+
+  public clearRegistry(): void {
+    this.registry.forEach((item) => {
+      Tag.clearDecoder(item.tag);
+    });
+    this.registry.clear();
+    this.tagMap.clear();
+  }
+
+  public getRegistry(): Registry {
+    return this.registry;
+  }
 }
 
-// RegistryItemClass is a type that enforces that the class has a static method fromCBOR
-type RegistryItemClass<T extends RegistryItem> = {
-  new (...args: any[]): RegistryItem;
-  fromCBOR(data: Buffer): T;
-};
-
-export const registry: { [type: string]: RegistryItemClass<any> } = {
-  bytes: Bytes,
-};
-
-/**
- * This function is used to get the correct RegistryItem class from the registry
- * and ensures that the default class is returned if none were found.
- * @param type registry type
- * @returns
- */
-export function getItemFromRegistry(type: string): RegistryItemClass<any> {
-  return registry[type] || RegistryItem;
-}
+export const globalUrRegistry = new URRegistry();

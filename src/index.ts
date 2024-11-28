@@ -1,23 +1,23 @@
-import { Decoder, IDecoder } from "./classes/Decoder";
-import { Encoder, IEncoder } from "./classes/Encoder";
-import { MultipartUr } from "./classes/MultipartUr";
+import { Decoder, IDecoder } from "./classes/Decoder.js";
+import { Encoder, IEncoder } from "./classes/Encoder.js";
+import { MultipartUr } from "./classes/MultipartUr.js";
 import {
   createUrTranscoder,
   createMultipartUrTranscoder,
   createFountainUrTranscoder,
-} from "./ngraveTranscoder";
-import { Ur } from "./classes/Ur";
-import { UrDecoder } from "./classes/UrDecoder";
-import { UrEncoder } from "./classes/UrEncoder";
-import { UrMultipartEncoder } from "./classes/UrMultipartEncoder";
-import { UrMultipartDecoder } from "./classes/UrMultipartDecoder";
-import UrFountainDecoder from "./classes/UrFountainDecoder";
-import UrFountainEncoder from "./classes/UrFountainEncoder";
-import { RegistryItem } from "./classes/RegistryItem";
-import { registry } from "./registry";
+} from "./ngraveTranscoder.js";
+import { Ur } from "./classes/Ur.js";
+import { UrDecoder } from "./classes/UrDecoder.js";
+import { UrEncoder } from "./classes/UrEncoder.js";
+import { UrMultipartEncoder } from "./classes/UrMultipartEncoder.js";
+import { UrMultipartDecoder } from "./classes/UrMultipartDecoder.js";
+import UrFountainDecoder from "./classes/UrFountainDecoder.js";
+import UrFountainEncoder from "./classes/UrFountainEncoder.js";
+import { RegistryItem } from "./classes/RegistryItem.js";
+import { globalUrRegistry } from "./registry.js";
 
 export {
-  registry,
+  globalUrRegistry,
   RegistryItem,
   Ur,
   MultipartUr,
