@@ -129,6 +129,11 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
   public nextPart(): string {
     this._seqNum = toUint32(this._seqNum + 1);
 
+    // when the seqnum restarts because of a number bigger than Uint32, we need to make sure to skip 0 to prevent invalid Multipart URs.
+    if (this._seqNum === 0) {
+      this._seqNum = toUint32(this._seqNum + 1);
+    }
+
     const indexes = chooseFragments(
       this._seqNum,
       this._fragments.length,

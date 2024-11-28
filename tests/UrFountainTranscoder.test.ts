@@ -231,6 +231,24 @@ describe("FountainTranscoder", () => {
       expect(result.data).toEqual(registryItem.data);
     });
 
+    test("fountainEncoder nextPart() should restart at seqNum 1 when the seqnum is bigger than uint32", () => {
+      const registryItem = new MockRegistryItem({ name: "Pieter" });
+  
+      let _seqNum = 4294967295; // Maximum value for uint32
+      const fountainEncoder = fountainEncoderCreator(
+        registryItem,
+        10,
+        10,
+        _seqNum
+      );
+  
+      const part1 = fountainEncoder.nextPart();
+      const part2 = fountainEncoder.nextPart();
+  
+      expect(MultipartUr.parseUr(part1).seqNum).toBe(1);
+      expect(MultipartUr.parseUr(part2).seqNum).toBe(2);
+    });    
+
     test("Should be able to encode/decode a simple string with default values", () => {
       const registryItem = new MockRegistryItem("thisIsATest");
       const fountainEncoder = fountainEncoderCreator(registryItem);
