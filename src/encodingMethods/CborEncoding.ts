@@ -2,7 +2,8 @@ import { URRegistry, globalUrRegistry } from "../registry.js";
 import { RegistryItem, RegistryItemClass } from "../classes/RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
-import { decode, DecodeOptions, encode, EncodeOptions } from "cbor2";
+import { decode, DecodeOptions, encode, EncodeOptions, } from "cbor2";
+import {registerEncoder, writeUint8Array} from 'cbor2/encoder';
 import { Tag } from "cbor2/tag";
 
 interface inputOptions {
@@ -10,6 +11,16 @@ interface inputOptions {
   cborLibEncoderOptions?: EncodeOptions;
   cborLibDecoderOptions?: DecodeOptions;
 }
+
+// For Node.js we are going to convert buffer into Uint8Array
+// This code should only run in Node.js
+// TODO: Handle checking if it is Node.js or not
+registerEncoder(Buffer, (b, _writer, _options) => {
+  // Conver buffer to Uint8Array
+  const u8 = new Uint8Array(b);
+  // This is a major type ( MT.BYTE_STRING ) so no tag is given
+  return [NaN, u8]
+});
 
 export class CborEncoding<T extends RegistryItem>
   implements IEncodingMethod<T, Buffer>
