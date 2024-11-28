@@ -256,8 +256,10 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     }
 
     // If this is a single-part UR then we're done
-    // FIXME: will never reach here because parseUr method will throw an error.
     if (!seqLength) {
+      // Mock the result so isSuccess returns true
+      // TODO: improve logic that depends on this.result and this.urDecoderResult
+      this.result = Buffer.from("Single part ur");
       this.urDecoderResult = this.decode(bytewords);
       return true;
     }

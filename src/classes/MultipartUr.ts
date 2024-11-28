@@ -71,7 +71,12 @@ export class MultipartUr<T extends RegistryItem = RegistryItem>
     seqLength: 23
   } 
    */
-  static parseUr(message: string) {
+  static parseUr(message: string): {
+    type: string;
+    payload: string;
+    seqNum?: number;
+    seqLength?: number;
+  } {
     const lowercase = message.toLowerCase(); // e.g. "ur:bytes/6-23/lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
     const prefix = lowercase.slice(0, 3);
 
@@ -81,7 +86,10 @@ export class MultipartUr<T extends RegistryItem = RegistryItem>
 
     const components = lowercase.slice(3).split("/");
 
-    if (components.length !== 3) {
+    if (components.length === 2) {
+      // could only be a singlePart ur or invalid
+      return Ur.parseUr(message);
+    } else if (components.length !== 3) {
       throw new InvalidPathLengthError();
     }
 
