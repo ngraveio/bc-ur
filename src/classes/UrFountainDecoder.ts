@@ -37,22 +37,34 @@ interface PartDict {
 }
 
 export default class UrFountainDecoder extends UrMultipartDecoder {
-  private errorRaw: Error | undefined;
-  private errorDecoded: any;
+  // Stores an error while decoding message
+  private error: Error | undefined;
+  // Stores the assembled raw result as a Buffer
   private resultAssembledRaw: Buffer | undefined = undefined;
+  // Stores the decoded result as a RegistryItem
   private resultDecoded: RegistryItem | undefined = undefined;
+  // Stores the expected type of the UR
   private expectedType: string;
 
+  // Stores the expected length of the message
   private expectedMessageLength: number = 0;
+  // Stores the expected checksum of the message
   private expectedChecksum: number = 0;
+  // Stores the expected length of each fragment
   private expectedFragmentLength: number = 0;
   // Keeps track of the amount of times 'receivepart()' has been called.
   private processedPartsCount: number = 0;
+  // Stores the expected indexes of the parts
   private expectedPartIndexes: PartIndexes = [];
+  // Stores the indexes of the last part received
   private lastPartIndexes: PartIndexes = [];
+  // Queue of parts to be processed
   private queuedParts: FountainDecoderPart[] = [];
+  // Stores the indexes of the parts that have been received
   private receivedPartIndexes: PartIndexes = [];
+  // Stores the mixed parts
   private mixedParts: PartDict[] = [];
+  // Stores the simple parts
   private simpleParts: PartDict[] = [];
 
   /**
@@ -166,7 +178,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
       if (checksum === this.expectedChecksum) {
         this.resultAssembledRaw = message;
       } else {
-        this.errorRaw = new InvalidChecksumError();
+        this.error = new InvalidChecksumError();
       }
     } else {
       this.reduceMixedBy(part);
@@ -283,8 +295,6 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     if (this.isSuccess()) {
       const decodedMessage = new CborEncoding().decode(this.resultAssembledRaw);
       this.resultDecoded = decodedMessage;
-    } else if (this.isFailure()) {
-      this.errorDecoded = new InvalidSchemeError();
     }
 
     return true;
@@ -347,19 +357,19 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
   }
 
   public isSuccess() {
-    return Boolean(this.errorRaw === undefined && this.isComplete());
+    return Boolean(this.error === undefined && this.isComplete());
   }
 
   public isUrDecoderSuccess(): boolean {
-    return !this.errorDecoded && this.isUrDecoderComplete();
+    return !this.error && this.isUrDecoderComplete();
   }
 
   public isFailure() {
-    return this.errorRaw !== undefined;
+    return this.error !== undefined;
   }
 
   public resultError() {
-    return this.errorRaw ? this.errorRaw.message : "";
+    return this.error ? this.error.message : "";
   }
 
   public expectedPartCount(): number {
