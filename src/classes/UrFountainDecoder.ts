@@ -12,8 +12,6 @@ import { MultipartPayload, UrMultipartDecoder } from "./UrMultipartDecoder.js";
 import { Ur } from "./Ur.js";
 import { RegistryItem } from "./RegistryItem.js";
 import { CborEncoding } from "../encodingMethods/CborEncoding.js";
-import { BytewordEncoding } from "../encodingMethods/BytewordEncoding.js";
-import { HexEncoding } from "../encodingMethods/HexEncoding.js";
 
 class FountainDecoderPart {
   constructor(private _indexes: number[], private _fragment: Buffer) {}
@@ -271,10 +269,10 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     if (!seqLength) {
       // For a single-part UR, the raw result is the same as the decoded result when calling this.decode, as it does not need reassembly.
       // We do the decoding steps manually to get the buffer and the decoded result.
-      const hex = new BytewordEncoding().decode(bytewords);
-      const buffer = new HexEncoding().decode(hex);
+      const hex = this.encodingMethods[0].decode(bytewords); // BytewordEncoding
+      const buffer = this.encodingMethods[1].decode(hex); // HexEncoding
       this.resultAssembledRaw = buffer;
-      this.resultDecoded = new CborEncoding().decode(buffer);
+      this.resultDecoded = this.encodingMethods[2].decode(buffer); // CborEncoding
       return true;
     }
 
