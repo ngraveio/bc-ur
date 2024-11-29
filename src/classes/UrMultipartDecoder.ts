@@ -49,13 +49,22 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
       fragmentLength: number;
     } = null;
 
+    if (fragments.length === 1) {
+      const { payload, seqLength } = MultipartUr.parseUr(fragments[0]);
+
+      // it should be a single part ur, which means it should not have a seqLength
+      if (!seqLength) {
+        return this.decode<T>(payload);
+      }
+    }
+
     const fragmentPayloads: Buffer[] = fragments.map((fragment) => {
-      const multipart = this.decodeMultipartUr(fragment);
-      const validatedPayload = this.validateMultipartPayload(multipart.payload);
+      const { payload, type } = this.decodeMultipartUr(fragment);
+      const validatedPayload = this.validateMultipartPayload(payload);
 
       // set expected registryType if it does not exist
-      if (!expectedRegistryType && Ur.isURType(multipart?.type)) {
-        expectedRegistryType = multipart.type;
+      if (!expectedRegistryType && Ur.isURType(type)) {
+        expectedRegistryType = type;
       }
 
       // set expected payload if it does not exist
@@ -73,7 +82,7 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
       // compare expected type with the received the fragment
       if (
         expectedRegistryType &&
-        !this.compareRegistryType(expectedRegistryType, multipart.type)
+        !this.compareRegistryType(expectedRegistryType, type)
       ) {
         console.warn("Did not expect this ur type");
         // return default value.

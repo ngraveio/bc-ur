@@ -1,5 +1,8 @@
 import { AssertionError } from "assert";
-import { createMultipartUrTranscoder } from "../src/ngraveTranscoder";
+import {
+  createMultipartUrTranscoder,
+  createUrTranscoder,
+} from "../src/ngraveTranscoder";
 import { registryItemFactory } from "../src/classes/RegistryItem";
 import { CborEncoding } from "../src/encodingMethods/CborEncoding";
 import { globalUrRegistry } from "../src";
@@ -88,6 +91,13 @@ describe("FountainTranscoder", () => {
           metadata.data.firmwareVersion
         );
         expect(decodedPayload.type.tag).toEqual(Metadata.tag);
+      });
+      test("Should be able to decode a single UR", () => {
+        const { encoder: singleUrEncoder } = createUrTranscoder();
+        const singleUr = singleUrEncoder.encodeUr(item);
+        const decodedPayload = decoder.decodeUr([singleUr]);
+        expect(decodedPayload).toBeInstanceOf(MockRegistryItem);
+        expect(decodedPayload.data).toEqual(item.data);
       });
     });
   });
