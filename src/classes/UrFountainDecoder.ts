@@ -299,7 +299,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
   }
 
   public receiveFountainPart(encoderPart: MultipartPayload): boolean {
-    if (this.isComplete()) {
+    if (this.isRawResultComplete()) {
       return false;
     }
 
@@ -319,7 +319,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     this.lastPartIndexes = decoderPart.indexes;
     this.queuedParts.push(decoderPart);
 
-    while (!this.isComplete() && this.queuedParts.length > 0) {
+    while (!this.isRawResultComplete() && this.queuedParts.length > 0) {
       this.processQueuedItem();
     }
 
@@ -328,7 +328,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     return true;
   }
 
-  private isComplete() {
+  public isRawResultComplete() {
     return Boolean(
       this.resultAssembledRaw !== undefined &&
         this.resultAssembledRaw.length > 0
@@ -355,7 +355,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
   }
 
   public isSuccess() {
-    return Boolean(this.error === undefined && this.isComplete());
+    return Boolean(this.error === undefined && this.isRawResultComplete());
   }
 
   public isUrDecoderSuccess(): boolean {
@@ -387,7 +387,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
   }
 
   public estimatedPercentComplete(): number {
-    if (this.isComplete()) {
+    if (this.isRawResultComplete()) {
       return 1;
     }
 
@@ -407,7 +407,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
   }
 
   public getProgress(): number {
-    if (this.isComplete()) {
+    if (this.isRawResultComplete()) {
       return 1;
     }
 
