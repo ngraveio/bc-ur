@@ -12,6 +12,8 @@ import { MultipartPayload, UrMultipartDecoder } from "./UrMultipartDecoder.js";
 import { Ur } from "./Ur.js";
 import { RegistryItem } from "./RegistryItem.js";
 import { CborEncoding } from "../encodingMethods/CborEncoding.js";
+import { BytewordEncoding } from "../encodingMethods/BytewordEncoding.js";
+import { HexEncoding } from "../encodingMethods/HexEncoding.js";
 
 class FountainDecoderPart {
   constructor(private _indexes: number[], private _fragment: Buffer) {}
@@ -35,12 +37,10 @@ interface PartDict {
 }
 
 export default class UrFountainDecoder extends UrMultipartDecoder {
-  private error: Error | undefined;
-  private urDecoderError: any;
-
-  private result: Buffer | undefined = undefined;
-
-  private urDecoderResult: RegistryItem | undefined = undefined;
+  private errorRaw: Error | undefined;
+  private errorDecoded: any;
+  private resultAssembledRaw: Buffer | undefined = undefined;
+  private resultDecoded: RegistryItem | undefined = undefined;
   private expectedType: string;
 
   private expectedMessageLength: number = 0;
@@ -164,9 +164,9 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
       const checksum = getCRC(message);
 
       if (checksum === this.expectedChecksum) {
-        this.result = message;
+        this.resultAssembledRaw = message;
       } else {
-        this.error = new InvalidChecksumError();
+        this.errorRaw = new InvalidChecksumError();
       }
     } else {
       this.reduceMixedBy(part);
@@ -244,7 +244,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
 
   receivePart(s: string): boolean {
     // If we already have a result, we're done
-    if (this.urDecoderResult !== undefined) {
+    if (this.resultDecoded !== undefined) {
       return false;
     }
 
@@ -257,10 +257,12 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
 
     // If this is a single-part UR then we're done
     if (!seqLength) {
-      // Mock the result so isSuccess returns true
-      // TODO: improve logic that depends on this.result and this.urDecoderResult
-      this.result = Buffer.from("Single part ur");
-      this.urDecoderResult = this.decode(bytewords);
+      // For a single-part UR, the raw result is the same as the decoded result when calling this.decode, as it does not need reassembly.
+      // We do the decoding steps manually to get the buffer and the decoded result.
+      const hex = new BytewordEncoding().decode(bytewords);
+      const buffer = new HexEncoding().decode(hex);
+      this.resultAssembledRaw = buffer;
+      this.resultDecoded = new CborEncoding().decode(buffer);
       return true;
     }
 
@@ -279,10 +281,10 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     }
 
     if (this.isSuccess()) {
-      const decodedMessage = new CborEncoding().decode(this.result);
-      this.urDecoderResult = decodedMessage;
+      const decodedMessage = new CborEncoding().decode(this.resultAssembledRaw);
+      this.resultDecoded = decodedMessage;
     } else if (this.isFailure()) {
-      this.urDecoderError = new InvalidSchemeError();
+      this.errorDecoded = new InvalidSchemeError();
     }
 
     return true;
@@ -318,19 +320,26 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     return true;
   }
 
-  public isComplete() {
-    return Boolean(this.result !== undefined && this.result.length > 0);
+  private isComplete() {
+    return Boolean(
+      this.resultAssembledRaw !== undefined &&
+        this.resultAssembledRaw.length > 0
+    );
   }
 
   public isUrDecoderComplete(): boolean {
-    if (this.urDecoderResult) {
+    if (this.resultDecoded) {
       return true;
     }
     return false;
   }
 
   public getResultRegistryItem(): RegistryItem {
-    return this.urDecoderResult;
+    return this.resultDecoded;
+  }
+
+  public getRawResult(): Buffer {
+    return this.resultAssembledRaw;
   }
 
   public isUrDecoderCompleteOrHasError(): boolean {
@@ -338,27 +347,19 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
   }
 
   public isSuccess() {
-    return Boolean(this.error === undefined && this.isComplete());
+    return Boolean(this.errorRaw === undefined && this.isComplete());
   }
 
   public isUrDecoderSuccess(): boolean {
-    return !this.urDecoderError && this.isUrDecoderComplete();
-  }
-
-  public resultMessage(): Buffer {
-    return this.isSuccess() ? this.result! : Buffer.from([]);
-  }
-
-  public getDecodedResult() {
-    return this.isSuccess() ? this.decodeCbor(this.result)! : null;
+    return !this.errorDecoded && this.isUrDecoderComplete();
   }
 
   public isFailure() {
-    return this.error !== undefined;
+    return this.errorRaw !== undefined;
   }
 
   public resultError() {
-    return this.error ? this.error.message : "";
+    return this.errorRaw ? this.errorRaw.message : "";
   }
 
   public expectedPartCount(): number {
