@@ -22,8 +22,6 @@ export class MockRegistryItem2 extends registryItemFactory({
   CDDL: ``,
 }) {}
 
-
-
 describe("FountainTranscoder", () => {
   beforeAll(() => {
     // Add the MockRegistryItem to the registry
@@ -233,7 +231,7 @@ describe("FountainTranscoder", () => {
 
     test("fountainEncoder nextPart() should restart at seqNum 1 when the seqnum is bigger than uint32", () => {
       const registryItem = new MockRegistryItem({ name: "Pieter" });
-  
+
       let _seqNum = 4294967295; // Maximum value for uint32
       const fountainEncoder = fountainEncoderCreator(
         registryItem,
@@ -241,13 +239,13 @@ describe("FountainTranscoder", () => {
         10,
         _seqNum
       );
-  
+
       const part1 = fountainEncoder.nextPart();
       const part2 = fountainEncoder.nextPart();
-  
+
       expect(MultipartUr.parseUr(part1).seqNum).toBe(1);
       expect(MultipartUr.parseUr(part2).seqNum).toBe(2);
-    });    
+    });
 
     test("Should be able to encode/decode a simple string with default values", () => {
       const registryItem = new MockRegistryItem("thisIsATest");
@@ -295,14 +293,26 @@ describe("FountainTranscoder", () => {
         registryItem.data
       );
     });
-    test("Should throw an error when decoding a simple ur", () => {
+    test("Should accept a simple ur", () => {
       const message = makeMessage(30);
       const registryItem = new MockRegistryItem(message);
       const singleEncodedUR = encoder.encodeUr(registryItem);
       const fountainDecoder = fountainDecoderCreator();
+      expect(fountainDecoder.receivePart(singleEncodedUR)).toEqual(true);
+    });
+    test("Should be able to encode/decode a buffer", () => {
+      const message = makeMessage(250);
+      const registryItem = new MockRegistryItem(message);
+      const singleEncodedUR = encoder.encodeUr(registryItem);
+      const fountainDecoder = fountainDecoderCreator();
 
-      expect(() => fountainDecoder.receivePart(singleEncodedUR)).toThrow(
-        InvalidPathLengthError
+      do {
+        fountainDecoder.receivePart(singleEncodedUR);
+      } while (!fountainDecoder.isUrDecoderCompleteOrHasError());
+
+      expect(fountainDecoder.isSuccess()).toEqual(true);
+      expect(fountainDecoder.getResultRegistryItem().data).toEqual(
+        registryItem.data
       );
     });
     test("Should be able to encode/decode a buffer with a small fragment length", () => {
