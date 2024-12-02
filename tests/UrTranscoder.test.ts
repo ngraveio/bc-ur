@@ -1,19 +1,33 @@
-import { registry, RegistryItem } from "../src";
+import { globalUrRegistry } from "../src";
+import { registryItemFactory } from "../src/classes/RegistryItem";
 import { InvalidTypeError } from "../src/errors";
 import { createUrTranscoder } from "../src/ngraveTranscoder";
 
-// Create a MockRegistryItem class
-export class MockRegistryItem extends RegistryItem {
-  constructor(dataRaw?: any) {
-    super("custom", 0, dataRaw);
-  }
-}
+export class MockRegistryItem extends registryItemFactory({
+  tag: 998,
+  URType: "custom1",
+  CDDL: ``,
+}) {}
 
-// add it to the registry
-registry["custom"] = new MockRegistryItem();
+export class InvalidRegistryItem extends registryItemFactory({
+  tag: 0,
+  URType: "è",
+  CDDL: ``,
+}) {}
 
 describe("UrEncoder", () => {
   const { encoder, decoder } = createUrTranscoder();
+  beforeAll(() => {
+    // Add the MockRegistryItem to the registry
+    globalUrRegistry.addItem(MockRegistryItem);
+    globalUrRegistry.addItem(InvalidRegistryItem);
+  });
+
+  afterAll(() => {
+    // Clear the registry
+    globalUrRegistry.removeItem(MockRegistryItem);
+    globalUrRegistry.removeItem(InvalidRegistryItem);
+  });
 
   test("should encode/decode a ur", () => {
     const registryItem = new MockRegistryItem({ name: "Pieter" });
@@ -24,7 +38,7 @@ describe("UrEncoder", () => {
     expect(decodedItem.data).toEqual(registryItem.data);
   });
   test("should throw invalid type error for invalid ur type", () => {
-    const registryItem = new RegistryItem("è", 0, { name: "Pieter" });
+    const registryItem = new InvalidRegistryItem({ name: "Pieter" });
     const encodedUr = encoder.encodeUr(registryItem);
 
     expect(() => decoder.decodeUr(encodedUr)).toThrow(InvalidTypeError);

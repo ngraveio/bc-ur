@@ -35,24 +35,34 @@ interface PartDict {
 }
 
 export default class UrFountainDecoder extends UrMultipartDecoder {
+  // Stores an error while decoding message
   private error: Error | undefined;
-  private urDecoderError: any;
-
-  private result: Buffer | undefined = undefined;
-
-  private urDecoderResult: RegistryItem | undefined = undefined;
+  // Stores the assembled raw result as a Buffer
+  private resultAssembledRaw: Buffer | undefined = undefined;
+  // Stores the decoded result as a RegistryItem
+  private resultDecoded: RegistryItem | undefined = undefined;
+  // Stores the expected type of the UR
   private expectedType: string;
 
+  // Stores the expected length of the message
   private expectedMessageLength: number = 0;
+  // Stores the expected checksum of the message
   private expectedChecksum: number = 0;
+  // Stores the expected length of each fragment
   private expectedFragmentLength: number = 0;
   // Keeps track of the amount of times 'receivepart()' has been called.
   private processedPartsCount: number = 0;
+  // Stores the expected indexes of the parts
   private expectedPartIndexes: PartIndexes = [];
+  // Stores the indexes of the last part received
   private lastPartIndexes: PartIndexes = [];
+  // Queue of parts to be processed
   private queuedParts: FountainDecoderPart[] = [];
+  // Stores the indexes of the parts that have been received
   private receivedPartIndexes: PartIndexes = [];
+  // Stores the mixed parts
   private mixedParts: PartDict[] = [];
+  // Stores the simple parts
   private simpleParts: PartDict[] = [];
 
   /**
@@ -164,7 +174,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
       const checksum = getCRC(message);
 
       if (checksum === this.expectedChecksum) {
-        this.result = message;
+        this.resultAssembledRaw = message;
       } else {
         this.error = new InvalidChecksumError();
       }
@@ -244,7 +254,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
 
   receivePart(s: string): boolean {
     // If we already have a result, we're done
-    if (this.urDecoderResult !== undefined) {
+    if (this.resultDecoded !== undefined) {
       return false;
     }
 
@@ -256,9 +266,13 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     }
 
     // If this is a single-part UR then we're done
-    // FIXME: will never reach here because parseUr method will throw an error.
     if (!seqLength) {
-      this.urDecoderResult = this.decode(bytewords);
+      // For a single-part UR, the raw result is the same as the decoded result when calling this.decode, as it does not need reassembly.
+      // We do the decoding steps manually to get the buffer and the decoded result.
+      const hex = this.encodingMethods[0].decode(bytewords); // BytewordEncoding
+      const buffer = this.encodingMethods[1].decode(hex); // HexEncoding
+      this.resultAssembledRaw = buffer;
+      this.resultDecoded = this.encodingMethods[2].decode(buffer); // CborEncoding
       return true;
     }
 
@@ -277,17 +291,15 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     }
 
     if (this.isSuccess()) {
-      const decodedMessage = new CborEncoding().decode(this.result);
-      this.urDecoderResult = decodedMessage;
-    } else if (this.isFailure()) {
-      this.urDecoderError = new InvalidSchemeError();
+      const decodedMessage = new CborEncoding().decode(this.resultAssembledRaw);
+      this.resultDecoded = decodedMessage;
     }
 
     return true;
   }
 
   public receiveFountainPart(encoderPart: MultipartPayload): boolean {
-    if (this.isComplete()) {
+    if (this.isRawResultComplete()) {
       return false;
     }
 
@@ -307,7 +319,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     this.lastPartIndexes = decoderPart.indexes;
     this.queuedParts.push(decoderPart);
 
-    while (!this.isComplete() && this.queuedParts.length > 0) {
+    while (!this.isRawResultComplete() && this.queuedParts.length > 0) {
       this.processQueuedItem();
     }
 
@@ -316,19 +328,26 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     return true;
   }
 
-  public isComplete() {
-    return Boolean(this.result !== undefined && this.result.length > 0);
+  public isRawResultComplete() {
+    return Boolean(
+      this.resultAssembledRaw !== undefined &&
+        this.resultAssembledRaw.length > 0
+    );
   }
 
   public isUrDecoderComplete(): boolean {
-    if (this.urDecoderResult) {
+    if (this.resultDecoded) {
       return true;
     }
     return false;
   }
 
   public getResultRegistryItem(): RegistryItem {
-    return this.urDecoderResult;
+    return this.resultDecoded;
+  }
+
+  public getRawResult(): Buffer {
+    return this.resultAssembledRaw;
   }
 
   public isUrDecoderCompleteOrHasError(): boolean {
@@ -336,19 +355,11 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
   }
 
   public isSuccess() {
-    return Boolean(this.error === undefined && this.isComplete());
+    return Boolean(this.error === undefined && this.isRawResultComplete());
   }
 
   public isUrDecoderSuccess(): boolean {
-    return !this.urDecoderError && this.isUrDecoderComplete();
-  }
-
-  public resultMessage(): Buffer {
-    return this.isSuccess() ? this.result! : Buffer.from([]);
-  }
-
-  public getDecodedResult() {
-    return this.isSuccess() ? this.decodeCbor(this.result)! : null;
+    return !this.error && this.isUrDecoderComplete();
   }
 
   public isFailure() {
@@ -376,7 +387,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
   }
 
   public estimatedPercentComplete(): number {
-    if (this.isComplete()) {
+    if (this.isRawResultComplete()) {
       return 1;
     }
 
@@ -396,7 +407,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
   }
 
   public getProgress(): number {
-    if (this.isComplete()) {
+    if (this.isRawResultComplete()) {
       return 1;
     }
 
