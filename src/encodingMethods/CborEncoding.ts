@@ -26,7 +26,7 @@ export class CborEncoding<T extends RegistryItem>
   implements IEncodingMethod<T, Buffer>
 {
   private _name: EncodingMethodName = EncodingMethodName.cbor;
-  public registry: URRegistry;
+  public registry: URRegistry = globalUrRegistry;
 
   /** Decoding options for CBOR2 library */
   cborLibEncoderOptions: EncodeOptions;
@@ -35,8 +35,6 @@ export class CborEncoding<T extends RegistryItem>
   constructor(options?: inputOptions) {
     this.cborLibEncoderOptions = options?.cborLibEncoderOptions;
     this.cborLibDecoderOptions = options?.cborLibDecoderOptions;
-    // If given registry, use that isolated one
-    this.registry = options?.registry || globalUrRegistry;
   }
 
   get name(): EncodingMethodName {
