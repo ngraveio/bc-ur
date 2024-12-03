@@ -4,8 +4,9 @@
   "author": "Antonis Poulakis <antwnic4@gmail.com>, Irfan Bilaloğlu <irfanbilaloglu@gmail.com>, Pieter Uyttersprot <pieter.uyttersprot@ngrave.io>",
   "description": "A JS implementation of the Uniform Resources (UR) specification from Blockchain Commons",
   "license": "MIT",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
   "type": "module",
   "directories": {
     "lib": "src",
@@ -18,7 +19,7 @@
   "scripts": {
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
     "build": "yarn clean && yarn compile",
-    "compile": "tsc -p tsconfig.json -outDir ./dist",
+    "compile": "tsc -p tsconfig.json && tsc -p tsconfig.json --module commonjs --outDir dist/cjs && tsc -p tsconfig.json --module esnext --outDir dist/esm",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "prepublish": "yarn build",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" --max-warnings=0"
@@ -41,6 +42,13 @@
     "rimraf": "^6.0.1",
     "ts-jest": "^29.2.5",
     "typescript": "5.6.2"
+  },
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
+      "react-native": "./dist/esm/index.js"
+    }
   },
   "repository": {
     "type": "git",

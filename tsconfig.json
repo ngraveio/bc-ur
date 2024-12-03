@@ -21,7 +21,8 @@
     "paths": {
       "cbor2": ["./node_modules/cbor2/lib/index.d.ts"],
       "cbor2/*": ["./node_modules/cbor2/lib/*"]
-    }    
+    },
+    "declarationDir": "./dist/types"
   },
   "paths": {
     "*": [
