@@ -4,13 +4,25 @@ import { Tag } from "cbor2/tag";
 export type Registry = Map<string, RegistryItemClass>;
 
 export class URRegistry {
+  private static instance: URRegistry;
   private registry: Registry = new Map();
   private tagMap: Map<number, string> = new Map();
   private loggingEnabled: boolean;
 
-  constructor(items: RegistryItemClass[] = [], loggingEnabled: boolean = true) {
+  private constructor(items: RegistryItemClass[] = [], loggingEnabled: boolean = true) {
     this.loggingEnabled = loggingEnabled;
     this.addItems(items);
+  }
+
+  public static getInstance(items: RegistryItemClass[] = [], loggingEnabled: boolean = true): URRegistry {
+    if (!URRegistry.instance) {
+      URRegistry.instance = new URRegistry(items, loggingEnabled);
+    }
+    return URRegistry.instance;
+  }
+
+  public setLoggingEnabled(enabled: boolean): void {
+    this.loggingEnabled = enabled;
   }
 
   private log(message: string): void {
@@ -97,4 +109,4 @@ export class URRegistry {
   }
 }
 
-export const globalUrRegistry = new URRegistry();
+export const globalUrRegistry = URRegistry.getInstance();
