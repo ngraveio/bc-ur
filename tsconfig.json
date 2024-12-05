@@ -32,9 +32,11 @@
   },
   "references": [],
   "include": [
-    "src/**/*"
+    "src/**/*.ts",
   ],
   "exclude": [
-    "tests/"
+    "node_modules",
+    "dist",
+    "tests"
   ]
 }

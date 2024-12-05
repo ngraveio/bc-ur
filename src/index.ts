@@ -1,4 +1,4 @@
-import { Decoder, IDecoder } from "./classes/Decoder.js";
+import { Decoder, IDecoder } from "./classes/Decoder";
 import { Encoder, IEncoder } from "./classes/Encoder.js";
 import { MultipartUr } from "./classes/MultipartUr.js";
 import {
@@ -15,6 +15,7 @@ import UrFountainDecoder from "./classes/UrFountainDecoder.js";
 import UrFountainEncoder from "./classes/UrFountainEncoder.js";
 import { RegistryItem, registryItemFactory, RegistryItemClass } from "./classes/RegistryItem.js";
 import { globalUrRegistry } from "./registry.js";
+import { CborEncoding } from "./encodingMethods/CborEncoding.js";
 
 export {
   globalUrRegistry,
@@ -29,6 +30,7 @@ export {
   IDecoder,
   Decoder,
   UrDecoder,
+  CborEncoding,
   UrMultipartDecoder as MultipartUrDecoder,
   UrFountainDecoder,
   IEncoder,
