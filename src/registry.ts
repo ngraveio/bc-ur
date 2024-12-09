@@ -8,15 +8,33 @@ export class URRegistry {
   private registry: Registry = new Map();
   private tagMap: Map<number, string> = new Map();
   private loggingEnabled: boolean;
+  private _ignoreKeysNotInMap: boolean;
 
-  private constructor(items: RegistryItemClass[] = [], loggingEnabled: boolean = true) {
+  private constructor(
+    items: RegistryItemClass[] = [],
+    loggingEnabled: boolean = true,
+    ignoreKeysNotInMap: boolean = false
+  ) {
     this.loggingEnabled = loggingEnabled;
+    this._ignoreKeysNotInMap = ignoreKeysNotInMap;
     this.addItems(items);
   }
 
-  public static getInstance(items: RegistryItemClass[] = [], loggingEnabled: boolean = true): URRegistry {
+  set ignoreKeysNotInMap(value: boolean) {
+    this._ignoreKeysNotInMap = value;
+  }
+
+  public static getInstance(
+    items: RegistryItemClass[] = [],
+    loggingEnabled: boolean = true,
+    ignoreKeysNotInMap: boolean = false
+  ): URRegistry {
     if (!URRegistry.instance) {
-      URRegistry.instance = new URRegistry(items, loggingEnabled);
+      URRegistry.instance = new URRegistry(
+        items,
+        loggingEnabled,
+        ignoreKeysNotInMap
+      );
     }
     return URRegistry.instance;
   }
@@ -43,7 +61,11 @@ export class URRegistry {
     this.registry.set(item.URType, item);
     this.tagMap.set(item.tag, item.URType);
     Tag.registerDecoder(item.tag, (tag: Tag, opts: any) => {
-      return item.fromCBORData.bind(item)(tag.contents, opts);
+      return item.fromCBORData.bind(item)(
+        tag.contents,
+        this._ignoreKeysNotInMap,
+        opts
+      );
     });
   }
 
@@ -83,8 +105,7 @@ export class URRegistry {
       const URType = findItem.URType;
       if (this.registry.has(URType)) {
         foundItem = findItem;
-      }
-      else {
+      } else {
         this.log(`Warning: Item not found in registry with type: ${URType}`);
         return;
       }
