@@ -1,3 +1,4 @@
+import { stringToUint8Array, uint8ArrayToHex } from "uint8array-extras";
 import { MultipartUrEncoder } from "../src";
 import { chooseDegree, chooseFragments, shuffle } from "../src/fountainUtils";
 import { bufferXOR, getCRC, intToBytes, makeMessage } from "../src/utils";
@@ -23,7 +24,7 @@ describe("Xoshiro rng", () => {
   });
 
   test("2", () => {
-    const checksum = intToBytes(getCRC(Buffer.from("Wolf")));
+    const checksum = intToBytes(getCRC(stringToUint8Array("Wolf")));
     const rng = new Xoshiro(checksum);
     const numbers = [...new Array(100)].map(() =>
       rng.next().mod(100).toNumber()
@@ -41,7 +42,7 @@ describe("Xoshiro rng", () => {
   });
 
   test("3", () => {
-    const rng = new Xoshiro(Buffer.from("Wolf"));
+    const rng = new Xoshiro(stringToUint8Array("Wolf"));
     const numbers = [...new Array(100)].map(() => rng.nextInt(1, 10));
     const expectedNumbers = [
       6, 5, 8, 4, 10, 5, 7, 10, 4, 9, 10, 9, 7, 7, 1, 1, 2, 9, 9, 2, 6, 4, 5, 7,
@@ -57,7 +58,7 @@ describe("Xoshiro rng", () => {
 
 describe("Shuffle", () => {
   test("random shuffle", () => {
-    const rng = new Xoshiro(Buffer.from("Wolf"));
+    const rng = new Xoshiro(stringToUint8Array("Wolf"));
     const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
     const result = [...new Array(10)].map(() => shuffle(values, rng));
@@ -80,7 +81,7 @@ describe("Shuffle", () => {
 
 describe("Random Sampler", () => {
   test("random sampler", () => {
-    const rng = new Xoshiro(Buffer.from("Wolf"));
+    const rng = new Xoshiro(stringToUint8Array("Wolf"));
     const sampler = randomSampler([1, 2, 4, 8], null, rng.nextDouble);
 
     const samples = [...new Array(500)].map(() => sampler.next());
@@ -111,6 +112,30 @@ describe("Random Sampler", () => {
   });
 });
 
+describe("XOR", () => {
+  test("test xor", () => {
+    const rng = new Xoshiro(stringToUint8Array("Wolf"));
+    const data1 = new Uint8Array(rng.nextData(10));
+
+    expect(uint8ArrayToHex(data1)).toEqual("916ec65cf77cadf55cd7");
+
+    const data2 = new Uint8Array(rng.nextData(10));
+
+    expect(uint8ArrayToHex(data2)).toEqual("f9cda1a1030026ddd42e");
+
+    let data3 = new Uint8Array(data1.length);
+
+    data3.set(data1);
+    data3 = bufferXOR(data3, data2);
+
+    expect(uint8ArrayToHex(data3)).toEqual("68a367fdf47c8b2888f9");
+
+    data3 = bufferXOR(data3, data1);
+
+    expect(data3.every((value, index) => value === data2[index])).toBe(true);
+  });
+});
+
 const encoder = new MultipartUrEncoder([]);
 
 describe("Degree", () => {
@@ -124,7 +149,7 @@ describe("Degree", () => {
     const fragments = encoder.partitionMessage(message, fragmentLength);
 
     const degrees = [...new Array(200)].map((_, index) => {
-      const rng = new Xoshiro(Buffer.from(`Wolf-${index + 1}`));
+      const rng = new Xoshiro(stringToUint8Array(`Wolf-${index + 1}`));
       return chooseDegree(fragments.length, rng);
     });
     const expectedDegrees = [
@@ -193,28 +218,5 @@ describe("Fragments", () => {
     ];
 
     expect(fragmentIndexes).toEqual(expectedDegrees);
-  });
-});
-
-describe("XOR", () => {
-  test("test xor", () => {
-    const rng = new Xoshiro(Buffer.from("Wolf"));
-    const data1 = Buffer.from(rng.nextData(10));
-
-    expect(data1.toString("hex")).toEqual("916ec65cf77cadf55cd7");
-
-    const data2 = Buffer.from(rng.nextData(10));
-
-    expect(data2.toString("hex")).toEqual("f9cda1a1030026ddd42e");
-    let data3 = Buffer.alloc(data1.length);
-
-    data1.copy(data3);
-    data3 = bufferXOR(data3, data2);
-
-    expect(data3.toString("hex")).toEqual("68a367fdf47c8b2888f9");
-
-    data3 = bufferXOR(data3, data1);
-
-    expect(data3.equals(data2)).toBe(true);
   });
 });

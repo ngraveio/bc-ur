@@ -9,7 +9,7 @@ import { CborEncoding } from "../encodingMethods/CborEncoding.js";
 /**
  * [seqNum, fragments.length, totalPayloadLength, checksum, fragment]
  */
-export type IMultipartUrPayload = [number, number, number, number, Buffer];
+export type IMultipartUrPayload = [number, number, number, number, Uint8Array];
 
 export class UrMultipartEncoder extends Encoder<Buffer, string> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
@@ -65,14 +65,15 @@ export class UrMultipartEncoder extends Encoder<Buffer, string> {
    * @param fragmentLength
    * @returns
    */
-  partitionMessage(message: Buffer, fragmentLength: number): Buffer[] {
-    let remaining = Buffer.from(message);
+  partitionMessage(message: Uint8Array, fragmentLength: number): Uint8Array[] {
+    let remaining = Uint8Array.from(message);
     let fragment;
-    let fragments: Buffer[] = [];
+    let fragments: Uint8Array[] = [];
 
     while (remaining.length > 0) {
       [fragment, remaining] = split(remaining, -fragmentLength);
-      fragment = Buffer.alloc(fragmentLength, 0) // initialize with 0's to achieve the padding
+      fragment = new Uint8Array(fragmentLength)
+        .fill(0) // initialize with 0's to achieve the padding
         .fill(fragment, 0, fragment.length);
       fragments.push(fragment);
     }

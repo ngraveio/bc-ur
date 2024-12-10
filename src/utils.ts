@@ -54,9 +54,9 @@ export const setDifference = (ar1: number[], ar2: number[]): number[] => {
   return ar1.filter((x) => ar2.indexOf(x) < 0);
 };
 
-export const bufferXOR = (a: Buffer, b: Buffer): Buffer => {
+export const bufferXOR = (a: Uint8Array, b: Uint8Array): Uint8Array => {
   const length = Math.max(a.length, b.length);
-  const buffer = Buffer.allocUnsafe(length);
+  const buffer = new Uint8Array(length);
 
   for (let i = 0; i < length; ++i) {
     buffer[i] = a[i] ^ b[i];

@@ -2,8 +2,8 @@ import { URRegistry, globalUrRegistry } from "../registry.js";
 import { RegistryItem, RegistryItemClass } from "../classes/RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
-import { decode, DecodeOptions, encode, EncodeOptions, } from "cbor2";
-import {registerEncoder, writeUint8Array} from 'cbor2/encoder';
+import { decode, DecodeOptions, encode, EncodeOptions } from "cbor2";
+import { registerEncoder } from "cbor2/encoder";
 import { Tag } from "cbor2/tag";
 
 interface inputOptions {
@@ -12,18 +12,13 @@ interface inputOptions {
   cborLibDecoderOptions?: DecodeOptions;
 }
 
-// For Node.js we are going to convert buffer into Uint8Array
-// This code should only run in Node.js
-// TODO: Handle checking if it is Node.js or not
-registerEncoder(Buffer, (b, _writer, _options) => {
-  // Conver buffer to Uint8Array
-  const u8 = new Uint8Array(b);
+registerEncoder(Uint8Array, (b, _writer, _options) => {
   // This is a major type ( MT.BYTE_STRING ) so no tag is given
-  return [NaN, u8]
+  return [NaN, b];
 });
 
 export class CborEncoding<T extends RegistryItem>
-  implements IEncodingMethod<T, Buffer>
+  implements IEncodingMethod<T, Uint8Array>
 {
   private _name: EncodingMethodName = EncodingMethodName.cbor;
   public registry: URRegistry = globalUrRegistry;
@@ -43,12 +38,12 @@ export class CborEncoding<T extends RegistryItem>
 
   /**
    * Encode the given payload to CBOR
-   * 
+   *
    * @param payload @type RegistryItem
    * @param cborLibOptions @type EncodeOptions
-   * @returns @type Buffer
-   */ 
-  encode(payload: any, cborLibOptions?: EncodeOptions): Buffer {
+   * @returns @type Uint8Array
+   */
+  encode(payload: any, cborLibOptions?: EncodeOptions): Uint8Array {
     // Combine instance cborLibOptions with the given cborLibOptions
     const combinedOptions = {
       ...this.cborLibEncoderOptions,
@@ -57,19 +52,18 @@ export class CborEncoding<T extends RegistryItem>
 
     // By default encode return Uint8Array
     const encoded = encode(payload, combinedOptions);
-    // TODO: For web compatibility, we need to convert Buffer to Uint8Array
-    return Buffer.from(encoded);
+    return encoded;
   }
 
   /**
    * Decode the CBOR encoded payload to the given type
-   * @param payload @type Buffer
+   * @param payload @type Uint8Array
    * @param enforceType Forces decoding into given type or throws error if it cannot be decoded @type RegistryItemClass
    * @param cborLibOptions @type DecodeOptions
    * @returns @type T
    */
   decode(
-    payload: Buffer,
+    payload: Uint8Array,
     enforceType?: RegistryItemClass,
     cborLibOptions?: DecodeOptions
   ): T {
@@ -102,5 +96,4 @@ export class CborEncoding<T extends RegistryItem>
     // TODO: fix as unknown as T;
     return decoded as unknown as T;
   }
-
 }

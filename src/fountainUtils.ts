@@ -68,11 +68,11 @@ export const chooseFragments = (
  */
 export const mixFragments = (
   indexes: number[],
-  fragments: Buffer[],
+  fragments: Uint8Array[],
   nominalFragmentLength: number
-): Buffer => {
+): Uint8Array => {
   return indexes.reduce(
     (result, index) => bufferXOR(fragments[index], result),
-    Buffer.alloc(nominalFragmentLength, 0)
+    new Uint8Array(nominalFragmentLength).fill(0)
   );
 };

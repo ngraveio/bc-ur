@@ -8,6 +8,7 @@ import { InvalidChecksumError } from "../errors.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { RegistryItem } from "./RegistryItem.js";
 import { CborEncoding } from "../encodingMethods/CborEncoding.js";
+import { concatUint8Arrays } from "uint8array-extras";
 
 export type MultipartPayload = {
   seqNum: number;
@@ -124,11 +125,11 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
    * @returns the concatenated fragments with the expected length.
    */
   protected joinFragments = (
-    fragments: Buffer[],
+    fragments: Uint8Array[],
     messageLength: number
-  ): Buffer => {
+  ): Uint8Array => {
     // with 'slice', we remove the additionally created buffer parts, needed to achieve the minimum fragment length.
-    return Buffer.concat(fragments).slice(0, messageLength);
+    return concatUint8Arrays(fragments).slice(0, messageLength);
   };
 
   private compareMultipartUrPayload(
