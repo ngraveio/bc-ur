@@ -8,22 +8,22 @@ import { InvalidChecksumError } from "../errors.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { RegistryItem } from "./RegistryItem.js";
 import { CborEncoding } from "../encodingMethods/CborEncoding.js";
-import { concatUint8Arrays } from "uint8array-extras";
+import { concatUint8Arrays, isUint8Array } from "uint8array-extras";
 
 export type MultipartPayload = {
   seqNum: number;
   seqLength: number;
   messageLength: number;
   checksum: number;
-  fragment: Buffer;
+  fragment: Uint8Array;
 };
 
-export class UrMultipartDecoder extends Decoder<string, Buffer> {
+export class UrMultipartDecoder extends Decoder<string, Uint8Array> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
     super(encodingMethods);
   }
 
-  decodeCbor(payload: Buffer): string {
+  decodeCbor(payload: Uint8Array): string {
     const cborEncoding = this.encodingMethods.find(
       (method) => method.name === EncodingMethodName.cbor
     );
@@ -59,7 +59,7 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
       }
     }
 
-    const fragmentPayloads: Buffer[] = fragments.map((fragment) => {
+    const fragmentPayloads: Uint8Array[] = fragments.map((fragment) => {
       const { payload, type } = this.decodeMultipartUr(fragment);
       const validatedPayload = this.validateMultipartPayload(payload);
 
@@ -87,7 +87,7 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
       ) {
         console.warn("Did not expect this ur type");
         // return default value.
-        return Buffer.from([]);
+        return new Uint8Array([]);
       }
 
       // compare expected payload with the received fragment
@@ -97,7 +97,7 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
       ) {
         console.warn("Did not expect this payload");
         // return default value.
-        return Buffer.from([]);
+        return new Uint8Array([]);
       }
       return validatedPayload.fragment;
     });
@@ -171,7 +171,7 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
       seqLength,
     } = MultipartUr.parseUr(payload);
 
-    const decoded = this.decode<Buffer>(bytewords); // {"_checksum": 556878893, "_fragment": [Object] (type of Buffer), "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
+    const decoded = this.decode<Uint8Array>(bytewords); // {"_checksum": 556878893, "_fragment": [Object] (type of Buffer), "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
 
     return MultipartUr.toMultipartUr(
       { data: decoded, type: { URType: type } } as RegistryItem,
@@ -180,14 +180,14 @@ export class UrMultipartDecoder extends Decoder<string, Buffer> {
     );
   }
 
-  public validateMultipartPayload(decoded: Buffer): MultipartPayload {
+  public validateMultipartPayload(decoded: Uint8Array): MultipartPayload {
     const [seqNum, seqLength, messageLength, checksum, fragment] = decoded;
 
     assert(typeof seqNum === "number");
     assert(typeof seqLength === "number");
     assert(typeof messageLength === "number");
     assert(typeof checksum === "number");
-    assert(Buffer.isBuffer(fragment) && fragment.length > 0);
+    assert(isUint8Array(fragment) && fragment.length > 0);
 
     return { seqNum, seqLength, messageLength, checksum, fragment };
   }

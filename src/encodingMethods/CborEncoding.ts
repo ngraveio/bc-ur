@@ -12,9 +12,14 @@ interface inputOptions {
   cborLibDecoderOptions?: DecodeOptions;
 }
 
-registerEncoder(Uint8Array, (b, _writer, _options) => {
+// For Node.js we are going to convert buffer into Uint8Array
+// This code should only run in Node.js
+// TODO: Handle checking if it is Node.js or not
+registerEncoder(Buffer, (b, _writer, _options) => {
+  // Conver buffer to Uint8Array
+  const u8 = new Uint8Array(b);
   // This is a major type ( MT.BYTE_STRING ) so no tag is given
-  return [NaN, b];
+  return [NaN, u8];
 });
 
 export class CborEncoding<T extends RegistryItem>

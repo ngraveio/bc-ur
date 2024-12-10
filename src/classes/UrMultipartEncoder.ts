@@ -11,7 +11,7 @@ import { CborEncoding } from "../encodingMethods/CborEncoding.js";
  */
 export type IMultipartUrPayload = [number, number, number, number, Uint8Array];
 
-export class UrMultipartEncoder extends Encoder<Buffer, string> {
+export class UrMultipartEncoder extends Encoder<Uint8Array, string> {
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
     super(encodingMethods);
   }
@@ -41,7 +41,6 @@ export class UrMultipartEncoder extends Encoder<Buffer, string> {
     const fragments = this.partitionMessage(cborMessage, fragmentLength);
     const multipartUrStrings = fragments.map((fragment, index) => {
       const seqNum = toUint32(index + 1);
-      // TODO: do I need to use Buffer.from on the fragment?
       const encodedFragment = super.encode<IMultipartUrPayload>([
         seqNum,
         fragments.length,
@@ -72,10 +71,9 @@ export class UrMultipartEncoder extends Encoder<Buffer, string> {
 
     while (remaining.length > 0) {
       [fragment, remaining] = split(remaining, -fragmentLength);
-      fragment = new Uint8Array(fragmentLength)
-        .fill(0) // initialize with 0's to achieve the padding
-        .fill(fragment, 0, fragment.length);
-      fragments.push(fragment);
+      const newFragment = new Uint8Array(fragmentLength);
+      newFragment.set(fragment, 0);
+      fragments.push(newFragment);
     }
 
     return fragments;

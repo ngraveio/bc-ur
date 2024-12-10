@@ -56,13 +56,13 @@ export const setDifference = (ar1: number[], ar2: number[]): number[] => {
 
 export const bufferXOR = (a: Uint8Array, b: Uint8Array): Uint8Array => {
   const length = Math.max(a.length, b.length);
-  const buffer = new Uint8Array(length);
+  const uInt8Array = new Uint8Array(length);
 
   for (let i = 0; i < length; ++i) {
-    buffer[i] = a[i] ^ b[i];
+    uInt8Array[i] = a[i] ^ b[i];
   }
 
-  return buffer;
+  return uInt8Array;
 };
 
 export const makeMessage = (

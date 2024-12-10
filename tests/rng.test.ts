@@ -7,7 +7,7 @@ import randomSampler from "@apocentre/alias-sampling";
 
 describe("Xoshiro rng", () => {
   test("1", () => {
-    const rng = new Xoshiro(Buffer.from("Wolf"));
+    const rng = new Xoshiro(stringToUint8Array("Wolf"));
     const numbers = [...new Array(100)].map(() =>
       rng.next().mod(100).toNumber()
     );
