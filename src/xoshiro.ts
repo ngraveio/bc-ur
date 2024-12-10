@@ -17,14 +17,14 @@ const rotl = (x: JSBI, k: number): JSBI =>
 export default class Xoshiro {
   private s: JSBI[];
 
-  constructor(seed: Buffer) {
+  constructor(seed: Uint8Array) {
     const digest = sha256Hash(seed);
 
     this.s = [JSBI.BigInt(0), JSBI.BigInt(0), JSBI.BigInt(0), JSBI.BigInt(0)];
     this.setS(digest);
   }
 
-  private setS(digest: Buffer) {
+  private setS(digest: Uint8Array) {
     for (let i = 0; i < 4; i++) {
       let o = i * 8;
       let v = JSBI.BigInt(0);
