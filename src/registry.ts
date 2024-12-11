@@ -8,33 +8,21 @@ export class URRegistry {
   private registry: Registry = new Map();
   private tagMap: Map<number, string> = new Map();
   private loggingEnabled: boolean;
-  private _ignoreKeysNotInMap: boolean;
 
   private constructor(
     items: RegistryItemClass[] = [],
-    loggingEnabled: boolean = true,
-    ignoreKeysNotInMap: boolean = false
+    loggingEnabled: boolean = true
   ) {
     this.loggingEnabled = loggingEnabled;
-    this._ignoreKeysNotInMap = ignoreKeysNotInMap;
     this.addItems(items);
-  }
-
-  set ignoreKeysNotInMap(value: boolean) {
-    this._ignoreKeysNotInMap = value;
   }
 
   public static getInstance(
     items: RegistryItemClass[] = [],
-    loggingEnabled: boolean = true,
-    ignoreKeysNotInMap: boolean = false
+    loggingEnabled: boolean = true
   ): URRegistry {
     if (!URRegistry.instance) {
-      URRegistry.instance = new URRegistry(
-        items,
-        loggingEnabled,
-        ignoreKeysNotInMap
-      );
+      URRegistry.instance = new URRegistry(items, loggingEnabled);
     }
     return URRegistry.instance;
   }
@@ -63,7 +51,7 @@ export class URRegistry {
     Tag.registerDecoder(item.tag, (tag: Tag, opts: any) => {
       return item.fromCBORData.bind(item)(
         tag.contents,
-        this._ignoreKeysNotInMap,
+        item.allowKeysNotInMap,
         opts
       );
     });

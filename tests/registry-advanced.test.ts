@@ -153,7 +153,5 @@ describe("Advanced Registry Items", () => {
     cbor.registry.removeItem(MyRegistryItem);
     cbor.registry.removeItem(User);
     cbor.registry.removeItem(UserCollection);
-
-    cbor.registry.ignoreKeysNotInMap = false;
   });
 });

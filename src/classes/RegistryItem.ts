@@ -24,6 +24,8 @@ export interface IRegistryType {
   CDDL: string;
   /** Key name to key in integer map for smaller encoded data size */
   keyMap?: IKeyMap;
+  /** allow the keys that are not explicitely defined in the keyMap */
+  allowKeysNotInMap?: boolean;
 }
 
 export abstract class RegistryItemBase {
@@ -34,9 +36,18 @@ export abstract class RegistryItemBase {
   // TODO: should we force this to be a map? It is much safer that way for injection attacks
   data: any;
 
-  constructor(registryType: IRegistryType, data?: any, keyMap?: IKeyMap) {
+  /** allow the keys that are not explicitely defined in the keyMap */
+  allowKeysNotInMap?: boolean;
+
+  constructor(
+    registryType: IRegistryType,
+    data?: any,
+    keyMap?: IKeyMap,
+    allowKeysNotInMap?: boolean
+  ) {
     this.type = registryType;
     this.keyMap = keyMap;
+    this.allowKeysNotInMap = allowKeysNotInMap;
 
     // Verify input
     const { valid, reasons } = this.verifyInput(data);
@@ -114,8 +125,9 @@ export abstract class RegistryItemBase {
  * @returns
  */
 export function registryItemFactory(input: IRegistryType) {
-  const { tag, URType, CDDL, keyMap } = input;
+  const { tag, URType, CDDL, keyMap, allowKeysNotInMap } = input;
   const _keyMap = keyMap;
+  const _allowKeysNotInMap = allowKeysNotInMap ?? true;
 
   return class extends RegistryItemBase {
     // Add static properties to the class
@@ -123,19 +135,28 @@ export function registryItemFactory(input: IRegistryType) {
     static URType: string = URType;
     static CDDL: string = CDDL;
     static keyMap: IKeyMap = _keyMap;
+    static allowKeysNotInMap: boolean = _allowKeysNotInMap;
 
     // Initiate base class with the values
-    constructor(data?: any, keyMap: IKeyMap = _keyMap) {
-      super(input, data, keyMap);
+    constructor(
+      data?: any,
+      keyMap: IKeyMap = _keyMap,
+      allowKeysNotInMap: boolean = _allowKeysNotInMap
+    ) {
+      super(input, data, keyMap, allowKeysNotInMap);
     }
 
     /**
      * Post process the data after decoding CBOR
      */
-    static postCBOR(val: any, ignoreKeysNotInMap: boolean = false) {
+    static postCBOR(val: any, allowKeysNotInMapOverwrite?: boolean) {
       // If key-map exists, convert integer keys back to string keys
       if (keyMap) {
-        return decodeKeys(val, keyMap, ignoreKeysNotInMap);
+        return decodeKeys(
+          val,
+          keyMap,
+          allowKeysNotInMapOverwrite ?? allowKeysNotInMap
+        );
       }
       return val;
     }
@@ -144,9 +165,9 @@ export function registryItemFactory(input: IRegistryType) {
      * Static method to create an instance from CBOR data.
      * It processes the raw CBOR data if needed and returns a new instance of the class.
      */
-    static fromCBORData(val: any, ignoreKeysNotInMap?: boolean, tagged?: any) {
+    static fromCBORData(val: any, allowKeysNotInMap?: boolean, tagged?: any) {
       // Do some post processing data coming from the cbor decoder
-      const data = this.postCBOR(val, ignoreKeysNotInMap);
+      const data = this.postCBOR(val, allowKeysNotInMap);
 
       // Return an instance of the generated class
       return new this(data);

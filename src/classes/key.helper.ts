@@ -54,7 +54,7 @@ export function encodeKeys(
 export function decodeKeys(
   data: Map<string | number, any>,
   keyMap: IKeyMap,
-  ignoreKeysNotInMap: boolean
+  allowKeysNotInMap: boolean
 ): object {
   const result = {};
   // If we have a mapping, use it to map the data
@@ -68,7 +68,7 @@ export function decodeKeys(
     keys.delete(keyMap[key]);
   }
 
-  if (!ignoreKeysNotInMap) {
+  if (allowKeysNotInMap) {
     // Add other keys as string if they are not existent in the map
     keys.forEach((key) => {
       result[key] = data.get(key);

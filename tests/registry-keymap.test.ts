@@ -33,9 +33,34 @@ describe("Registry Items with KeyMap", () => {
     }
   }
 
-  beforeAll(() => {
+  class CoinInfoIgnoreKeys extends registryItemFactory({
+    tag: 66666,
+    URType: "coin-info-ignore-keys",
+    allowKeysNotInMap: false,
+    keyMap: {
+      type: 1,
+      network: 2,
+    },
+    CDDL: `
+          coininfo = #6.40305({
+              ? type: uint .default 1, ; values from [SLIP44](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) with high bit turned off
+              ? network: int .default 1 ; coin-specific identifier for testnet
+              ? myKey: text .default "deneme"
+          })
+      
+          type = 1
+          network = 2
+      `,
+  }) {
+    constructor(data: ICoinInfo) {
+      super(data);
+    }
+  }
+
+  beforeEach(() => {
     // Add to registry
     cbor.registry.addItem(CoinInfo);
+    cbor.registry.addItem(CoinInfoIgnoreKeys);
   });
 
   it("should convert string keys into integers in cbor encoded data", () => {
@@ -62,7 +87,7 @@ describe("Registry Items with KeyMap", () => {
       "hex"
     );
 
-    const decoded = cbor.decode(encoded, CoinInfo);
+    const decoded = cbor.decode(encoded, CoinInfo, undefined, true);
 
     expect(decoded).toBeInstanceOf(CoinInfo);
     expect(decoded.data).toEqual({ type: 5, network: 3, anahtar: "deneme" });
@@ -71,13 +96,13 @@ describe("Registry Items with KeyMap", () => {
   it("should decode to instance if enforced type is given. Ignoring keys that are not defined in the keyMap", () => {
     // { type: 5, network: 3, anahtar: "deneme" }
     cbor.registry.removeItem(CoinInfo);
-    cbor.registry.ignoreKeysNotInMap = true;
+
     const encoded = Buffer.from(
       "d99d71a30105020367616e61687461726664656e656d65",
       "hex"
     );
 
-    const decoded = cbor.decode(encoded, CoinInfo, undefined, true);
+    const decoded = cbor.decode(encoded, CoinInfo, undefined, false);
 
     expect(decoded).toBeInstanceOf(CoinInfo);
     expect(decoded.data).toEqual({ type: 5, network: 3 });
@@ -91,19 +116,19 @@ describe("Registry Items with KeyMap", () => {
   });
 
   it("should encode and decode with same the same data, ignore the keys not in the map", () => {
-    cbor.registry.ignoreKeysNotInMap = true;
-    const coininfo = new CoinInfo({ type: 5, network: 3, anahtar: "deneme" });
+    const coininfo = new CoinInfoIgnoreKeys({
+      type: 5,
+      network: 3,
+      anahtar: "deneme",
+    });
     const encoded = cbor.encode(coininfo);
     const decoded = cbor.decode(encoded);
-    expect(decoded).toEqual(new CoinInfo({ type: 5, network: 3 }));
+    expect(decoded).toEqual(new CoinInfoIgnoreKeys({ type: 5, network: 3 }));
   });
 
   afterAll(() => {
     // Remove items from registry
     cbor.registry.removeItem(CoinInfo);
-  });
-  afterEach(() => {
-    cbor.registry.ignoreKeysNotInMap = false;
   });
 });
 

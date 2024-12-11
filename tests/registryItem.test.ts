@@ -39,7 +39,7 @@ describe("Registry Item", () => {
     expect(testItem.type).toHaveProperty("tag");
     expect(testItem.type).toHaveProperty("URType");
     expect(testItem.type).toHaveProperty("CDDL");
-    
+
     expect(testItem.type.tag).toBe(123);
     expect(testItem.type.URType).toBe("testItem1");
     expect(testItem.type.CDDL).toBe("");
@@ -47,7 +47,7 @@ describe("Registry Item", () => {
     // Check instance methods
     expect(testItem).toHaveProperty("preCBOR");
     expect(testItem).toHaveProperty("toCBOR");
-    expect(testItem).toHaveProperty("verifyInput")
+    expect(testItem).toHaveProperty("verifyInput");
     expect(testItem).toHaveProperty("toString");
     expect(testItem).toHaveProperty("toJSON");
   });
@@ -58,7 +58,7 @@ describe("Registry Item", () => {
       URType: "testItem1",
       CDDL: ``,
     }) {}
-    
+
     expect(() => testItem1.fromCBORData({})).not.toThrow();
     expect(testItem1.fromCBORData({})).toBeInstanceOf(testItem1);
   });
@@ -80,9 +80,8 @@ describe("Registry Item", () => {
       tag: 123,
       URType: "testItem1",
       CDDL: ``,
-    })
-    {
-      constructor(data: {foo: string, bar?: number}) {
+    }) {
+      constructor(data: { foo: string; bar?: number }) {
         super(data);
       }
 
@@ -97,7 +96,7 @@ describe("Registry Item", () => {
           reasons.push(new Error("Foo should be a string"));
         }
 
-        if(input.bar) {
+        if (input.bar) {
           if (typeof input.bar !== "number") {
             reasons.push(new Error("Bar should be a number"));
           }
@@ -120,7 +119,6 @@ describe("Registry Item", () => {
     //@ts-ignore
     expect(() => new testItem1({ foo: "bar", bar: "baz" })).toThrow();
 
-
     // Test fromCBORData
     expect(() => testItem1.fromCBORData({ foo: "bar" })).not.toThrow();
 
@@ -135,7 +133,6 @@ describe("Registry Item", () => {
 
   // Test instance with keyMap
   it("should define an registry item instance with keyMap", () => {
-
     class testItem1 extends registryItemFactory({
       tag: 123,
       URType: "testItem1",
@@ -143,7 +140,7 @@ describe("Registry Item", () => {
       keyMap: {
         foo: 1,
         bar: 2,
-      }
+      },
     }) {}
 
     const input = { foo: "myString", bar: 123 };
@@ -160,7 +157,6 @@ describe("Registry Item", () => {
     const convertedBack = testItem1.postCBOR(converted);
     expect(convertedBack).toEqual(input);
 
-
     // Test if keys not defined in keyMap are also included
     // TODO: add ability to ignore keys not in keyMap
     const input2 = { foo: "myString", bar: 123, baz: "extra" };
@@ -175,12 +171,11 @@ describe("Registry Item", () => {
     expect(converted2.get("baz")).toBe("extra");
 
     // Convert back to original
-    const convertedBack2 = testItem1.postCBOR(converted2);
+    const convertedBack2 = testItem1.postCBOR(converted2, true);
     expect(convertedBack2).toEqual(input2);
 
-
     // Test if postCBOR works with fromCBORData
-    const newInstance = testItem1.fromCBORData(converted2);
+    const newInstance = testItem1.fromCBORData(converted2, true);
     expect(newInstance.data).toEqual(input2);
   });
 });
