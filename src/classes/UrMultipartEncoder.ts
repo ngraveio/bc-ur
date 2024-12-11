@@ -71,6 +71,7 @@ export class UrMultipartEncoder extends Encoder<Buffer, string> {
     let fragments: Buffer[] = [];
 
     while (remaining.length > 0) {
+      //@ts-ignore
       [fragment, remaining] = split(remaining, -fragmentLength);
       fragment = Buffer.alloc(fragmentLength, 0) // initialize with 0's to achieve the padding
         .fill(fragment, 0, fragment.length);

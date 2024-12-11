@@ -1,4 +1,5 @@
-import { registryItemFactory } from "./classes/RegistryItem.js";
+import { registryItemFactory, RegistryItem } from "./classes/RegistryItem.js";
+import { CborEncoding } from "./encodingMethods/CborEncoding.js";
 
 // Define a nested registry items
 interface IUser {
@@ -103,3 +104,12 @@ export class UserCollection extends registryItemFactory(UserCollectionType) {
     return { valid, reasons };
   }
 }
+
+const cbor = new CborEncoding();
+
+const testString = "Hello World!";
+const encoded = cbor.encode(testString);
+const decoded = cbor.decode(encoded);
+
+console.log("Encoded:", encoded);
+console.log("Decoded:", decoded);

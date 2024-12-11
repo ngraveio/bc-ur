@@ -2,9 +2,11 @@ import { URRegistry, globalUrRegistry } from "../registry.js";
 import { RegistryItem, RegistryItemClass } from "../classes/RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
-import { decode, DecodeOptions, encode, EncodeOptions, } from "cbor2";
-import {registerEncoder, writeUint8Array} from 'cbor2/encoder';
-import { Tag } from "cbor2/tag";
+// import { decode, DecodeOptions, encode, EncodeOptions, } from "cbor2";
+// import { registerEncoder } from 'cbor2/encoder';
+// import { Tag } from "cbor2/tag";
+
+import { decode, DecodeOptions, encode, EncodeOptions, registerEncoder, Tag } from "../helpers/cborWrapper.js";
 
 interface inputOptions {
   registry?: URRegistry;

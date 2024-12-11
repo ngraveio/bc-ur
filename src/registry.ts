@@ -1,5 +1,5 @@
 import { RegistryItemClass } from "./classes/RegistryItem.js";
-import { Tag } from "cbor2/tag";
+import { Tag } from "./helpers/cborWrapper.js";
 
 export type Registry = Map<string, RegistryItemClass>;
 

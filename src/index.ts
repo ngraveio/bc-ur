@@ -1,4 +1,4 @@
-import { Decoder, IDecoder } from "./classes/Decoder";
+import { Decoder, IDecoder } from "./classes/Decoder.js";
 import { Encoder, IEncoder } from "./classes/Encoder.js";
 import { MultipartUr } from "./classes/MultipartUr.js";
 import {

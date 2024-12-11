@@ -1,4 +1,5 @@
 import shajs from "sha.js";
+//@ts-ignore
 import { crc32 } from "crc";
 import Xoshiro from "./xoshiro.js";
 
