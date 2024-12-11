@@ -19,7 +19,8 @@ export type IKeyMap = Record<string, string | number>;
  */
 export function encodeKeys(
   data: object,
-  keyMap: IKeyMap
+  keyMap: IKeyMap,
+  allowKeysNotInMap: boolean
 ): Map<string | number, any> {
   const map = new Map();
   // If we have a mapping, use it to map the data
@@ -35,10 +36,12 @@ export function encodeKeys(
     keys.delete(key);
   }
 
-  // Add other keys as string if they are not existent in the map
-  keys.forEach((key) => {
-    map.set(key, data[key]);
-  });
+  if (allowKeysNotInMap) {
+    // Add other keys as string if they are not existent in the map
+    keys.forEach((key) => {
+      map.set(key, data[key]);
+    });
+  }
 
   return map;
 }

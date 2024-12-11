@@ -108,11 +108,17 @@ describe("Registry Items with KeyMap", () => {
     expect(decoded.data).toEqual({ type: 5, network: 3 });
   });
 
-  it("should encode and decode with same the same data, having the orginal keys", () => {
-    const coininfo = new CoinInfo({ type: 5, network: 3, anahtar: "deneme" });
+  it("should only encode fields that are defined in the keyMap if allowKeysNotInMap is false", () => {
+    const coininfoClean = new CoinInfoIgnoreKeys({ type: 5, network: 3 });
+    const encodedCleanAsHex = cbor.encode(coininfoClean).toString("hex");
+
+    const coininfo = new CoinInfoIgnoreKeys({
+      type: 5,
+      network: 3,
+      anahtar: "deneme",
+    });
     const encoded = cbor.encode(coininfo);
-    const decoded = cbor.decode(encoded);
-    expect(decoded).toEqual(coininfo);
+    expect(encoded.toString("hex")).toEqual(encodedCleanAsHex);
   });
 
   it("should encode and decode with same the same data, ignore the keys not in the map", () => {

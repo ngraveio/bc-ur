@@ -91,7 +91,7 @@ export abstract class RegistryItemBase {
   preCBOR() {
     // If key-map exists, convert keys to integers
     if (this.keyMap) {
-      return encodeKeys(this.data, this.keyMap);
+      return encodeKeys(this.data, this.keyMap, this.allowKeysNotInMap);
     }
     return this.data;
   }
