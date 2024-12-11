@@ -1,42 +1,24 @@
 {
   "compilerOptions": {
-    "resolveJsonModule": true,    
-    "declaration": true,
-    "sourceMap": true,
-    "experimentalDecorators": true,    
-    "emitDecoratorMetadata": true,    
-    "composite": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",    
+    /** Module options */
+    "module": "node16",
+    "moduleResolution": "node16",
     "rootDir": "./src",
     "outDir": "./dist",
-    "target": "es2019",
-    "lib": [
-      "es2019"
-    ],
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "typeRoots": ["./node_modules/@types", "./node_modules/cbor2/lib"],
-    "baseUrl": "./",
-    "paths": {
-      "cbor2": ["./node_modules/cbor2/lib/index.d.ts"],
-      "cbor2/*": ["./node_modules/cbor2/lib/*"]
-    },
-    "declarationDir": "./dist/types"
-  },
-  "paths": {
-    "*": [
-      "node_modules/*",
-      "@types/*"
-    ]
+    "target": "ES2022",
+    "esModuleInterop": true, /** Let's you use default imports */
+
+    /** Type options */
+    "declaration": true,
+    /** "emitDeclarationOnly": true, **/
+
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "composite": true,
+    "importHelpers": true
   },
   "references": [],
-  "include": [
-    "src/**/*.ts",
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "tests"
-  ]
+  "exclude": ["node_modules", "tests"]
 }

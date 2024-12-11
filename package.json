@@ -4,22 +4,21 @@
   "author": "Antonis Poulakis <antwnic4@gmail.com>, Irfan Bilaloğlu <irfanbilaloglu@gmail.com>, Pieter Uyttersprot <pieter.uyttersprot@ngrave.io>",
   "description": "A JS implementation of the Uniform Resources (UR) specification from Blockchain Commons",
   "license": "MIT",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
-  "types": "dist/types/index.d.ts",
   "type": "module",
   "directories": {
     "lib": "src",
     "test": "tests"
   },
+  "types": "./dist/commonjs/index.d.ts",
   "files": [
     "src",
     "dist"
   ],
   "scripts": {
+    "prepare": "tshy",
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
     "build": "yarn clean && yarn compile",
-    "compile": "tsup",
+    "compile": "tsc -p tsconfig.json",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "prepublish": "yarn build",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" --max-warnings=0"
@@ -30,7 +29,6 @@
     "bignumber.js": "^9.1.2",
     "cbor2": "file:/home/irfan/code/clone/cbor2",
     "crc": "^4.3.2",
-    "jsbi": "^4.3.0",
     "sha.js": "^2.4.11"
   },
   "devDependencies": {
@@ -41,14 +39,9 @@
     "jest": "^29.7.0",
     "rimraf": "^6.0.1",
     "ts-jest": "^29.2.5",
-    "typescript": "5.6.2",
-    "tsup": "8.3.5"
-  },
-  "exports": {
-    ".": {
-      "require": "./dist/cjs/index.cjs",
-      "import": "./dist/esm/index.js"
-    }
+    "tshy": "^3.0.2",
+    "tsup": "8.3.5",
+    "typescript": "5.6.2"
   },
   "repository": {
     "type": "git",
@@ -60,5 +53,26 @@
   "bugs": {
     "url": "https://github.com/ngraveio/bc-ur/issues"
   },
-  "homepage": "https://github.com/ngraveio/bc-ur#readme"
+  "homepage": "https://github.com/ngraveio/bc-ur#readme",
+  "tshy": {
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/index.d.ts",
+        "default": "./dist/commonjs/index.js"
+      }
+    }
+  },
+  "main": "./dist/commonjs/index.js",
+  "module": "./dist/esm/index.js"
 }
