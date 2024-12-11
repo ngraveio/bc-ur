@@ -1,4 +1,5 @@
-import { registryItemFactory, RegistryItem } from "../src/classes/RegistryItem";
+import { stringToUint8Array, uint8ArrayToHex } from "uint8array-extras";
+import { registryItemFactory } from "../src/classes/RegistryItem";
 import { CborEncoding } from "../src/encodingMethods/CborEncoding";
 import { User, UserCollection } from "../src/test.utils";
 
@@ -86,8 +87,9 @@ describe("CBOR Encoder", () => {
       const encoded = cbor.encode(testBuffer);
       const decoded = cbor.decode(encoded);
       //@ts-ignore
-      expect(decoded.toString('hex')).toEqual(testBuffer.toString('hex'));
-      expect(decoded).toEqual(testBuffer);
+      expect(uint8ArrayToHex(decoded)).toEqual(testBuffer.toString("hex"));
+      // uInt8Array is converted to buffer after decoding
+      expect(decoded).toEqual(Uint8Array.from(testBuffer));
     });
 
     it("should encode a UInt8Array but decode as Buffer ( only in nodejs )", () => {
@@ -142,7 +144,7 @@ describe("CBOR Encoder", () => {
       map?: Map<any, any>;
       set?: Set<any>;
       undefined?: undefined;
-      buffer?: Buffer;
+      buffer?: Uint8Array;
       date?: Date;
       regexp?: RegExp;
       url?: URL;
@@ -179,7 +181,7 @@ describe("CBOR Encoder", () => {
       const encoded = cbor.encode(testRegistryItem);
 
       // 123({"foo": "bar"})
-      expect(encoded.toString("hex")).toEqual("d87ba163666f6f63626172");
+      expect(uint8ArrayToHex(encoded)).toEqual("d87ba163666f6f63626172");
     });
 
     it("should decode to correct instace from CBOR", () => {
@@ -219,7 +221,7 @@ describe("CBOR Encoder", () => {
         ]),
         set: new Set([1, 2, 3]),
         undefined: undefined,
-        buffer: Buffer.from("hello"),
+        buffer: stringToUint8Array("hello"),
         date: new Date(),
         regexp: /hello/,
         url: new URL("https://example.com"),
@@ -262,7 +264,6 @@ describe("CBOR Encoder", () => {
       CDDL: ``,
     }) {};
 
-
     beforeAll(() => {
       // Add to registry
       cbor.registry.addItem(MyRegistryItem);
@@ -278,11 +279,16 @@ describe("CBOR Encoder", () => {
       it("should encode to correct cbor", () => {
         const encoded = cbor.encode(user);
         // 111({"id": 1, "name": "İrfan Bilaloğlu"})
-        expect(encoded.toString("hex")).toEqual("d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75");
+        expect(uint8ArrayToHex(encoded)).toEqual(
+          "d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75"
+        );
       });
 
       it("should decode to correct instance", () => {
-        const encoded = Buffer.from("d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75", "hex");
+        const encoded = Buffer.from(
+          "d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75",
+          "hex"
+        );
         const decoded = cbor.decode(encoded);
         expect(decoded).toBeInstanceOf(User);
         expect(decoded.data).toEqual(userInput);
@@ -320,16 +326,22 @@ describe("CBOR Encoder", () => {
       });
 
       it("should decode to the correct RegistryItem when it's already that class and additionally the enforced type is given", () => {
-        const encoded = Buffer.from("d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75", "hex");
+        const encoded = Buffer.from(
+          "d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75",
+          "hex"
+        );
         // It will already decode to User instance and we will force it again
         const decoded = cbor.decode(encoded, User);
         expect(decoded).toBeInstanceOf(User);
-        expect(decoded.data).toEqual({"id": 1, "name": "İrfan Bilaloğlu"});
+        expect(decoded.data).toEqual({ id: 1, name: "İrfan Bilaloğlu" });
       });
 
-      it('should decode to instance if enforced type is given even if top level is not a tag', () => {
+      it("should decode to instance if enforced type is given even if top level is not a tag", () => {
         // {"id": 1, "name": "İrfan Bilaloğlu"}
-        const encoded = Buffer.from("a262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75", 'hex');
+        const encoded = Buffer.from(
+          "a262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75",
+          "hex"
+        );
         const decoded = cbor.decode(encoded, User);
 
         expect(decoded).toBeInstanceOf(User);
@@ -361,12 +373,17 @@ describe("CBOR Encoder", () => {
       it("should encode to correct cbor", () => {
         const encoded = cbor.encode(userCollection);
         // 112({"name": "My Collection", "users": [111({"id": 1, "name": "İrfan Bilaloğlu"}), 111({"id": 2, "name": "Pieter Uyttersprot"})]})
-        expect(encoded.toString("hex")).toEqual("d870a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74");
+        expect(uint8ArrayToHex(encoded)).toEqual(
+          "d870a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74"
+        );
       });
 
       it("should decode to correct instance", () => {
         // 112({"name": "My Collection", "users": [111({"id": 1, "name": "İrfan Bilaloğlu"}), 111({"id": 2, "name": "Pieter Uyttersprot"})]})
-        const encoded = Buffer.from("d870a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74", "hex");
+        const encoded = Buffer.from(
+          "d870a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74",
+          "hex"
+        );
         const decoded = cbor.decode(encoded);
         expect(decoded).toBeInstanceOf(UserCollection);
       });
@@ -431,14 +448,16 @@ describe("CBOR Encoder", () => {
       const coininfo = new CoinInfo({ type: 5, network: 3 });
       const encoded = cbor.encode(coininfo);
       // 40305({1: 5, 2: 3})
-      expect(encoded.toString("hex")).toEqual("d99d71a201050203");
+      expect(uint8ArrayToHex(encoded)).toEqual("d99d71a201050203");
     });
 
     it("should not convert keys that are not defined in keymap", () => {
       const coininfo = new CoinInfo({ type: 5, network: 3, anahtar: "deneme" });
       const encoded = cbor.encode(coininfo);
       // 40305({1: 5, 2: 3, "anahtar": "deneme"})
-      expect(encoded.toString("hex")).toEqual("d99d71a30105020367616e61687461726664656e656d65");
+      expect(uint8ArrayToHex(encoded)).toEqual(
+        "d99d71a30105020367616e61687461726664656e656d65"
+      );
     });
 
     it("should encode and decode with same the same data, having the orginal keys", () => {
@@ -485,7 +504,7 @@ describe("CBOR Encoder", () => {
         const data = super.preCBOR();
 
         // Multiply the numver
-        const number = this.data.number * this.multiplier
+        const number = this.data.number * this.multiplier;
         // Set the data on the converted map
         data.set(this.keyMap.number, number);
 
@@ -522,7 +541,7 @@ describe("CBOR Encoder", () => {
       });
       const encoded = cbor.encode(testItem);
       // 123({1: "hello", 2: 12, 3: 2})
-      expect(encoded.toString("hex")).toEqual("d87ba3016568656c6c6f020c0302");
+      expect(uint8ArrayToHex(encoded)).toEqual("d87ba3016568656c6c6f020c0302");
     });
 
     it("should run postprocessor after decoding", () => {

@@ -13,7 +13,7 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
   private _messageLength: number;
   private _maxFragmentLength: number;
   private _minFragmentLength: number;
-  private _fragments: Buffer[];
+  private _fragments: Uint8Array[];
   private _nominalFragmentLength: number;
   private _seqNum: number;
   private _checksum: number;
@@ -80,7 +80,6 @@ export default class UrFountainEncoder extends UrMultipartEncoder {
       const seqNum = toUint32(index + 1);
       const indexes = chooseFragments(seqNum, fragments.length, checksum);
       const mixed = mixFragments(indexes, fragments, fragmentLength);
-      // TODO: do I need to use Buffer.from on the fragment?
       const encodedFragment = super.encode([
         seqNum,
         fragments.length,
