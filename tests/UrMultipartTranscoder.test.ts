@@ -7,6 +7,7 @@ import { registryItemFactory } from "../src/classes/RegistryItem";
 import { CborEncoding } from "../src/encodingMethods/CborEncoding";
 import { globalUrRegistry } from "../src";
 import { makeMessage } from "../src/utils";
+import { hexToUint8Array } from "uint8array-extras";
 
 export class MockRegistryItem extends registryItemFactory({
   tag: 998,
@@ -71,7 +72,7 @@ describe("FountainTranscoder", () => {
         ).toThrow(AssertionError);
       });
       test("Should be able to access the properties of the urtype after encoding/decoding", () => {
-        const sync_id = Buffer.from("babe0000babe00112233445566778899", "hex");
+        const sync_id = hexToUint8Array("babe0000babe00112233445566778899");
         const metadata = new Metadata({
           syncId: sync_id,
           device: "my-device",

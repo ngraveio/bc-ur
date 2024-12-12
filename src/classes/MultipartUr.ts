@@ -45,9 +45,6 @@ export class MultipartUr<T extends RegistryItem = RegistryItem>
     assert(typeof seqNum === "number");
     assert(typeof seqLength === "number");
 
-    // FIXME: multipart is inherently encoded with cbor and so the payload is a buffer.
-    // assert(Buffer.isBuffer(payload) && payload.length > 0);
-    // return combined result
     return new MultipartUr(registryItem, seqNum, seqLength);
   }
 

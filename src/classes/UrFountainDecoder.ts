@@ -14,7 +14,7 @@ import { RegistryItem } from "./RegistryItem.js";
 import { CborEncoding } from "../encodingMethods/CborEncoding.js";
 
 class FountainDecoderPart {
-  constructor(private _indexes: number[], private _fragment: Buffer) {}
+  constructor(private _indexes: number[], private _fragment: Uint8Array) {}
 
   get indexes() {
     return this._indexes;
@@ -38,7 +38,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
   // Stores an error while decoding message
   private error: Error | undefined;
   // Stores the assembled raw result as a Buffer
-  private resultAssembledRaw: Buffer | undefined = undefined;
+  private resultAssembledRaw: Uint8Array | undefined = undefined;
   // Stores the decoded result as a RegistryItem
   private resultDecoded: RegistryItem | undefined = undefined;
   // Stores the expected type of the UR
@@ -346,7 +346,7 @@ export default class UrFountainDecoder extends UrMultipartDecoder {
     return this.resultDecoded;
   }
 
-  public getRawResult(): Buffer {
+  public getRawResult(): Uint8Array {
     return this.resultAssembledRaw;
   }
 

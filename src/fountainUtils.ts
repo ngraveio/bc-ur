@@ -1,3 +1,4 @@
+import { concatUint8Arrays } from "uint8array-extras";
 import { bufferXOR, intToBytes } from "./utils.js";
 import Xoshiro from "./xoshiro.js";
 import randomSampler from "@apocentre/alias-sampling";
@@ -50,7 +51,7 @@ export const chooseFragments = (
     // return the index of the current fragment.
     return [seqNum - 1];
   } else {
-    const seed = Buffer.concat([intToBytes(seqNum), intToBytes(checksum)]);
+    const seed = concatUint8Arrays([intToBytes(seqNum), intToBytes(checksum)]);
     const rng = new Xoshiro(seed);
     const degree = chooseDegree(seqLength, rng);
     const indexes = [...new Array(seqLength)].map((_, index) => index);
@@ -64,15 +65,15 @@ export const chooseFragments = (
  * Mix the fragments of the passed indexes.
  * @param indexes array of indexes to include in the mix.
  * @param fragments array of pure fragments for a given payload.
- * @returns A mixed fragment, represented as a buffer.
+ * @returns A mixed fragment, represented as a Uint8Array.
  */
 export const mixFragments = (
   indexes: number[],
-  fragments: Buffer[],
+  fragments: Uint8Array[],
   nominalFragmentLength: number
-): Buffer => {
+): Uint8Array => {
   return indexes.reduce(
     (result, index) => bufferXOR(fragments[index], result),
-    Buffer.alloc(nominalFragmentLength, 0)
+    new Uint8Array(nominalFragmentLength).fill(0)
   );
 };
