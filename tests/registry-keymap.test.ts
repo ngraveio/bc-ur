@@ -87,25 +87,27 @@ describe("Registry Items with KeyMap", () => {
       "hex"
     );
 
-    const decoded = cbor.decode(encoded, CoinInfo, undefined, true);
+    const decoded = cbor.decode(encoded, CoinInfo);
 
     expect(decoded).toBeInstanceOf(CoinInfo);
     expect(decoded.data).toEqual({ type: 5, network: 3, anahtar: "deneme" });
   });
 
   it("should decode to instance if enforced type is given. Ignoring keys that are not defined in the keyMap", () => {
+    // Make the CoinInfoIgnoreKeys to not allow keys that are not in the map
+    CoinInfo.allowKeysNotInMap = false;
     // { type: 5, network: 3, anahtar: "deneme" }
-    cbor.registry.removeItem(CoinInfo);
-
     const encoded = Buffer.from(
       "d99d71a30105020367616e61687461726664656e656d65",
       "hex"
     );
 
-    const decoded = cbor.decode(encoded, CoinInfo, undefined, false);
+    const decoded = cbor.decode(encoded, CoinInfo);
 
     expect(decoded).toBeInstanceOf(CoinInfo);
     expect(decoded.data).toEqual({ type: 5, network: 3 });
+    // reset the value
+    CoinInfo.allowKeysNotInMap = true;
   });
 
   it("should only encode fields that are defined in the keyMap if allowKeysNotInMap is false", () => {

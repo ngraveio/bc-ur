@@ -35,19 +35,11 @@ export abstract class RegistryItemBase {
   /** Data that our item contains */
   // TODO: should we force this to be a map? It is much safer that way for injection attacks
   data: any;
+  static allowKeysNotInMap: any;
 
-  /** allow the keys that are not explicitely defined in the keyMap */
-  allowKeysNotInMap?: boolean;
-
-  constructor(
-    registryType: IRegistryType,
-    data?: any,
-    keyMap?: IKeyMap,
-    allowKeysNotInMap?: boolean
-  ) {
+  constructor(registryType: IRegistryType, data?: any, keyMap?: IKeyMap) {
     this.type = registryType;
     this.keyMap = keyMap;
-    this.allowKeysNotInMap = allowKeysNotInMap;
 
     // Verify input
     const { valid, reasons } = this.verifyInput(data);
@@ -91,7 +83,9 @@ export abstract class RegistryItemBase {
   preCBOR() {
     // If key-map exists, convert keys to integers
     if (this.keyMap) {
-      return encodeKeys(this.data, this.keyMap, this.allowKeysNotInMap);
+      const allowKeysNotInMap = (this.constructor as typeof RegistryItemBase)
+        .allowKeysNotInMap;
+      return encodeKeys(this.data, this.keyMap, allowKeysNotInMap);
     }
     return this.data;
   }
@@ -125,9 +119,8 @@ export abstract class RegistryItemBase {
  * @returns
  */
 export function registryItemFactory(input: IRegistryType) {
-  const { tag, URType, CDDL, keyMap, allowKeysNotInMap } = input;
+  const { tag, URType, CDDL, keyMap, allowKeysNotInMap = true } = input;
   const _keyMap = keyMap;
-  const _allowKeysNotInMap = allowKeysNotInMap ?? true;
 
   return class extends RegistryItemBase {
     // Add static properties to the class
@@ -135,15 +128,11 @@ export function registryItemFactory(input: IRegistryType) {
     static URType: string = URType;
     static CDDL: string = CDDL;
     static keyMap: IKeyMap = _keyMap;
-    static allowKeysNotInMap: boolean = _allowKeysNotInMap;
+    static allowKeysNotInMap: boolean = allowKeysNotInMap;
 
     // Initiate base class with the values
-    constructor(
-      data?: any,
-      keyMap: IKeyMap = _keyMap,
-      allowKeysNotInMap: boolean = _allowKeysNotInMap
-    ) {
-      super(input, data, keyMap, allowKeysNotInMap);
+    constructor(data?: any, keyMap: IKeyMap = _keyMap) {
+      super(input, data, keyMap);
     }
 
     /**

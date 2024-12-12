@@ -71,8 +71,7 @@ export class CborEncoding<T extends RegistryItem>
   decode(
     payload: Buffer,
     enforceType?: RegistryItemClass,
-    cborLibOptions?: DecodeOptions,
-    allowKeysNotInMapOverwrite?: boolean
+    cborLibOptions?: DecodeOptions
   ): T {
     // Combine instance cborLibOptions with the given cborLibOptions
     const combinedOptions = {
@@ -96,13 +95,13 @@ export class CborEncoding<T extends RegistryItem>
         // Try to create the instance of the enforced type from tag contents
         return enforceType.fromCBORData(
           decoded.contents,
-          allowKeysNotInMapOverwrite
+          enforceType.allowKeysNotInMap
         ) as unknown as T;
       }
       // Try to create the instance of the enforced type from decoded data
       return enforceType.fromCBORData(
         decoded,
-        allowKeysNotInMapOverwrite
+        enforceType.allowKeysNotInMap
       ) as unknown as T;
     }
 
