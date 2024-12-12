@@ -1,3 +1,4 @@
+import { uint8ArrayToHex } from "uint8array-extras";
 import { registryItemFactory } from "../src/classes/RegistryItem";
 import { CborEncoding } from "../src/encodingMethods/CborEncoding";
 
@@ -67,14 +68,14 @@ describe("Registry Items with KeyMap", () => {
     const coininfo = new CoinInfo({ type: 5, network: 3 });
     const encoded = cbor.encode(coininfo);
     // 40305({1: 5, 2: 3})
-    expect(encoded.toString("hex")).toEqual("d99d71a201050203");
+    expect(uint8ArrayToHex(encoded)).toEqual("d99d71a201050203");
   });
 
   it("should not convert keys that are not defined in keymap", () => {
     const coininfo = new CoinInfo({ type: 5, network: 3, anahtar: "deneme" });
     const encoded = cbor.encode(coininfo);
     // 40305({1: 5, 2: 3, "anahtar": "deneme"})
-    expect(encoded.toString("hex")).toEqual(
+    expect(uint8ArrayToHex(encoded)).toEqual(
       "d99d71a30105020367616e61687461726664656e656d65"
     );
   });
@@ -112,7 +113,7 @@ describe("Registry Items with KeyMap", () => {
 
   it("should only encode fields that are defined in the keyMap if allowKeysNotInMap is false", () => {
     const coininfoClean = new CoinInfoIgnoreKeys({ type: 5, network: 3 });
-    const encodedCleanAsHex = cbor.encode(coininfoClean).toString("hex");
+    const encodedCleanAsHex = uint8ArrayToHex(cbor.encode(coininfoClean));
 
     const coininfo = new CoinInfoIgnoreKeys({
       type: 5,
@@ -120,7 +121,7 @@ describe("Registry Items with KeyMap", () => {
       anahtar: "deneme",
     });
     const encoded = cbor.encode(coininfo);
-    expect(encoded.toString("hex")).toEqual(encodedCleanAsHex);
+    expect(uint8ArrayToHex(encoded)).toEqual(encodedCleanAsHex);
   });
 
   it("should encode and decode with same the same data, ignore the keys not in the map", () => {
@@ -204,7 +205,7 @@ describe("Registry items with post and pre processors", () => {
     });
     const encoded = cbor.encode(testItem);
     // 123({1: "hello", 2: 12, 3: 2})
-    expect(encoded.toString("hex")).toEqual("d87ba3016568656c6c6f020c0302");
+    expect(uint8ArrayToHex(encoded)).toEqual("d87ba3016568656c6c6f020c0302");
   });
 
   it("should run postprocessor after decoding", () => {

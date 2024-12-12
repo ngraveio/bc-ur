@@ -1,4 +1,5 @@
-import { registryItemFactory, RegistryItem } from "../src/classes/RegistryItem";
+import { uint8ArrayToHex } from "uint8array-extras";
+import { registryItemFactory } from "../src/classes/RegistryItem";
 import { CborEncoding } from "../src/encodingMethods/CborEncoding";
 import { User, UserCollection } from "../src/test.utils";
 
@@ -26,7 +27,7 @@ describe("Advanced Registry Items", () => {
     it("should encode to correct cbor", () => {
       const encoded = cbor.encode(user);
       // 111({"id": 1, "name": "İrfan Bilaloğlu"})
-      expect(encoded.toString("hex")).toEqual(
+      expect(uint8ArrayToHex(encoded)).toEqual(
         "d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75"
       );
     });
@@ -120,7 +121,7 @@ describe("Advanced Registry Items", () => {
     it("should encode to correct cbor", () => {
       const encoded = cbor.encode(userCollection);
       // 112({"name": "My Collection", "users": [111({"id": 1, "name": "İrfan Bilaloğlu"}), 111({"id": 2, "name": "Pieter Uyttersprot"})]})
-      expect(encoded.toString("hex")).toEqual(
+      expect(uint8ArrayToHex(encoded)).toEqual(
         "d870a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74"
       );
     });
