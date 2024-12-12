@@ -92,10 +92,16 @@ export class CborEncoding<T extends RegistryItem>
           );
         }
         // Try to create the instance of the enforced type from tag contents
-        return enforceType.fromCBORData(decoded.contents) as unknown as T;
+        return enforceType.fromCBORData(
+          decoded.contents,
+          enforceType.allowKeysNotInMap
+        ) as unknown as T;
       }
       // Try to create the instance of the enforced type from decoded data
-      return enforceType.fromCBORData(decoded) as unknown as T;
+      return enforceType.fromCBORData(
+        decoded,
+        enforceType.allowKeysNotInMap
+      ) as unknown as T;
     }
 
     // TODO: fix as unknown as T;
