@@ -8,7 +8,7 @@
   ],
   "exclude": [
     "../src/package.json",
-    "../src/helpers/cborWrapper-cjs.cts"
+    "../src/wrappers/cbor2-cjs.cts"
   ],
   "compilerOptions": {
     "outDir": "../.tshy-build/esm"

@@ -1,5 +1,15 @@
 import { RegistryItemClass } from "./classes/RegistryItem.js";
-import { Tag } from "./helpers/cborWrapper.js";
+import {
+  DecodeOptions,
+  EncodeOptions,
+  Tag,
+} from "./wrappers/cbor2.js";
+
+interface inputOptions {
+  registry?: URRegistry;
+  cborLibEncoderOptions?: EncodeOptions;
+  cborLibDecoderOptions?: DecodeOptions;
+}
 
 export type Registry = Map<string, RegistryItemClass>;
 
@@ -42,7 +52,7 @@ export class URRegistry {
     }
     this.registry.set(item.URType, item);
     this.tagMap.set(item.tag, item.URType);
-    Tag.registerDecoder(item.tag, (tag: Tag, opts: any) => {
+    Tag.registerDecoder(item.tag, (tag: any, opts: any) => {
       return item.fromCBORData.bind(item)(tag.contents, opts);
     });
   }

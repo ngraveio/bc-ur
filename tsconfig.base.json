@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    /** Module options */
+    "module": "node16",
+    "moduleResolution": "node16",
+    "rootDir": "./src",
+    "outDir": "./dist/esm",
+    "target": "ES2022",
+    "esModuleInterop": true, /** Let's you use default imports */
+
+    /** Type options */
+    "declaration": true,
+    /** "emitDeclarationOnly": true, **/
+
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "composite": true,
+    "importHelpers": true
+  },
+  "references": [],
+  "exclude": ["node_modules", "tests"]
+}

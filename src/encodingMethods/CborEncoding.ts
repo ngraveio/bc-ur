@@ -2,11 +2,12 @@ import { URRegistry, globalUrRegistry } from "../registry.js";
 import { RegistryItem, RegistryItemClass } from "../classes/RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
-// import { decode, DecodeOptions, encode, EncodeOptions, } from "cbor2";
-// import { registerEncoder } from 'cbor2/encoder';
-// import { Tag } from "cbor2/tag";
 
-import { decode, DecodeOptions, encode, EncodeOptions, registerEncoder, Tag } from "../helpers/cborWrapper.js";
+import {
+  DecodeOptions,
+  EncodeOptions,
+  decode, encode, Tag, registerEncoder
+} from "../wrappers/cbor2.js";
 
 interface inputOptions {
   registry?: URRegistry;
@@ -21,9 +22,8 @@ registerEncoder(Buffer, (b, _writer, _options) => {
   // Conver buffer to Uint8Array
   const u8 = new Uint8Array(b);
   // This is a major type ( MT.BYTE_STRING ) so no tag is given
-  return [NaN, u8]
+  return [NaN, u8];
 });
-
 export class CborEncoding<T extends RegistryItem>
   implements IEncodingMethod<T, Buffer>
 {
@@ -45,11 +45,11 @@ export class CborEncoding<T extends RegistryItem>
 
   /**
    * Encode the given payload to CBOR
-   * 
+   *
    * @param payload @type RegistryItem
    * @param cborLibOptions @type EncodeOptions
    * @returns @type Buffer
-   */ 
+   */
   encode(payload: any, cborLibOptions?: EncodeOptions): Buffer {
     // Combine instance cborLibOptions with the given cborLibOptions
     const combinedOptions = {
@@ -104,5 +104,4 @@ export class CborEncoding<T extends RegistryItem>
     // TODO: fix as unknown as T;
     return decoded as unknown as T;
   }
-
 }

@@ -1,24 +1,4 @@
-{
-  "compilerOptions": {
-    /** Module options */
-    "module": "node16",
-    "moduleResolution": "node16",
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "target": "ES2022",
-    "esModuleInterop": true, /** Let's you use default imports */
-
-    /** Type options */
-    "declaration": true,
-    /** "emitDeclarationOnly": true, **/
-
-    "resolveJsonModule": true,
-    "sourceMap": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "composite": true,
-    "importHelpers": true
-  },
-  "references": [],
-  "exclude": ["node_modules", "tests"]
-}
+// NOTE: Do not extend or alter this file.  This file is only here to point
+// VSCode to the correct config file.  (There's no way of configuring the path
+// VSCode uses for the tsconfig.json file)
+{ "extends": "./tsconfig.esm.json" }
