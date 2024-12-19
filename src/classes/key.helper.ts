@@ -28,7 +28,8 @@ export function encodeKeys(data: object, keyMap: IKeyMap): Map<string|number, an
 
   // Add the keys in the correct order to the map
   for (const key in keyMap) {
-    if(data[key]) map.set(keyMap[key], data[key]);
+    // Check if the key exists in the data
+    if(data[key] !== undefined) map.set(keyMap[key], data[key]);
     keys.delete(key);
   }
   
