@@ -9,6 +9,7 @@ export default {
     },
   },
   moduleNameMapper: {
+    '^../../commonjs/wrappers/cbor2Wrapper.js(.*)$': '<rootDir>/src/wrappers/cbor2Wrapper$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },  
   testPathIgnorePatterns: [
