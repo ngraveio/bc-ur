@@ -1,17 +1,34 @@
 import resolve from "@rollup/plugin-node-resolve";
 
-export default {
-  input: "./dist/esm/wrappers/cbor2Wrapper.js",
-  output: {
-    file: "dist/commonjs/wrappers/cbor2Wrapper.js",
-    format: "cjs",
-    exports: "auto",
+export default [
+  {
+    input: "./dist/esm/wrappers/cbor2Wrapper.js",
+    output: {
+      file: "dist/commonjs/wrappers/cbor2Wrapper.js",
+      format: "cjs",
+      exports: "auto",
+    },
+    plugins: [
+      resolve({
+        preferBuiltins: false,
+        moduleDirectories: ["node_modules"],
+        exportConditions: ["default", "import", "node"],
+      }),
+    ],
   },
-  plugins: [
-    resolve({
-      preferBuiltins: false,
-      moduleDirectories: ["node_modules"],
-      exportConditions: ["default", "import", "node"],
-    }),
-  ]
-};
+  {
+    input: "./dist/esm/wrappers/uint8array.js",
+    output: {
+      file: "dist/commonjs/wrappers/uint8array.js",
+      format: "cjs",
+      exports: "auto",
+    },
+    plugins: [
+      resolve({
+        preferBuiltins: false,
+        moduleDirectories: ["node_modules"],
+        exportConditions: ["default", "import", "node"],
+      }),
+    ],
+  },
+];
