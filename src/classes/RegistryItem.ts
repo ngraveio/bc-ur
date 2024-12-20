@@ -172,7 +172,7 @@ export type RegistryItemClass<T extends RegistryItemBase = RegistryItemBase> = {
   CDDL: string;
   keyMap?: IKeyMap;
   allowKeysNotInMap: boolean;
-  postCBOR(val: any): any;
-  fromCBORData(val: any, tagged?: any): T;  
+  postCBOR(val: any, allowKeysNotInMapOverwrite?: boolean): any;
+  fromCBORData(val: any, allowKeysNotInMap?: boolean, tagged?: any): T;  
 };
 export type RegistryItem = InstanceType<RegistryItemClass>;
