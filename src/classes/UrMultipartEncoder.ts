@@ -70,6 +70,7 @@ export class UrMultipartEncoder extends Encoder<Uint8Array, string> {
     let fragments: Uint8Array[] = [];
 
     while (remaining.length > 0) {
+      //@ts-ignore
       [fragment, remaining] = split(remaining, -fragmentLength);
       const newFragment = new Uint8Array(fragmentLength);
       newFragment.set(fragment, 0);

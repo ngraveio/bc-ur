@@ -1,72 +1,45 @@
 import { sha256Hash } from "./utils.js";
-import BigNumber from "bignumber.js";
-import JSBI from "jsbi";
+import { BigNumber } from "bignumber.js";
 
-const MAX_UINT64 = 0xffffffffffffffff;
-const rotl = (x: JSBI, k: number): JSBI =>
-  JSBI.bitwiseXor(
-    JSBI.asUintN(64, JSBI.leftShift(x, JSBI.BigInt(k))),
-    JSBI.BigInt(
-      JSBI.asUintN(
-        64,
-        JSBI.signedRightShift(x, JSBI.subtract(JSBI.BigInt(64), JSBI.BigInt(k)))
-      )
-    )
-  );
+const MAX_UINT64 = BigInt("0xffffffffffffffff");
+
+const rotl = (x: bigint, k: number): bigint =>
+  (x << BigInt(k) | x >> BigInt(64 - k)) & MAX_UINT64;
 
 export default class Xoshiro {
-  private s: JSBI[];
+  private s: bigint[];
 
   constructor(seed: Uint8Array) {
     const digest = sha256Hash(seed);
 
-    this.s = [JSBI.BigInt(0), JSBI.BigInt(0), JSBI.BigInt(0), JSBI.BigInt(0)];
+    this.s = [0n, 0n, 0n, 0n];
     this.setS(digest);
   }
 
   private setS(digest: Uint8Array) {
     for (let i = 0; i < 4; i++) {
       let o = i * 8;
-      let v = JSBI.BigInt(0);
+      let v = 0n;
       for (let n = 0; n < 8; n++) {
-        v = JSBI.asUintN(64, JSBI.leftShift(v, JSBI.BigInt(8)));
-        v = JSBI.asUintN(64, JSBI.bitwiseOr(v, JSBI.BigInt(digest[o + n])));
+        v = (v << 8n) | BigInt(digest[o + n]);
       }
-      this.s[i] = JSBI.asUintN(64, v);
+      this.s[i] = v & MAX_UINT64;
     }
   }
 
-  private roll(): JSBI {
-    const result = JSBI.asUintN(
-      64,
-      JSBI.multiply(
-        rotl(JSBI.asUintN(64, JSBI.multiply(this.s[1], JSBI.BigInt(5))), 7),
-        JSBI.BigInt(9)
-      )
-    );
+  private roll(): bigint {
+    const result =
+      ((rotl((this.s[1] * 5n) & MAX_UINT64, 7) * 9n) & MAX_UINT64);
 
-    const t = JSBI.asUintN(64, JSBI.leftShift(this.s[1], JSBI.BigInt(17)));
+    const t = (this.s[1] << 17n) & MAX_UINT64;
 
-    this.s[2] = JSBI.asUintN(
-      64,
-      JSBI.bitwiseXor(this.s[2], JSBI.BigInt(this.s[0]))
-    );
-    this.s[3] = JSBI.asUintN(
-      64,
-      JSBI.bitwiseXor(this.s[3], JSBI.BigInt(this.s[1]))
-    );
-    this.s[1] = JSBI.asUintN(
-      64,
-      JSBI.bitwiseXor(this.s[1], JSBI.BigInt(this.s[2]))
-    );
-    this.s[0] = JSBI.asUintN(
-      64,
-      JSBI.bitwiseXor(this.s[0], JSBI.BigInt(this.s[3]))
-    );
+    this.s[2] ^= this.s[0];
+    this.s[3] ^= this.s[1];
+    this.s[1] ^= this.s[2];
+    this.s[0] ^= this.s[3];
 
-    this.s[2] = JSBI.asUintN(64, JSBI.bitwiseXor(this.s[2], JSBI.BigInt(t)));
-
-    this.s[3] = JSBI.asUintN(64, rotl(this.s[3], 45));
+    this.s[2] ^= t;
+    this.s[3] = rotl(this.s[3], 45);
 
     return result;
   }
@@ -76,7 +49,7 @@ export default class Xoshiro {
   };
 
   nextDouble = (): BigNumber => {
-    return new BigNumber(this.roll().toString()).div(MAX_UINT64 + 1);
+    return new BigNumber(this.roll().toString()).div((MAX_UINT64 + 1n).toString());
   };
 
   nextInt = (low: number, high: number): number => {

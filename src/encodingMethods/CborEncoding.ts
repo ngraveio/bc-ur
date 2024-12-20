@@ -2,9 +2,12 @@ import { URRegistry, globalUrRegistry } from "../registry.js";
 import { RegistryItem, RegistryItemClass } from "../classes/RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
-import { decode, DecodeOptions, encode, EncodeOptions } from "cbor2";
-import { registerEncoder } from "cbor2/encoder";
-import { Tag } from "cbor2/tag";
+
+import {
+  DecodeOptions,
+  EncodeOptions,
+  decode, encode, Tag, registerEncoder
+} from "../wrappers/cbor2.js";
 
 interface inputOptions {
   registry?: URRegistry;
@@ -21,7 +24,6 @@ registerEncoder(Buffer, (b, _writer, _options) => {
   // This is a major type ( MT.BYTE_STRING ) so no tag is given
   return [NaN, u8];
 });
-
 export class CborEncoding<T extends RegistryItem>
   implements IEncodingMethod<T, Uint8Array>
 {

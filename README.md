@@ -87,3 +87,36 @@ else {
 }
 
 ```
+
+
+## Technical Choices
+
+### Dual Packaging
+
+This library is distributed in two formats: **ESM (ECMAScript Module)** and **CommonJS (CJS)**. The default version is ESM, which is utilized in the examples provided above.
+
+```
+dist
+├── esm
+│   ├── index.js
+│   ├── package.json
+├── commonjs
+│   ├── index.js
+│   ├── package.json
+└── package.json
+```
+
+
+Each `package.json` file within the subdirectories specifies the corresponding `type` property: `"module"` for ESM and `"commonjs"` for CJS. This enables Node.js to correctly interpret the file type based on the `.js` extension.
+
+The **CommonJS** format is included for backward compatibility with older versions of Node.js. However, it is **not recommended** for use in browser environments.
+
+Due to the library’s reliance on the **ESM-only** [CBOR2](https://github.com/hildjj/cbor2) library, the CommonJS version is created using **Rollup**. This process bundles the CBOR2 library into a single file and converts it to the CommonJS format.
+
+To mitigate the [Dual Package Hazard](https://nodejs.org/docs/latest-v18.x/api/packages.html#dual-package-hazard), the ESM version of this library also uses a bundled version of the CBOR2 library. This ensures consistency by maintaining a single source of truth for CBOR tag definitions.
+
+**Important Note:**
+> Adding CBOR types via the CBOR2 library will not affect the BC-UR library, as the BC-UR library uses the bundled version of CBOR2.
+
+
+More details about CBOR2 and dual packaging here: https://github.com/hildjj/cbor2/pull/57

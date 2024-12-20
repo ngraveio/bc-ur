@@ -118,7 +118,7 @@ export abstract class RegistryItemBase {
  * @param input
  * @returns
  */
-export function registryItemFactory(input: IRegistryType) {
+export function registryItemFactory(input: IRegistryType): RegistryItemClass {
   const { tag, URType, CDDL, keyMap, allowKeysNotInMap = true } = input;
   const _keyMap = keyMap;
 
@@ -164,5 +164,15 @@ export function registryItemFactory(input: IRegistryType) {
   };
 }
 
-export type RegistryItemClass = ReturnType<typeof registryItemFactory>;
+// Helper type to define the RegistryItem class with custom constructors and static properties
+export type RegistryItemClass<T extends RegistryItemBase = RegistryItemBase> = {
+  new (...args: any[]): T;
+  tag: number;
+  URType: string;
+  CDDL: string;
+  keyMap?: IKeyMap;
+  allowKeysNotInMap: boolean;
+  postCBOR(val: any, allowKeysNotInMapOverwrite?: boolean): any;
+  fromCBORData(val: any, allowKeysNotInMap?: boolean, tagged?: any): T;  
+};
 export type RegistryItem = InstanceType<RegistryItemClass>;

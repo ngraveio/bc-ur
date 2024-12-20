@@ -1,5 +1,15 @@
 import { RegistryItemClass } from "./classes/RegistryItem.js";
-import { Tag } from "cbor2/tag";
+import {
+  DecodeOptions,
+  EncodeOptions,
+  Tag,
+} from "./wrappers/cbor2.js";
+
+interface inputOptions {
+  registry?: URRegistry;
+  cborLibEncoderOptions?: EncodeOptions;
+  cborLibDecoderOptions?: DecodeOptions;
+}
 
 export type Registry = Map<string, RegistryItemClass>;
 

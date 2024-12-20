@@ -8,7 +8,7 @@ import { InvalidChecksumError } from "../errors.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { RegistryItem } from "./RegistryItem.js";
 import { CborEncoding } from "../encodingMethods/CborEncoding.js";
-import { concatUint8Arrays, isUint8Array } from "uint8array-extras";
+import { concatUint8Arrays, isUint8Array } from "../wrappers/uint8array.js";
 
 export type MultipartPayload = {
   seqNum: number;

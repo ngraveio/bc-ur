@@ -114,3 +114,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+#thsy
+.tshy-build
+
+# vscode
+.vscode

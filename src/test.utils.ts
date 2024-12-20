@@ -1,4 +1,4 @@
-import { registryItemFactory } from "./classes/RegistryItem";
+import { registryItemFactory } from "./classes/RegistryItem.js";
 
 // Define a nested registry items
 interface IUser {

@@ -1,4 +1,4 @@
-import { concatUint8Arrays } from "uint8array-extras";
+import { concatUint8Arrays } from "./wrappers/uint8array.js";
 import { bufferXOR, intToBytes } from "./utils.js";
 import Xoshiro from "./xoshiro.js";
 import randomSampler from "@apocentre/alias-sampling";
