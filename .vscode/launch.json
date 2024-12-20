@@ -8,26 +8,17 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Program",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}/dist/index.js",
-      "outFiles": [
-        "${workspaceFolder}/**/*.js"
-      ]
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/dist/esm/index.js",
+      "outFiles": ["${workspaceFolder}/**/*.js"]
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Debug Current",
-      "skipFiles": [
-          "<node_internals>/**"
-      ],
-      "runtimeExecutable": "ts-node",
+      "skipFiles": ["<node_internals>/**"],
       "program": "${file}",
-      "outFiles": [
-          "${workspaceFolder}/**/*.js"
-      ]
-  },    
+      "outFiles": ["${workspaceFolder}/dist/esm/**/*.js"]
+    }
   ]
 }
