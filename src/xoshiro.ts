@@ -9,14 +9,14 @@ const rotl = (x: bigint, k: number): bigint =>
 export default class Xoshiro {
   private s: bigint[];
 
-  constructor(seed: Buffer) {
+  constructor(seed: Uint8Array) {
     const digest = sha256Hash(seed);
 
     this.s = [0n, 0n, 0n, 0n];
     this.setS(digest);
   }
 
-  private setS(digest: Buffer) {
+  private setS(digest: Uint8Array) {
     for (let i = 0; i < 4; i++) {
       let o = i * 8;
       let v = 0n;

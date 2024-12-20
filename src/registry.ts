@@ -19,12 +19,18 @@ export class URRegistry {
   private tagMap: Map<number, string> = new Map();
   private loggingEnabled: boolean;
 
-  private constructor(items: RegistryItemClass[] = [], loggingEnabled: boolean = true) {
+  private constructor(
+    items: RegistryItemClass[] = [],
+    loggingEnabled: boolean = true
+  ) {
     this.loggingEnabled = loggingEnabled;
     this.addItems(items);
   }
 
-  public static getInstance(items: RegistryItemClass[] = [], loggingEnabled: boolean = true): URRegistry {
+  public static getInstance(
+    items: RegistryItemClass[] = [],
+    loggingEnabled: boolean = true
+  ): URRegistry {
     if (!URRegistry.instance) {
       URRegistry.instance = new URRegistry(items, loggingEnabled);
     }
@@ -52,8 +58,12 @@ export class URRegistry {
     }
     this.registry.set(item.URType, item);
     this.tagMap.set(item.tag, item.URType);
-    Tag.registerDecoder(item.tag, (tag: any, opts: any) => {
-      return item.fromCBORData.bind(item)(tag.contents, opts);
+    Tag.registerDecoder(item.tag, (tag: Tag, opts: any) => {
+      return item.fromCBORData.bind(item)(
+        tag.contents,
+        item.allowKeysNotInMap,
+        opts
+      );
     });
   }
 
@@ -93,8 +103,7 @@ export class URRegistry {
       const URType = findItem.URType;
       if (this.registry.has(URType)) {
         foundItem = findItem;
-      }
-      else {
+      } else {
         this.log(`Warning: Item not found in registry with type: ${URType}`);
         return;
       }

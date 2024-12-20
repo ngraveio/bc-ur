@@ -25,7 +25,7 @@ registerEncoder(Buffer, (b, _writer, _options) => {
   return [NaN, u8];
 });
 export class CborEncoding<T extends RegistryItem>
-  implements IEncodingMethod<T, Buffer>
+  implements IEncodingMethod<T, Uint8Array>
 {
   private _name: EncodingMethodName = EncodingMethodName.cbor;
   public registry: URRegistry = globalUrRegistry;
@@ -48,9 +48,9 @@ export class CborEncoding<T extends RegistryItem>
    *
    * @param payload @type RegistryItem
    * @param cborLibOptions @type EncodeOptions
-   * @returns @type Buffer
+   * @returns @type Uint8Array
    */
-  encode(payload: any, cborLibOptions?: EncodeOptions): Buffer {
+  encode(payload: any, cborLibOptions?: EncodeOptions): Uint8Array {
     // Combine instance cborLibOptions with the given cborLibOptions
     const combinedOptions = {
       ...this.cborLibEncoderOptions,
@@ -59,19 +59,18 @@ export class CborEncoding<T extends RegistryItem>
 
     // By default encode return Uint8Array
     const encoded = encode(payload, combinedOptions);
-    // TODO: For web compatibility, we need to convert Buffer to Uint8Array
-    return Buffer.from(encoded);
+    return encoded;
   }
 
   /**
    * Decode the CBOR encoded payload to the given type
-   * @param payload @type Buffer
+   * @param payload @type Uint8Array
    * @param enforceType Forces decoding into given type or throws error if it cannot be decoded @type RegistryItemClass
    * @param cborLibOptions @type DecodeOptions
    * @returns @type T
    */
   decode(
-    payload: Buffer,
+    payload: Uint8Array,
     enforceType?: RegistryItemClass,
     cborLibOptions?: DecodeOptions
   ): T {
@@ -95,10 +94,16 @@ export class CborEncoding<T extends RegistryItem>
           );
         }
         // Try to create the instance of the enforced type from tag contents
-        return enforceType.fromCBORData(decoded.contents) as unknown as T;
+        return enforceType.fromCBORData(
+          decoded.contents,
+          enforceType.allowKeysNotInMap
+        ) as unknown as T;
       }
       // Try to create the instance of the enforced type from decoded data
-      return enforceType.fromCBORData(decoded) as unknown as T;
+      return enforceType.fromCBORData(
+        decoded,
+        enforceType.allowKeysNotInMap
+      ) as unknown as T;
     }
 
     // TODO: fix as unknown as T;
