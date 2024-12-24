@@ -1,11 +1,7 @@
-import shajs from "sha.js";
 //@ts-ignore
 import { crc32 } from "crc";
 import Xoshiro from "./xoshiro.js";
 import { stringToUint8Array, toUint8Array } from "./wrappers/uint8array.js";
-
-export const sha256Hash = (data: Uint8Array | string) =>
-  shajs("sha256").update(data).digest();
 
 export const partition = (s: string, n: number): string[] =>
   s.match(new RegExp(".{1," + n + "}", "g")) || [s];

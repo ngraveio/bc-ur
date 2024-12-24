@@ -1,5 +1,11 @@
-import { sha256Hash } from "./utils.js";
+import { sha256 } from "sha.js";
 import { BigNumber } from "bignumber.js";
+
+export const sha256Hash = (data) => {
+  //@ts-ignore
+  const SHA256 = new sha256();
+  return SHA256.update(data).digest();
+};
 
 const MAX_UINT64 = BigInt("0xffffffffffffffff");
 
