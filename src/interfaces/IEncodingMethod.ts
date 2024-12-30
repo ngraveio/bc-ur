@@ -5,6 +5,6 @@ import { EncodingMethodName } from "../enums/EncodingMethodName.js";
  */
 export interface IEncodingMethod<T, U> {
   name: EncodingMethodName | string;
-  encode(payload: T): U;
-  decode(payload: U): T;
+  encode(payload: T, config?: unknown): U;
+  decode(payload: U, config?: unknown): T;
 }
