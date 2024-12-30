@@ -32,6 +32,7 @@ describe("UrEncoder", () => {
   test("should encode/decode a ur", () => {
     const registryItem = new MockRegistryItem({ name: "Pieter" });
     const encodedUr = encoder.encodeUr(registryItem);
+    // 'ur:custom1/taaxvaoyiejthsjnihiygdinihjyihjpdsfdylay'
 
     const decodedItem = decoder.decodeUr(encodedUr);
 
@@ -40,6 +41,7 @@ describe("UrEncoder", () => {
   test("should throw invalid type error for invalid ur type", () => {
     const registryItem = new InvalidRegistryItem({ name: "Pieter" });
     const encodedUr = encoder.encodeUr(registryItem);
+    // ur:è/rtoyiejthsjnihiygdinihjyihjpkogsrlsr
 
     expect(() => decoder.decodeUr(encodedUr)).toThrow(InvalidTypeError);
   });
