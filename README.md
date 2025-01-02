@@ -120,3 +120,7 @@ To mitigate the [Dual Package Hazard](https://nodejs.org/docs/latest-v18.x/api/p
 
 
 More details about CBOR2 and dual packaging here: https://github.com/hildjj/cbor2/pull/57
+
+## Notes:
+
+You can change `findNominalFragmentLength` function.

@@ -14,15 +14,15 @@ export class FountainEncoder {
   public fragmentLenghtFinder = findNominalFragmentLength;
 
   /** Total data size of the input message */
-  protected _messageLength: number;
+  public _messageLength: number;
   /** Maximum data size in the fragment */
   protected _maxFragmentLength: number;
   /** Minumum data size in the fragment */
   protected _minFragmentLength: number;
   /** Calculated data size in the fragment */
-  protected _nominalFragmentLength: number;
+  public _nominalFragmentLength: number;
   /** Array of pure fragments (without any fountain encoded) */
-  protected _pureFragments: Uint8Array[];
+  public _pureFragments: Uint8Array[];
   /** Current index of the fragment start from 1 */
   protected _seqNum: number;
   /** Checksum of the original data */

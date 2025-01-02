@@ -70,3 +70,61 @@ export const makeMessage = (
 
   return new Uint8Array(rng.nextData(length));
 };
+
+
+
+/// Set operations
+/// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/difference#browser_compatibility
+
+/**
+ * Returns the union of two sets.
+ * @param set1 - The first set.
+ * @param set2 - The second set.
+ * @returns A new set containing all unique elements from both sets.
+ */
+export const union = <T>(set1: Set<T>, set2: Set<T>): Set<T> => {
+  return new Set([...set1, ...set2]);
+};
+
+/**
+ * Returns the intersection of two sets.
+ * @param set1 - The first set.
+ * @param set2 - The second set.
+ * @returns A new set containing elements present in both sets.
+ */
+export const intersection = <T>(set1: Set<T>, set2: Set<T>): Set<T> => {
+  return new Set([...set1].filter((x) => set2.has(x)));
+};
+
+/**
+ * Returns the difference of two sets (set1 - set2).
+ * @param set1 - The first set.
+ * @param set2 - The second set.
+ * @returns A new set containing elements in set1 that are not in set2.
+ */
+export const difference = <T>(set1: Set<T>, set2: Set<T>): Set<T> => {
+  return new Set([...set1].filter((x) => !set2.has(x)));
+};
+
+/**
+ * Returns the symmetric difference of two sets.
+ * @param set1 - The first set.
+ * @param set2 - The second set.
+ * @returns A new set containing elements in either set1 or set2, but not in both.
+ */
+export const symmetricDifference = <T>(set1: Set<T>, set2: Set<T>): Set<T> => {
+  return new Set([
+    ...[...set1].filter((x) => !set2.has(x)),
+    ...[...set2].filter((x) => !set1.has(x)),
+  ]);
+};
+
+/**
+ * Checks if set1 is a subset of set2.
+ * @param sub - The potential subset.
+ * @param container - The set to check against.
+ * @returns True if set1 is a subset of set2, otherwise false.
+ */
+export const isSubset = <T>(sub: Set<T>, container: Set<T>): boolean => {
+  return [...sub].every((x) => container.has(x));
+};

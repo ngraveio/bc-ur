@@ -1,4 +1,5 @@
 import { FountainEncoder } from "../src/new_classes/FountainEncoder"
+import { FountainDecoder } from "../src/new_classes/FountainDecoder"
 import { makeMessage } from "../src/utils";
 import { hexToUint8Array, uint8ArrayToHex } from "uint8array-extras";
 import { Ur } from "../src/new_classes/Ur";
@@ -121,6 +122,32 @@ describe("Fountain Encoder Ur", () => {
     }
 
     expect(fragments).toEqual(expectedPartsUr);
+  });
+
+});
+
+describe.only("Fountain Decoder", () => {
+
+  test("should decode a message", () => {
+    const messageSize = 32767
+    const maxFragmentLen = 1000    
+    const message = makeMessage(messageSize);
+
+    const encoder = new FountainEncoder(message, maxFragmentLen, undefined, 30);
+    console.log("Nominal fragment length", encoder._nominalFragmentLength);
+    console.log("Pure fragments", encoder._pureFragments.length);
+    const decoder = new FountainDecoder();
+
+    let counter = 0;
+    while (!decoder.done) {
+      console.log("Counter", counter++);
+      const part = encoder.nextPart();
+      decoder.receivePart(part);
+      console.log("Estimate percent", decoder.estimatedPercentComplete());
+      console.log("Progress", decoder.getProgress());
+    }
+
+    expect(decoder.result).toEqual(message);
   });
 
 });
