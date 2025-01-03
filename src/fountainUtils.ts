@@ -16,20 +16,25 @@ export const chooseDegree = (seqLenth: number, rng: Xoshiro): number => {
   return degreeChooser.next() + 1;
 };
 
-export const shuffle = (items: any[], rng: Xoshiro): any[] => {
-  let remaining = [...items];
-  let result = [];
+export const shuffle = (items: number[], rng: Xoshiro, degree?: number): number[] => {
+  if (!degree) degree = items.length;
+  
+  let remaining:number[] = [...items];
+  let result:number[] = [];
 
-  while (remaining.length > 0) {
+  let i = 1;
+  while (remaining.length > 0 && i <= degree) {
     let index = rng.nextInt(0, remaining.length - 1);
     let item = remaining[index];
     // remaining.erase(remaining.begin() + index);
     remaining.splice(index, 1);
     result.push(item);
+    i++;
   }
 
   return result;
 };
+
 
 /**
  * Get an array of indexes for the fragments that we want to mix with each other.
@@ -55,9 +60,9 @@ export const chooseFragments = (
     const rng = new Xoshiro(seed);
     const degree = chooseDegree(seqLength, rng);
     const indexes = [...new Array(seqLength)].map((_, index) => index);
-    const shuffledIndexes = shuffle(indexes, rng);
+    const shuffledIndexes = shuffle(indexes, rng, degree);
     // return a mix of indexes that we want to include.
-    return shuffledIndexes.slice(0, degree);
+    return shuffledIndexes;
   }
 };
 
