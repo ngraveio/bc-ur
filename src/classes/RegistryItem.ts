@@ -1,3 +1,4 @@
+import { Ur } from "../new_classes/Ur.js";
 import { encodeKeys, decodeKeys, IKeyMap } from "./key.helper.js";
 
 /**
@@ -107,6 +108,10 @@ export abstract class RegistryItemBase {
   toCBOR(_writer, _options) {
     const processed = this.preCBOR();
     return [this.type.tag, processed];
+  }
+
+  toUr() {
+    return new Ur(this);
   }
 }
 
