@@ -4,11 +4,13 @@ import { makeMessage } from "../src/utils";
 import { hexToUint8Array, uint8ArrayToHex } from "uint8array-extras";
 import { Ur } from "../src/new_classes/Ur";
 import { UrFountainEncoder } from "../src/new_classes/UrFountainEncoder";
+import { UrFountainDecoder } from "../src/new_classes/UrFountainDecoder";
+import { EncodingMethodName } from "../src/enums/EncodingMethodName";
 
 
 function make_message_ur(len: number, seed?: string): Ur {
   const message = makeMessage(len, seed);
-  console.log("message", uint8ArrayToHex(message));
+  // Encode this bytes as cbor then as bytewords
   const ur = new Ur({type: "bytes", payload: message});
   return ur;
 }
@@ -126,7 +128,7 @@ describe("Fountain Encoder Ur", () => {
 
 });
 
-describe.only("Fountain Decoder", () => {
+describe("Fountain Decoder", () => {
 
   test("should decode a message", () => {
     const messageSize = 32767
@@ -134,20 +136,40 @@ describe.only("Fountain Decoder", () => {
     const message = makeMessage(messageSize);
 
     const encoder = new FountainEncoder(message, maxFragmentLen, undefined, 30);
-    console.log("Nominal fragment length", encoder._nominalFragmentLength);
-    console.log("Pure fragments", encoder._pureFragments.length);
     const decoder = new FountainDecoder();
 
     let counter = 0;
     while (!decoder.done) {
-      console.log("Counter", counter++);
+      // console.log("Counter", counter++);
       const part = encoder.nextPart();
       decoder.receivePart(part);
-      console.log("Estimate percent", decoder.estimatedPercentComplete());
-      console.log("Progress", decoder.getProgress());
     }
 
     expect(decoder.result).toEqual(message);
+  });
+
+});
+
+
+describe("Fountain Decoder Ur", () => {
+  
+  test("should decode a message", () => {
+    const messageSize = 32767
+    const maxFragmentLen = 1000    
+    const myUr = make_message_ur(messageSize);
+
+    const encoder = new UrFountainEncoder(myUr, maxFragmentLen, undefined, 30);
+    const decoder = new UrFountainDecoder();
+
+    let counter = 0;
+    while (!decoder.done) {
+      const ur = encoder.nextPartUr();
+      decoder.receivePartUr(ur);
+    }
+
+    expect(decoder.resultUr.getPayloadHex()).toEqual(myUr.getPayloadHex());
+    expect(decoder.resultUr.toString()).toEqual(myUr.toString());
+    expect(decoder.resultUr.decode()).toEqual(myUr.decode());
   });
 
 });
