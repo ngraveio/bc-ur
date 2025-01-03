@@ -42,7 +42,7 @@ export class UrFountainEncoder extends FountainEncoder {
    */
   getAllPartsUr(fountainRatio: number = 0): Ur[] {
     const allParts = super.getAllParts(fountainRatio);
-    return allParts.map((part, index) => this.fragment2Ur(index, part));
+    return allParts.map((part, index) => this.fragment2Ur(index+1, part));
   }
 
   /**

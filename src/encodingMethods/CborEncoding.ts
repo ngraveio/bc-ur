@@ -15,6 +15,11 @@ interface inputOptions {
   cborLibDecoderOptions?: DecodeOptions;
 }
 
+interface decodeOptions {
+  enforceType?: RegistryItemClass;
+  cborLibOptions?: DecodeOptions;
+}
+
 // For Node.js we are going to convert buffer into Uint8Array
 // This code should only run in Node.js
 // TODO: Handle checking if it is Node.js or not
@@ -71,10 +76,10 @@ export class CborEncoding<T extends RegistryItem>
    */
   decode(
     payload: Uint8Array,
-    enforceType?: RegistryItemClass,
-    cborLibOptions?: DecodeOptions
+    options?: decodeOptions,
   ): T {
     // Combine instance cborLibOptions with the given cborLibOptions
+    const { cborLibOptions, enforceType } = options || {};
     const combinedOptions = {
       ...this.cborLibDecoderOptions,
       ...cborLibOptions,

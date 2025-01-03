@@ -32,7 +32,7 @@ export class EncodingPipeline<T, U> implements IEncodingMethod<T, U> {
     let fromIndex = 0;
     let untilIndex = this.encodingMethods.length;
 
-    const { from, until } = config;
+    const { from, until, ...rest } = config;
 
     // Find the index of the specified start and until encoding methods
     if(from) {
@@ -55,7 +55,7 @@ export class EncodingPipeline<T, U> implements IEncodingMethod<T, U> {
 
     // Apply each encoding method in sequence until the specified encoding method or the end
     for (let i = fromIndex; i < untilIndex; i++) {
-      encodedValue = this.encodingMethods[i].encode(encodedValue, config);
+      encodedValue = this.encodingMethods[i].encode(encodedValue, rest);
     }
     return encodedValue;
   }  
@@ -65,7 +65,7 @@ export class EncodingPipeline<T, U> implements IEncodingMethod<T, U> {
     let fromIndex = 0;
     let untilIndex = this.decodingMethods.length;
 
-    const { from, until } = config;
+    const { from, until, ...rest } = config;
 
     // Find the index of the specified start and until encoding methods
     if(from) {
@@ -88,7 +88,7 @@ export class EncodingPipeline<T, U> implements IEncodingMethod<T, U> {
 
     // Apply each encoding method in sequence until the specified encoding method or the end
     for (let i = fromIndex; i < untilIndex; i++) {
-      decodedValue = this.decodingMethods[i].decode(decodedValue, config);
+      decodedValue = this.decodingMethods[i].decode(decodedValue, rest);
     }
 
     return decodedValue;
