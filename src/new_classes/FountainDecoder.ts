@@ -18,11 +18,9 @@ export type MultipartPayload = {
   fragment: Uint8Array;
 };
 
-/////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
 
 class FountainBlock {
-  constructor(private _indexes: number[], private _fragment: Uint8Array) {}
+  constructor(protected _indexes: number[], protected _fragment: Uint8Array) {}
   /** What blocks is mixed in this block */
   get indexes() {
     return this._indexes;
@@ -39,21 +37,23 @@ class FountainBlock {
 
   public isSubsetOf(other: FountainBlock) {
     // Dont use set use array
-    return isSubset(new Set(this.indexes), new Set(other.indexes));
+    // return isSubset(new Set(this.indexes), new Set(other.indexes));
+    return arrayContains(other.indexes, this.indexes);
   }
 
   public isSupersetOf(other: FountainBlock) {
-    return isSubset(new Set(other.indexes), new Set(this.indexes));
+    // return isSubset(new Set(other.indexes), new Set(this.indexes));
+    return arrayContains(this.indexes, other.indexes);
   }
 
-  public reduceBy(other: FountainBlock) {
+  public reduceBy(other: FountainBlock): FountainBlock {
     // Check if the other block is a subset of this block
     if(!this.isSupersetOf(other)) {
       return this;
     }
-
     // Otherwise reduce the other block from this block
-    const newIndexes = difference(new Set(this.indexes), new Set(other.indexes));
+    // const newIndexes = difference(new Set(this.indexes), new Set(other.indexes));
+    const newIndexes = setDifference(this.indexes, other.indexes);
     const newFragment = bufferXOR(this.fragment, other.fragment);
 
     return new FountainBlock([...newIndexes], newFragment);
@@ -61,15 +61,16 @@ class FountainBlock {
 }
 
 
-class FountainBlockStorage { //extends Map<string, FountainBlock> {
+class FountainBlockStorage {
   blockMap: Map<string, FountainBlock>;
   
   constructor(blocks?: FountainBlock[]) {
-    this.blockMap = new Map();
     if (blocks) {
-      blocks.forEach((block) => {
-        this.add(block);
-      });
+      const add: [string, FountainBlock][] = blocks.map((block) => [this._toKey(block.indexes), block]);
+      this.blockMap = new Map(add);
+    }
+    else {
+      this.blockMap = new Map();
     }
   }
 
@@ -88,41 +89,41 @@ class FountainBlockStorage { //extends Map<string, FountainBlock> {
     return numIndexes.sort((a, b) => a.length - b.length || a[a.length - 1] - b[b.length - 1]);
   }
 
-  // Normalize the indexes into a sorted string key
-  _normalizeIndexes(indexes: number[]) {
-    //return indexes.sort((a, b) => a - b).join(',');
+  // A string key from the indexes
+  _toKey(indexes: number[]) {
     return indexes.join(',');
   }
 
   // Add a block
   add(block: FountainBlock) {
     const indexes = block.indexes;
-    const key = this._normalizeIndexes(indexes);
+    const key = this._toKey(indexes);
     this.blockMap.set(key, block);
   }
 
   // Get a block
   get(indexes: number[]) {
-    const key = this._normalizeIndexes(indexes);
+    const key = this._toKey(indexes);
     return this.blockMap.get(key);
   }
 
   // Check if a block exists
   has(indexes: number[]) {
-    const key = this._normalizeIndexes(indexes);
+    const key = this._toKey(indexes);
     return this.blockMap.has(key);
   }
 
   // Remove a block
   remove(indexes: number[]) {
-    const key = this._normalizeIndexes(indexes);
+    const key = this._toKey(indexes);
     const block = this.blockMap.get(key);
     this.blockMap.delete(key);
 
     return block;
   }
 
-  // Get all the subsets of a given indexes
+  // Get all the subsets of a block that can reduce this to simple one
+  // If we have 1x2x3 we need any of: 1x2, 2x3, 1x3
   getAllSubsetsOf(indexes: number[]) {
     const subsets = [];
 
@@ -158,35 +159,43 @@ export class FountainDecoder {
   public started: boolean = false;
   public done: boolean = false;
 
-  /** Stores an error while decoding message */
-  private error: Error | undefined;
-  /** Stores the assembled raw result as a Buffer */
-  private resultRaw: Uint8Array | undefined = undefined;
+  /** Stores the error if decoding fauls */
+  protected error: Error | undefined;
+  /** Stores the decoded data*/
+  protected resultRaw: Uint8Array | undefined = undefined;
 
   /** Stores the expected length of the final message */
-  private expectedMessageLength: number = 0;
+  protected expectedMessageLength: number = 0;
   /** Stores the expected checksum of the final message */
-  private expectedChecksum: number = 0;
+  protected expectedChecksum: number = 0;
   /** Stores the expected message length of each fragment */
-  private expectedFragmentLength: number = 0;
+  protected expectedFragmentLength: number = 0;
   /** Total number of simple fragments */
-  private expectedPartCount: number = 0;
-  /** Keeps track of the how many parts have been processed */
-  private processedPartsCount: number = 0;
-
+  protected expectedPartCount: number = 0;
+  
   /** Mixed Parts that we cannot reduce to simple parts yet */
-  private mixedBlocks: FountainBlockStorage = new FountainBlockStorage();
+  protected mixedBlocks: FountainBlockStorage = new FountainBlockStorage();
   /** Non-mixed single parts */
-  private simpleBlocks: FountainBlockStorage = new FountainBlockStorage();
+  protected simpleBlocks: FountainBlockStorage = new FountainBlockStorage();
   /** Queue of parts that may take part in reduction */
-  private queuedBlocks: FountainBlock[] = [];
-
+  protected queuedBlocks: FountainBlock[] = [];
+  
   // For tracking the progress of decoding we can keep seen indexes and decoded indexes
   public seenBlocks: number[] = [];
   public decodedBlocks: number[] = [];
+  /** Keeps track of the how many parts have been processed */
+  protected processedPartsCount: number = 0;
 
   get result(): Uint8Array | Error | undefined {
     return this.resultRaw || this.error;
+  }
+
+  isSuccessful(): boolean {
+    return this.done && !this.error;
+  }
+
+  constructor(parts: Uint8Array[] = []) {
+    parts.forEach((part) => this.receivePart(part));
   }
 
   public reset(): void {
@@ -195,17 +204,17 @@ export class FountainDecoder {
     this.expectedMessageLength = 0;
     this.expectedChecksum = 0;
     this.expectedFragmentLength = 0;
-    this.processedPartsCount = 0;
-
+    
     this.mixedBlocks = new FountainBlockStorage();
     this.simpleBlocks = new FountainBlockStorage();
     this.queuedBlocks = [];
-
+    
     this.seenBlocks = [];
     this.decodedBlocks = [];
+    this.processedPartsCount = 0;
   }
 
-  private setExpectedValues(decodedPart: MultipartPayload): void {
+  protected setExpectedValues(decodedPart: MultipartPayload): void {
     this.expectedPartCount = decodedPart.seqLength;
     this.expectedMessageLength = decodedPart.messageLength;
     this.expectedChecksum = decodedPart.checksum;
@@ -225,7 +234,7 @@ export class FountainDecoder {
    * @param decodedPart received multipart ur
    * @returns boolean indicating if the multipart ur is a 'member' of the originally scanned ur with the current decoder.
    */
-  private validatePart(decodedPart: MultipartPayload): boolean {
+  protected validatePart(decodedPart: MultipartPayload): boolean {
     // If this part's values don't match the first part's values, throw away the part
     if (this.expectedPartCount !== decodedPart.seqLength) {
       // TODO: display proper error message
@@ -273,17 +282,39 @@ export class FountainDecoder {
     this.done = true;
   }
 
-  receivePart(encodedPart: Uint8Array): boolean {
+  parseInput(input: Uint8Array | MultipartPayload): MultipartPayload {
+    // Check the type of input payload
+    if (input instanceof Uint8Array) {
+      return parseMultipartCbor(input);
+    }
+    else if(typeof input === "object") {
+      // Check its correct type
+      if (!validateMultipartPayload(input)) {
+        throw new Error("Invalid multipart payload");
+      }
+      return input;
+    }
+  
+    throw new Error("Invalid input type");
+  }
+
+  receivePart(encodedPart: Uint8Array | MultipartPayload): boolean {
     // If we already have a result, we're done
     if (this.done) {
       return false;
     }
 
-    // Decoded data should be in this format if not its not a valid multipart payload
-    // [seqNum, seqLength, messageLength, checksum, fragment]
+    let decodedPart: MultipartPayload;
     try {
-      const decodedPart = parseMultipartPayload(encodedPart);
+      decodedPart = this.parseInput(encodedPart);
+    }
+    catch (error) {
+      // Skip receiving invalid parts
+      console.warn("Cannot parse part", error);
+      return false;
+    }
 
+    try {
       // If this is the first part we've seen then set expected values
       if (!this.started) this.setExpectedValues(decodedPart);
 
@@ -293,7 +324,6 @@ export class FountainDecoder {
       }
 
       // Now we can start processing the part
-
       // Find which original data fragments are in this fragment what is mixed in this
       let indexes = chooseFragments(decodedPart.seqNum, decodedPart.seqLength, decodedPart.checksum);
       // order the indexes
@@ -303,13 +333,9 @@ export class FountainDecoder {
 
       const block = new FountainBlock(indexes, fragment);
 
-      console.log("Received part", block.indexes);
-
       this.queuedBlocks.push(block);
 
       this.processQueue();
-      console.log("Seen parts", this.seenBlocks);
-      console.log("Decoded parts", this.decodedBlocks);
 
       this.processedPartsCount += 1;
     } catch (error) {
@@ -322,7 +348,7 @@ export class FountainDecoder {
   }
 
   // http://blog.notdot.net/2012/01/Damn-Cool-Algorithms-Fountain-Codes
-  private processQueue(): void {
+  protected processQueue(): void {
     // Process the queued blocks until queue is empty or we're done
     while (!this.done && this.queuedBlocks.length > 0) {
       const block = this.queuedBlocks.shift()!;
@@ -345,7 +371,7 @@ export class FountainDecoder {
    * @param block object with the indexes and the fragment payload buffer.
    * @returns
    */
-  private processSimpleBlock(block: FountainBlock): void {
+  protected processSimpleBlock(block: FountainBlock): void {
     if (!block.isSimple()) {
       throw new Error("Part is not simple");
     }
@@ -355,10 +381,8 @@ export class FountainDecoder {
 
     // Add our block to simple blocks
     this.simpleBlocks.add(block);
-    // Add the index to the decoded indexes
-    block.indexes.forEach((index) => {
-      this.decodedBlocks[index] = 1;
-    });
+    // Keep track of the decoded blocks
+    this.decodedBlocks[block.indexes[0]] = 1;
 
     // If we've received all the parts
     if (this.simpleBlocks.size == this.expectedPartCount) {
@@ -376,17 +400,16 @@ export class FountainDecoder {
    * @param newPart
    * @returns
    */
-  private processMixedBlock(newPart: FountainBlock): void {
+  protected processMixedBlock(newPart: FountainBlock): void {
     // Check if already have this block, if so pass
     if (this.mixedBlocks.has(newPart.indexes)) {
       return;
     }
 
-    // reducedPart = this.simpleParts.reduce((acc, { value: p }) => this.reducePartByPart(acc, p), reducedPart);
-
-    // Get all simple blocks that we have that makes up this part
-    let reducedBlock = this.simpleBlocks
-      .getSimpleSubsetsOf(newPart.indexes)
+    // Get all simple blocks that we have that makes up this part and reduce current block by whatever we have
+    let reducedBlock: FountainBlock = this.simpleBlocks
+      // .getSimpleSubsetsOf(newPart.indexes)
+      .getAllBlocks()
       .reduce((proccessed, currentSimple) => proccessed.reduceBy(currentSimple), newPart);
 
     // Now check if we have a simple part if so add it to the queue
@@ -422,7 +445,7 @@ export class FountainDecoder {
    * If a mixed part is reduced to simpler part add it to the mixed
    * @param block
    */
-  private reduceAllMixedBlocksBy(block: FountainBlock): void {
+  protected reduceAllMixedBlocksBy(block: FountainBlock): void {
     const newMixed: FountainBlock[] = [];
 
     // Try to reduce all the mixed parts by this simple part
@@ -441,8 +464,6 @@ export class FountainDecoder {
     // Override the mixed parts with new reduces parts
     this.mixedBlocks = new FountainBlockStorage(newMixed);
   }
-
-
   /**
    *
    *
@@ -491,7 +512,7 @@ export class FountainDecoder {
     }
   }  
 
-
+  
   public estimatedPercentComplete(): number {
     if (this.done) {
       return 1;
@@ -525,23 +546,46 @@ export class FountainDecoder {
 }
 
 export type IMultipartUrPayload = [number, number, number, number, Uint8Array];
-function parseMultipartPayload(encodeded: Uint8Array): MultipartPayload {
-  const decoded = cborEncoder.decode(encodeded) as unknown as IMultipartUrPayload;
-  const [seqNum, seqLength, messageLength, checksum, fragment] = decoded;
 
-  if (
-    typeof seqNum !== "number" ||
-    typeof seqLength !== "number" ||
-    typeof messageLength !== "number" ||
-    typeof checksum !== "number" ||
-    !isUint8Array(fragment) ||
-    fragment.length === 0
-  ) {
-    throw new Error("Invalid multipart payload");
+/**
+ * Parse CBOR encoded Multipart Payload
+ * @param encodeded 
+ * @returns 
+ */
+function parseMultipartCbor(encodeded: Uint8Array): MultipartPayload {
+  const decoded = cborEncoder.decode(encodeded) as unknown as IMultipartUrPayload;
+  return validateDecodedMultipart(decoded);
+}
+
+/**
+ * Validate and convert the decoded multipart payload to MultipartPayload object
+ * @param decoded 
+ * @returns 
+ */
+function validateDecodedMultipart(decoded: IMultipartUrPayload): MultipartPayload {
+  const [seqNum, seqLength, messageLength, checksum, fragment] = decoded;
+  if (!validateMultipartPayload({ seqNum, seqLength, messageLength, checksum, fragment })) {
+    throw new Error("Invalid  multipart payload");
   }
 
   return { seqNum, seqLength, messageLength, checksum, fragment };
 }
+
+function validateMultipartPayload(decoded: MultipartPayload): boolean {
+  if (
+    typeof decoded.seqNum !== "number" ||
+    typeof decoded.seqLength !== "number" ||
+    typeof decoded.messageLength !== "number" ||
+    typeof decoded.checksum !== "number" ||
+    !isUint8Array(decoded.fragment) ||
+    decoded.fragment.length === 0
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 
 
 /**
@@ -558,10 +602,3 @@ function joinFragments(fragments: Uint8Array[], messageLength?: number): Uint8Ar
   }
   return result;
 }
-
-
-
-//////////////////////////////
-
-
-
