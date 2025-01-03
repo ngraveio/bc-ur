@@ -1,5 +1,4 @@
 import { sha256 } from "sha.js";
-import { BigNumber } from "bignumber.js";
 
 export const sha256Hash = (data) => {
   //@ts-ignore
@@ -22,7 +21,7 @@ export default class Xoshiro {
     this.setS(digest);
   }
 
-  private setS(digest: Uint8Array) {
+  private setS = (digest: Uint8Array) => {
     for (let i = 0; i < 4; i++) {
       let o = i * 8;
       let v = 0n;
@@ -31,9 +30,9 @@ export default class Xoshiro {
       }
       this.s[i] = v & MAX_UINT64;
     }
-  }
+  };
 
-  private roll(): bigint {
+  private roll = (): bigint => {
     const result =
       ((rotl((this.s[1] * 5n) & MAX_UINT64, 7) * 9n) & MAX_UINT64);
 
@@ -48,18 +47,18 @@ export default class Xoshiro {
     this.s[3] = rotl(this.s[3], 45);
 
     return result;
-  }
-
-  next = (): BigNumber => {
-    return new BigNumber(this.roll().toString());
   };
 
-  nextDouble = (): BigNumber => {
-    return new BigNumber(this.roll().toString()).div((MAX_UINT64 + 1n).toString());
+  next = (): bigint => {
+    return this.roll();
+  };
+
+  nextDouble = (): number => {
+    return Number(this.roll()) / Number(MAX_UINT64 + 1n);
   };
 
   nextInt = (low: number, high: number): number => {
-    return Math.floor(this.nextDouble().toNumber() * (high - low + 1) + low);
+    return Math.floor(this.nextDouble() * (high - low + 1) + low);
   };
 
   nextByte = () => this.nextInt(0, 255);

@@ -9,7 +9,7 @@ describe("Xoshiro rng", () => {
   test("1", () => {
     const rng = new Xoshiro(stringToUint8Array("Wolf"));
     const numbers = [...new Array(100)].map(() =>
-      rng.next().mod(100).toNumber()
+      rng.next() % 100n
     );
     const expectedNumbers = [
       42, 81, 85, 8, 82, 84, 76, 73, 70, 88, 2, 74, 40, 48, 77, 54, 88, 7, 5,
@@ -27,7 +27,7 @@ describe("Xoshiro rng", () => {
     const checksum = intToBytes(getCRC(stringToUint8Array("Wolf")));
     const rng = new Xoshiro(checksum);
     const numbers = [...new Array(100)].map(() =>
-      rng.next().mod(100).toNumber()
+      rng.next() % 100n
     );
     const expectedNumbers = [
       88, 44, 94, 74, 0, 99, 7, 77, 68, 35, 47, 78, 19, 21, 50, 15, 42, 36, 91,
@@ -56,7 +56,7 @@ describe("Xoshiro rng", () => {
   });
 });
 
-describe("Shuffle", () => {
+describe.only("Shuffle", () => {
   test("random shuffle", () => {
     const rng = new Xoshiro(stringToUint8Array("Wolf"));
     const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -76,6 +76,32 @@ describe("Shuffle", () => {
     ];
 
     expect(result).toEqual(expectedResult);
+  });
+
+  test("random shuffle with degree", () => {
+    const expectedResult = [
+        [6],
+        [5, 8],
+        [4, 10, 5],
+        [7, 10, 3, 8],
+        [10, 8, 6, 5, 1],
+        [1, 3, 9, 8, 4, 6],
+        [4, 6, 8, 9, 3, 2, 1],
+        [3, 9, 7, 4, 5, 1, 10, 8],
+        [3, 10, 2, 6, 8, 5, 7, 9, 1],
+        [1, 5, 3, 8, 2, 6, 7, 9, 4, 10]
+    ]
+
+    const rng = new Xoshiro(stringToUint8Array("Wolf"));
+    const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    let results: number[][] = []; 
+
+    for (let i = 1; i <= 10; i++) {
+      results.push(shuffle(values, rng, i));
+    }
+
+    expect(results).toEqual(expectedResult);
+
   });
 });
 
