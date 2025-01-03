@@ -88,7 +88,7 @@ describe("Registry Items with KeyMap", () => {
       "hex"
     );
 
-    const decoded = cbor.decode(encoded, CoinInfo);
+    const decoded = cbor.decode(encoded, {enforceType: CoinInfo});
 
     expect(decoded).toBeInstanceOf(CoinInfo);
     expect(decoded.data).toEqual({ type: 5, network: 3, anahtar: "deneme" });
@@ -103,7 +103,7 @@ describe("Registry Items with KeyMap", () => {
       "hex"
     );
 
-    const decoded = cbor.decode(encoded, CoinInfo);
+    const decoded = cbor.decode(encoded, {enforceType: CoinInfo});
 
     expect(decoded).toBeInstanceOf(CoinInfo);
     expect(decoded.data).toEqual({ type: 5, network: 3 });
