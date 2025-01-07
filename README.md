@@ -124,3 +124,105 @@ More details about CBOR2 and dual packaging here: https://github.com/hildjj/cbor
 ## Notes:
 
 You can change `findNominalFragmentLength` function.
+
+
+
+# What is UR?
+**U**niform **R**esource (UR) is a structre for encoding binary data in a form that can be used in a URI and with types. It takes advantage of QR Codes *"alphanumeric"* mode to transfer binary data because the native binary encoding mode of QR codes is not consistently supported by [readers](https://stackoverflow.com/questions/37996101/storing-binary-data-in-qr-codes).
+
+More Details in: https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md
+
+## UR Format
+A single-part UR has the following form:
+
+```
+ur:<type>/<message (bytewords)>
+```
+
+For example:
+
+```
+ur:seed/oyadhdeynteelblrcygldwvarflojtcywyjytpdkfwprylienshnjnpluypmamtkmybsjkspvseesawmrltdlnlgkplfbkqzzoglfeoyaegslobemohs
+```
+
+A multi-part UR has the following form:
+
+```
+ur:<type>/<seq>/<fragment (bytewords)>
+```
+
+For example:
+
+```
+ur:seed/1-3/lpadaxcsencylobemohsgmoyadhdeynteelblrcygldwvarflojtcywyjydmylgdsa
+```
+
+## Ur Pipeline
+For encoding data in UR it goes through the following steps:
+1. **[CBOR Encoding](https://cbor.io/)**: The data is encoded in CBOR format and converted binary representation.
+2. **Hex Encoding**: The binary data is converted to a hexadecimal string.
+3. **[Bytewords Encoding](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-012-bytewords.md)**: The hexadecimal string is converted to a bytewords string and crc32 checksum is added.
+4. **[UR Encoding](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md)**: The bytewords string is encoded in UR format.
+
+### Example:
+
+Lets encode basic object:
+```json
+const testPayload = {
+  "id": "123",
+  "name": "John Doe"
+}
+```
+
+1. **CBOR:**
+```ts
+const cborEncoded_ = defaultEncoders.cbor.encode(testPayload);
+// or
+const cborEncoded = Ur.pipeline.encode(testPayload, {until:EncodingMethodName.hex});
+
+```
+**Result:**
+```
+new Uint8Array([162, 98, 105, 100, 24, 123, 100, 110, 97, 109, 101, 104, 74, 111, 104, 110, 32, 68, 111, 101])
+```
+
+**Cbor Commented:**
+```
+A2                     # map(2)
+   62                  # text(2)
+      6964             # "id"
+   18 7B               # unsigned(123)
+   64                  # text(4)
+      6E616D65         # "name"
+   68                  # text(8)
+      4A6F686E20446F65 # "John Doe"
+```
+
+2. **Hex encoded**:
+```ts
+const hexEncoded_ = defaultEncoders.hex.encode(cborEncoded_);
+// or
+const hexEncoded = Ur.pipeline.encode(testPayload, {until:EncodingMethodName.bytewords});
+```
+```
+a2626964187b646e616d65684a6f686e20446f65
+```
+
+3. **Bytewords encoded**:
+```ts
+const bytewordsEncoded_ = defaultEncoders.bytewords.encode(hexEncoded_);
+// or
+const bytewordsEncoded = Ur.pipeline.encode(testPayload);
+```
+```
+oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
+```
+
+4. **UR Encoded**:
+```ts
+const ur = Ur.fromData({type: "user", payload: testPayload});
+ur.toString();
+```
+```
+ur:cbor/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
+```
