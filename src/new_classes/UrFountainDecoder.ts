@@ -1,6 +1,6 @@
 import { RegistryItem } from "../classes/RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
-import { FountainDecoder, MultipartPayload } from "./FountainDecoder.js";
+import { FountainDecoder, MultipartPayload, validateDecodedMultipart } from "./FountainDecoder.js";
 import { Ur } from "./Ur.js";
 
 export class UrFountainDecoder extends FountainDecoder{
@@ -77,8 +77,8 @@ export class UrFountainDecoder extends FountainDecoder{
 
     let parsed: MultipartPayload;
     try {
-      const cborInput = part.getPayloadCbor();
-      parsed = super.parseInput(cborInput);
+      const decoded = part.decode();
+      parsed = validateDecodedMultipart(decoded)
     }
     catch (e) {
       console.error(e);
