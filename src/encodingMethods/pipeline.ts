@@ -27,6 +27,8 @@ export class EncodingPipeline<T, U> implements IEncodingMethod<T, U> {
     return this._encodingMethods.slice().reverse();
   }
   
+
+  // TODO: change until to "to"
   encode<O = U>(payload: T, config: pipelineConfig = {from:undefined, until:undefined}): O {
     let encodedValue: any = payload;
     let fromIndex = 0;

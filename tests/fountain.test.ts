@@ -11,7 +11,7 @@ import { EncodingMethodName } from "../src/enums/EncodingMethodName";
 function make_message_ur(len: number, seed?: string): Ur {
   const message = makeMessage(len, seed);
   // Encode this bytes as cbor then as bytewords
-  const ur = new Ur({type: "bytes", payload: message});
+  const ur = Ur.fromData({type: "bytes", payload: message});
   return ur;
 }
 
