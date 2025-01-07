@@ -107,7 +107,14 @@ export abstract class RegistryItemBase {
    */
   toCBOR(_writer, _options) {
     const processed = this.preCBOR();
-    return [this.type.tag, processed];
+    let tag = this.type.tag;
+    // TODO: find a better way to ignore top level tag on encoder
+    if (_options?.ignoreTopLevelTag) {
+      tag = NaN; // Do not tag the top level item
+      // Set it back to false for child items
+      _options.ignoreTopLevelTag = false;
+    }
+    return [tag, processed];
   }
 
   toUr() {

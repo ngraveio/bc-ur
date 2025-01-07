@@ -11,7 +11,7 @@ import {
 
 interface inputOptions {
   registry?: URRegistry;
-  cborLibEncoderOptions?: EncodeOptions;
+  cborLibEncoderOptions?: EncodeOptions & {ignoreTopLevelTag?: boolean};
   cborLibDecoderOptions?: DecodeOptions;
 }
 
@@ -55,7 +55,7 @@ export class CborEncoding<T extends RegistryItem>
    * @param cborLibOptions @type EncodeOptions
    * @returns @type Uint8Array
    */
-  encode(payload: any, cborLibOptions?: EncodeOptions): Uint8Array {
+  encode(payload: any, cborLibOptions?: EncodeOptions & {ignoreTopLevelTag?: boolean}): Uint8Array {
     // Combine instance cborLibOptions with the given cborLibOptions
     const combinedOptions = {
       ...this.cborLibEncoderOptions,

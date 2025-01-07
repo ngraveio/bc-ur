@@ -5,12 +5,6 @@ import {
   Tag,
 } from "./wrappers/cbor2.js";
 
-interface inputOptions {
-  registry?: URRegistry;
-  cborLibEncoderOptions?: EncodeOptions;
-  cborLibDecoderOptions?: DecodeOptions;
-}
-
 export type Registry = Map<string, RegistryItemClass>;
 
 export class URRegistry {
