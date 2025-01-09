@@ -1,5 +1,5 @@
 import { URRegistry, globalUrRegistry } from "../registry.js";
-import { RegistryItem, RegistryItemClass } from "../classes/RegistryItem.js";
+import { RegistryItem, RegistryItemClass, registryItemFactory } from "../classes/RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
 
@@ -111,7 +111,64 @@ export class CborEncoding<T extends RegistryItem>
       ) as unknown as T;
     }
 
+    // If we still have a cbor tag but not resgistry item
+    if (decoded instanceof Tag) {
+      return tag2registryItem(decoded) as unknown as T;
+    }
+
+
     // TODO: fix as unknown as T;
     return decoded as unknown as T;
+  }
+}
+
+/**
+ * Converts a CBOR tag to a registry item
+ * @param unkownTag 
+ * @returns 
+ */
+function tag2registryItem(unkownTag: Tag): RegistryItem {
+  const tag = unkownTag.tag;
+  const data = unkownTag.contents;
+
+  const registryItem = globalUrRegistry.queryByTag(tag);
+  if (registryItem) {
+    return registryItem.fromCBORData(
+      data,
+      registryItem.allowKeysNotInMap
+    );
+  } 
+
+  // If we dont have the tag in the registry return unknown item
+  const UnknownTag = class extends registryItemFactory({
+    tag: tag,
+    URType: "unknown-tag",
+    CDDL: ``,
+  }) {};
+
+  const unknownItem = new UnknownTag(data);
+
+  // Search through all the children in unknownItem.data if any one of them are tags
+  deepSearchObject(unknownItem.data);
+
+  return unknownItem;
+}
+
+/**
+ * Search through the object and convert tags to registry items
+ * @param obj 
+ * @returns 
+ */
+function deepSearchObject(obj: any) {
+  if (typeof obj !== "object") {
+    return obj;
+  }
+
+  for (const key in obj) {
+    if (obj[key] instanceof Tag) {
+      obj[key] = tag2registryItem(obj[key]);
+    } else if (typeof obj[key] === "object") {
+      deepSearchObject(obj[key]);
+    }
   }
 }
