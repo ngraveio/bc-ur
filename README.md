@@ -9,9 +9,9 @@ To install, run:
 yarn add @ngraveio/bc-ur
 ```
 
-## Quick Start
+# Quick Start
 
-### Encode a message
+## Encode a message
 
 ```js
 import {UR, UREncoder} from '@ngraveio/bc-ur'
@@ -48,7 +48,7 @@ while(!stop) {
 }
 ```
 
-### Decode a message
+## Decode a message
 
 ```js
 import {URDecoder} from '@ngraveio/bc-ur'
@@ -88,42 +88,125 @@ else {
 
 ```
 
+# Quick Start
 
-## Technical Choices
+### Single UR
 
-### Dual Packaging
+#### Encoding:
+Lets encode basic object:
+```ts
 
-This library is distributed in two formats: **ESM (ECMAScript Module)** and **CommonJS (CJS)**. The default version is ESM, which is utilized in the examples provided above.
 
+
+const testPayload = {
+  "id": "123",
+  "name": "John Doe"
+}
+
+const userUr = Ur.fromData({type: "user", payload: testPayload});
+userUr.toString();
 ```
-dist
-├── esm
-│   ├── index.js
-│   ├── package.json
-├── commonjs
-│   ├── index.js
-│   ├── package.json
-└── package.json
+```
+ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
+```
+
+**Decoding:**
+```ts
+const ur = Ur.fromString('ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl');
+const decoded = ur.decode();
+```
+
+Would give us:
+```json
+{"id": 123, "name": "John Doe"}
+```
+
+### Multi-Part UR (MUR)
+
+**Encoding:**
+Lets encode basic object:
+```ts
+const testPayload = {
+  "id": "123",
+  "name": "John Doe"
+}
+
+const userUr = Ur.fromData({type: "user", payload: testPayload});
+// Now we are going to create a fountain encoder which can generate indefined number of parts.
+// Because of that we need to create a new encoder for every item.
+const encoder = new UrFountainEncoder(userUr, 5); //  maxFragmentLength: 5
+const fragments = encoder.getAllPartsUr(2); // Ratio of fountain parts compared to original parts
+```
+We will get all results in an array of UR strings.
+```
+[
+  ur:user/1-2/lpadaobbcyjldnbwrlgeoeidiniecskgiejthsjnykwlbbst
+  ur:user/2-2/lpaoaobbcyjldnbwrlgeihisgejlisjtcxfyjlihfmtnlaqz
+  ur:user/3-2/lpaxaobbcyjldnbwrlgeihisgejlisjtcxfyjlihwletaewp
+  ur:user/4-2/lpaaaobbcyjldnbwrlgeoeidiniecskgiejthsjnsbianlki
+]
+```
+**For QR:**
+```ts
+// Keep generating new parts, until a condition is met; for example the user exits the page, or clicks "DONE"
+while(!stop) {
+  // get the next part in the sequence
+  let part = encoder.nextPart().toString();
+
+  // Get the UR string part that contains data from original UR data
+  // the part looks like this:
+  // ur:user/3-2/lpaxaobbcyjldnbwrlgeihisgejlisjtcxfyjlihwletaewp
+
+  displayPart(part)
+}
 ```
 
 
-Each `package.json` file within the subdirectories specifies the corresponding `type` property: `"module"` for ESM and `"commonjs"` for CJS. This enables Node.js to correctly interpret the file type based on the `.js` extension.
+#### Decoding:
+If you have all the parts you can decode them into the original UR object at once:
+```ts
+// If we have all the fragments we can decode them into the original UR object
+const decoder = new UrFountainDecoder(fragments);
+const resultUr = decoder.resultUr;
+// 'ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl'
+const decoded = resultUr.decode();
+// {"id":123,"name":"John Doe"}
+```
+**FOR QR:**
+For continuous decoding:
 
-The **CommonJS** format is included for backward compatibility with older versions of Node.js. However, it is **not recommended** for use in browser environments.
+```ts
+import {URDecoder} from '@ngraveio/bc-ur'
 
-Due to the library’s reliance on the **ESM-only** [CBOR2](https://github.com/hildjj/cbor2) library, the CommonJS version is created using **Rollup**. This process bundles the CBOR2 library into a single file and converts it to the CommonJS format.
+// Create the decoder object
+const decoder = new URDecoder()
 
-To mitigate the [Dual Package Hazard](https://nodejs.org/docs/latest-v18.x/api/packages.html#dual-package-hazard), the ESM version of this library also uses a bundled version of the CBOR2 library. This ensures consistency by maintaining a single source of truth for CBOR tag definitions.
+do {
+  // Scan the part from a QRCode
+  // the part should look like this:
+  // ur:user/3-2/lpaxaobbcyjldnbwrlgeihisgejlisjtcxfyjlihwletaewp
+  const part = scanQRCode()
 
-**Important Note:**
-> Adding CBOR types via the CBOR2 library will not affect the BC-UR library, as the BC-UR library uses the bundled version of CBOR2.
+  // Read the part and set expected type and element count
+  decoder.receivePartUr(part)
 
+  // check if all the necessary parts have been received to successfully decode the message
+} while (!decoder.isComplete())
 
-More details about CBOR2 and dual packaging here: https://github.com/hildjj/cbor2/pull/57
+// If no error has been found
+if (decoder.isSuccessful()) {
+  // Get the UR representation of the original single part UR
+  const ur = decoder.resultUR;
 
-## Notes:
-
-You can change `findNominalFragmentLength` function.
+  // Decode ur into the original data
+  const decoded = decoder.getDecodedData();
+}
+else {
+  // log and handle the error
+  console.log('Error found while decoding', decoder.error)
+  handleError(decoder.error)
+}
+```
 
 
 
@@ -157,22 +240,46 @@ For example:
 ur:seed/1-3/lpadaxcsencylobemohsgmoyadhdeynteelblrcygldwvarflojtcywyjydmylgdsa
 ```
 
-## Ur Pipeline
+### Quick Example:
+**Encoding:**
+Lets encode basic object:
+```ts
+const testPayload = {
+  "id": "123",
+  "name": "John Doe"
+}
+
+const userUr = Ur.fromData({type: "user", payload: testPayload});
+userUr.toString();
+```
+```
+ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
+```
+
+**Decoding:**
+```ts
+const ur = Ur.fromString('ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl');
+const decoded = ur.decode();
+```
+
+Would give us:
+```json
+{"id": 123, "name": "John Doe"}
+```
+
+
+
+
+# UR Data Pipeline
+### Encoding
 For encoding data in UR it goes through the following steps:
 1. **[CBOR Encoding](https://cbor.io/)**: The data is encoded in CBOR format and converted binary representation.
 2. **Hex Encoding**: The binary data is converted to a hexadecimal string.
 3. **[Bytewords Encoding](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-012-bytewords.md)**: The hexadecimal string is converted to a bytewords string and crc32 checksum is added.
 4. **[UR Encoding](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md)**: The bytewords string is encoded in UR format.
 
-### Example:
+### Pipeline Example:
 
-Lets encode basic object:
-```json
-const testPayload = {
-  "id": "123",
-  "name": "John Doe"
-}
-```
 
 1. **CBOR:**
 ```ts
@@ -220,9 +327,111 @@ oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
 
 4. **UR Encoded**:
 ```ts
-const ur = Ur.fromData({type: "user", payload: testPayload});
-ur.toString();
+const userUR = Ur.fromBytewords({type: "user", payload: bytewordsEncoded});
+userUR.toString();
 ```
 ```
-ur:cbor/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
+ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
 ```
+----
+
+### UR Decoding
+When decoding it will follow the reverse order in the pipeline.
+
+1. UR Decoding
+2. Bytewords Decoding
+3. Hex Decoding
+4. CBOR Decoding
+  
+#### Example
+1. **UR Decoding**:
+
+This will first check if the string is a valid UR string and then extract the type and the payload.
+
+```ts
+const ur = Ur.fromString('ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl'
+);
+```
+  Getting bytewords from UR is easy
+
+```ts
+// Get payload in bytewords
+const bytewords  = ur.payload;
+// or
+const bytewords = ur.getPayloadBytewords();
+```
+
+```
+oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
+```
+
+2. **Bytewords Decoding**:
+```ts
+const hexString_ = defaultEncoders.bytewords.decode(ur.payload);
+// Decocde until cbor so we have hex string
+const hexString = Ur.pipeline.decode(bytewords, {until:EncodingMethodName.hex});
+```
+```
+a2626964187b646e616d65684a6f686e20446f65
+```
+
+
+3. **Hex Decoding**:
+```ts
+const cborBuffer = defaultEncoders.hex.decode(hexString);
+const cborBuffer_ = Ur.pipeline.decode(bytewords, {until:EncodingMethodName.cbor});
+```
+
+```
+Uint8Array([162, 98, 105, 100, 24, 123, 100, 110, 97, 109, 101, 104, 74, 111, 104, 110, 32, 68, 111, 101])
+```
+
+4. **CBOR Decoding**:
+```ts
+const decoded_ = defaultEncoders.cbor.decode(cborBuffer);
+const decoded__ = Ur.pipeline.decode(bytewords);
+const decoded = ur.decode();
+```
+
+Would give us:
+```json
+{"id": 123, "name": "John Doe"}
+```
+
+
+
+## Technical Choices
+
+### Dual Packaging
+
+This library is distributed in two formats: **ESM (ECMAScript Module)** and **CommonJS (CJS)**. The default version is ESM, which is utilized in the examples provided above.
+
+```
+dist
+├── esm
+│   ├── index.js
+│   ├── package.json
+├── commonjs
+│   ├── index.js
+│   ├── package.json
+└── package.json
+```
+
+
+Each `package.json` file within the subdirectories specifies the corresponding `type` property: `"module"` for ESM and `"commonjs"` for CJS. This enables Node.js to correctly interpret the file type based on the `.js` extension.
+
+The **CommonJS** format is included for backward compatibility with older versions of Node.js. However, it is **not recommended** for use in browser environments.
+
+Due to the library’s reliance on the **ESM-only** [CBOR2](https://github.com/hildjj/cbor2) library, the CommonJS version is created using **Rollup**. This process bundles the CBOR2 library into a single file and converts it to the CommonJS format.
+
+To mitigate the [Dual Package Hazard](https://nodejs.org/docs/latest-v18.x/api/packages.html#dual-package-hazard), the ESM version of this library also uses a bundled version of the CBOR2 library. This ensures consistency by maintaining a single source of truth for CBOR tag definitions.
+
+**Important Note:**
+> Adding CBOR types via the CBOR2 library will not affect the BC-UR library, as the BC-UR library uses the bundled version of CBOR2.
+
+
+More details about CBOR2 and dual packaging here: https://github.com/hildjj/cbor2/pull/57
+
+## Notes:
+
+You can change `findNominalFragmentLength` function.
