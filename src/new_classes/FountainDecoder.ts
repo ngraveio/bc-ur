@@ -99,6 +99,10 @@ export class FountainDecoder {
     return this.done && !this.error;
   }
 
+  isComplete(): boolean {
+    return this.done;
+  }
+
   constructor(parts: Uint8Array[] = []) {
     parts.forEach((part) => this.receivePart(part));
   }
@@ -462,6 +466,14 @@ export class FountainDecoder {
 
     return this.simpleBlocks.length / expectedPartCount;
   }
+
+  getDecodedData(): any {
+    if (!this.isSuccessful()) {
+      console.log('Fountain decoding was not successful');
+      return undefined;
+    }
+    return cborEncoder.decode(this.resultRaw);
+  }  
 }
 
 export type IMultipartUrPayload = [number, number, number, number, Uint8Array];

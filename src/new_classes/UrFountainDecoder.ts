@@ -52,12 +52,17 @@ export class UrFountainDecoder extends FountainDecoder{
     return super.validatePart(decodedPart);
   }
 
-  receivePartUr(part: Ur): boolean {
+  receivePartUr(part: Ur | string): boolean {
     // If we already have a result, we're done
     if (this.done) {
       return false;
     }
 
+    // Convert string into UR
+    if (typeof part === 'string') {
+      part = Ur.fromString(part);
+    }
+    
     // If what we received is not a multupart UR, then we're done
     if (!part.isFragment) {
       // If this is not a fragment and we have not received any fragments yet then its the whole UR
@@ -115,8 +120,12 @@ export class UrFountainDecoder extends FountainDecoder{
     }
   }
 
-  getResultRegistryItem(): RegistryItem {
-    return this.resultUr.toRegistryItem();
+  getDecodedData(): RegistryItem | any {
+    if (!this.isSuccessful()) {
+      console.log('Fountain decoding was not successful');
+      return undefined;
+    }
+    return this.resultUr.decode();
   }
 
 }

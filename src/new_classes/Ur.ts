@@ -78,7 +78,7 @@ export class Ur {
   }
 
   // Get payload in bytewords
-  getPayload() {
+  getPayloadBytewords() {
     return this.payload;
   }
 

@@ -11,7 +11,8 @@ import { performance } from "node:perf_hooks";
 
 import { createFountainUrTranscoder, createMultipartUrTranscoder, createUrTranscoder } from "./ngraveTranscoder.js";
 import { MultipartUr } from "./classes/MultipartUr.js";
-import exp from "node:constants";
+import { EncodingMethodName } from "./enums/EncodingMethodName.js";
+import { dataPipeline, defaultEncoders } from "./encodingMethods/index.js";
 
 // Benchmarking logic
 function benchmark(fn: Function, iterations = 1000) {
@@ -106,7 +107,7 @@ const iki = () => {
       const part = newEncoder.nextPartUr();
       newDecoder.receivePartUr(part);
     }
-    const result = newDecoder.getResultRegistryItem();
+    const result = newDecoder.getDecodedResult()();
     // console.log(index);
   };
 
@@ -115,11 +116,77 @@ const iki = () => {
 };
 
 
-/// Run the benchmarks
-console.profile()
-iki();
-console.profileEnd();
+// /// Run the benchmarks
+// console.profile()
+// iki();
+// console.profileEnd();
 
-console.log("Benchmarking done");
+// console.log("Benchmarking done");
 
-globalUrRegistry.removeItem(MockRegistryItem);
+// globalUrRegistry.removeItem(MockRegistryItem);
+
+// Creating an example
+
+
+class UserItem extends registryItemFactory({
+  tag: 798,
+  URType: "user",
+  CDDL: `user = {id: int, name: tstr}`,
+}) {}
+
+const testPayload = {
+  'id': 123,
+  'name': 'John Doe',
+};
+
+// // encoding
+// const cborEncoded_ = defaultEncoders.cbor.encode(testPayload);
+// const cborEncoded = Ur.pipeline.encode(testPayload, {until:EncodingMethodName.hex});
+// const hexEncoded_ = defaultEncoders.hex.encode(cborEncoded_);
+// const hexEncoded = Ur.pipeline.encode(testPayload, {until:EncodingMethodName.bytewords});
+// const bytewordsEncoded_ = defaultEncoders.bytewords.encode(hexEncoded_);
+// const bytewordsEncoded = Ur.pipeline.encode(testPayload);
+
+// const ur_ = Ur.fromBytewords({type: "user", payload: bytewordsEncoded});
+// const urString  = ur_.toString();
+
+// // Create UR
+// const ur = Ur.fromString(urString);
+
+// // Get payload in bytewords
+// const bytewords  = ur.payload;
+
+// const hexString_ = defaultEncoders.bytewords.decode(ur.payload);
+// // Decocde until cbor so we have hex string
+// const hexString = Ur.pipeline.decode(bytewords, {until:EncodingMethodName.hex});
+
+
+// const cborBuffer = defaultEncoders.hex.decode(hexString);
+// const cborBuffer_ = Ur.pipeline.decode(bytewords, {until:EncodingMethodName.cbor});
+
+// const decoded_ = defaultEncoders.cbor.decode(cborBuffer);
+// const decoded__ = Ur.pipeline.decode(bytewords);
+// // or
+// const decoded = ur.decode();
+
+// console.log('decoded', decoded);
+
+
+const userUr = Ur.fromData({type: "user", payload: testPayload});
+const encoder = new UrFountainEncoder(userUr, 10); //  maxFragmentLength: 5 min fragment length: 1
+const fragments = encoder.getAllPartsUr(1); // Ratio of fountain parts compared to original parts
+
+
+// const decoder = new UrFountainDecoder(fragments);
+// const resultUr = decoder.resultUr;
+// const decoded = resultUr.decode();
+
+const decoder = new UrFountainDecoder();
+
+// TODO: Convert to UR first inside
+decoder.receivePartUr(part)
+
+decoder.isSuccessful()
+
+console.log('fin');
+
