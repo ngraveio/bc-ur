@@ -1,6 +1,6 @@
 import { FountainEncoder } from "../src/new_classes/FountainEncoder"
 import { FountainDecoder } from "../src/new_classes/FountainDecoder"
-import { makeMessage } from "../src/utils";
+import { makeMessage } from "../src/helpers/utils";
 import { hexToUint8Array, uint8ArrayToHex } from "uint8array-extras";
 import { Ur } from "../src/new_classes/Ur";
 import { UrFountainEncoder } from "../src/new_classes/UrFountainEncoder";

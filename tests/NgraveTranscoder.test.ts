@@ -1,8 +1,8 @@
 import {
   createFountainUrTranscoder,
   createUrTranscoder,
-} from "../src/ngraveTranscoder";
-import { globalUrRegistry } from "../src/registry";
+} from "../src/classes/ngraveTranscoder";
+import { UrRegistry } from "../src/registry";
 import { User } from "../src/test.utils";
 
 // Define a user
@@ -11,11 +11,11 @@ const user = new User(userInput);
 
 describe("NgraveTranscoder", () => {
   afterEach(() => {
-    globalUrRegistry.removeItem(User);
+    UrRegistry.removeItem(User);
   });
   test("Should encoder encode/decode a type", () => {
     // Add the RegistryItem to the registry
-    globalUrRegistry.addItem(User);
+    UrRegistry.addItem(User);
 
     const { encoder, decoder } = createUrTranscoder();
 

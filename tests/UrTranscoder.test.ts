@@ -1,7 +1,7 @@
-import { globalUrRegistry } from "../src";
+import { UrRegistry } from "../src/registry";
 import { registryItemFactory } from "../src/classes/RegistryItem";
 import { InvalidTypeError } from "../src/errors";
-import { createUrTranscoder } from "../src/ngraveTranscoder";
+import { createUrTranscoder } from "../src/classes/ngraveTranscoder";
 
 export class MockRegistryItem extends registryItemFactory({
   tag: 998,
@@ -19,14 +19,14 @@ describe("UrEncoder", () => {
   const { encoder, decoder } = createUrTranscoder();
   beforeAll(() => {
     // Add the MockRegistryItem to the registry
-    globalUrRegistry.addItem(MockRegistryItem);
-    globalUrRegistry.addItem(InvalidRegistryItem);
+    UrRegistry.addItem(MockRegistryItem);
+    UrRegistry.addItem(InvalidRegistryItem);
   });
 
   afterAll(() => {
     // Clear the registry
-    globalUrRegistry.removeItem(MockRegistryItem);
-    globalUrRegistry.removeItem(InvalidRegistryItem);
+    UrRegistry.removeItem(MockRegistryItem);
+    UrRegistry.removeItem(InvalidRegistryItem);
   });
 
   test("should encode/decode a ur", () => {

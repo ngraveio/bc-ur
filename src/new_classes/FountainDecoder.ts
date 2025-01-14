@@ -1,9 +1,9 @@
-import { difference, isSubset } from "../utils.js";
+import { difference, isSubset } from "../helpers/utils.js";
 import { concatUint8Arrays, isUint8Array } from "../wrappers/uint8array.js";
 
 import { InvalidChecksumError, InvalidSchemeError } from "../errors.js";
-import { chooseFragments } from "../fountainUtils.js";
-import { arrayContains, arraysEqual, bufferXOR, getCRC, setDifference } from "../utils.js";
+import { chooseFragments } from "../helpers/fountainUtils.js";
+import { arrayContains, arraysEqual, bufferXOR, getCRC, setDifference } from "../helpers/utils.js";
 
 import { CborEncoding } from "../encodingMethods/CborEncoding.js";
 

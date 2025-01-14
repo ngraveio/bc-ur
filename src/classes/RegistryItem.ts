@@ -163,7 +163,7 @@ export function registryItemFactory(input: IRegistryType): RegistryItemClass {
     }
 
     /**
-     * Static method to create an instance from CBOR data.
+     * Static method to create an instance from CBOR DataItem data.
      * It processes the raw CBOR data if needed and returns a new instance of the class.
      */
     static fromCBORData(val: any, allowKeysNotInMap?: boolean, tagged?: any) {

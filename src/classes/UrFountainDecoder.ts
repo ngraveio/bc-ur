@@ -1,12 +1,12 @@
 import { InvalidChecksumError, InvalidSchemeError } from "../errors.js";
-import { chooseFragments } from "../fountainUtils.js";
+import { chooseFragments } from "../helpers/fountainUtils.js";
 import {
   arrayContains,
   arraysEqual,
   bufferXOR,
   getCRC,
   setDifference,
-} from "../utils.js";
+} from "../helpers/utils.js";
 import { MultipartUr } from "./MultipartUr.js";
 import { MultipartPayload, UrMultipartDecoder } from "./UrMultipartDecoder.js";
 import { Ur } from "./Ur.js";

@@ -69,7 +69,7 @@ export class Ur {
 
   // Decode
   decode(until?: EncodingMethodName) {
-    return Ur.pipeline.decode(this.payload, {until});
+    return Ur.pipeline.decode(this.payload, {until, enforceType: this.isFragment ? undefined : this.type});
   }
 
   // Get string representation

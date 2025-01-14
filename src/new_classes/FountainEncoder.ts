@@ -1,5 +1,5 @@
-import { chooseFragments, findNominalFragmentLength, mixFragments, partitionMessage } from "../fountainUtils.js";
-import { toUint32, getCRC } from "../utils.js";
+import { chooseFragments, findNominalFragmentLength, mixFragments, partitionMessage } from "../helpers/fountainUtils.js";
+import { toUint32, getCRC } from "../helpers/utils.js";
 import { CborEncoding } from "../encodingMethods/CborEncoding.js";
 
 const cborEncoder = new CborEncoding();

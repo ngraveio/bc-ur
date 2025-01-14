@@ -1,7 +1,7 @@
 import { stringToUint8Array, uint8ArrayToHex } from "uint8array-extras";
-import { MultipartUrEncoder } from "../src";
-import { chooseDegree, chooseFragments, shuffle } from "../src/fountainUtils";
-import { bufferXOR, getCRC, intToBytes, makeMessage } from "../src/utils";
+import { UrMultipartEncoder } from "../src/classes/UrMultipartEncoder";
+import { chooseDegree, chooseFragments, shuffle } from "../src/helpers/fountainUtils";
+import { bufferXOR, getCRC, intToBytes, makeMessage } from "../src//helpers/utils";
 import Xoshiro from "../src/xoshiro";
 import randomSampler from "@apocentre/alias-sampling";
 
@@ -162,7 +162,7 @@ describe("XOR", () => {
   });
 });
 
-const encoder = new MultipartUrEncoder([]);
+const encoder = new UrMultipartEncoder([]);
 
 describe("Degree", () => {
   test("choose degree", () => {

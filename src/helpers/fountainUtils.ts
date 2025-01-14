@@ -1,6 +1,6 @@
-import { concatUint8Arrays } from "./wrappers/uint8array.js";
+import { concatUint8Arrays } from "../wrappers/uint8array.js";
 import { bufferXOR, intToBytes } from "./utils.js";
-import Xoshiro from "./xoshiro.js";
+import Xoshiro from "../xoshiro.js";
 import randomSampler from "@apocentre/alias-sampling";
 
 export const chooseDegree = (seqLenth: number, rng: Xoshiro): number => {

@@ -1,6 +1,6 @@
-import { chooseFragments, mixFragments } from "../fountainUtils.js";
+import { chooseFragments, mixFragments } from "../helpers/fountainUtils.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
-import { toUint32, getCRC } from "../utils.js";
+import { toUint32, getCRC } from "../helpers/utils.js";
 import { getMultipartUrString } from "./MultipartUr.js";
 import { UrMultipartEncoder } from "./UrMultipartEncoder.js";
 import { RegistryItem } from "./RegistryItem.js";

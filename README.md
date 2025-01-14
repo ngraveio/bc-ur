@@ -182,7 +182,7 @@ class AnyItem extends registryItemFactory({
 
 // TODO: add type automatically to UR registry
 // IMPORTANT: Register our item to the UR registry
-globalUrRegistry.addItem(AnyItem);
+UrRegistry.addItem(AnyItem);
 
 const anyItem = new AnyItem({id: 123, name: "John Doe"});
 
@@ -304,7 +304,7 @@ export class User extends registryItemFactory({
 }
 
 // IMPORTANT: Register our user item to the global registry
-globalUrRegistry.addItem(User);
+UrRegistry.addItem(User);
 
 // Create our user item
 const user = new User({

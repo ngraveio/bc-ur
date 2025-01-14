@@ -1,14 +1,14 @@
-import { CborEncoding } from "./encodingMethods/CborEncoding.js";
-import { Ur } from "./classes/Ur.js";
-import { UrDecoder } from "./classes/UrDecoder.js";
-import { UrEncoder } from "./classes/UrEncoder.js";
-import UrFountainDecoder from "./classes/UrFountainDecoder.js";
-import UrFountainEncoder from "./classes/UrFountainEncoder.js";
-import { HexEncoding } from "./encodingMethods/HexEncoding.js";
-import { BytewordEncoding } from "./encodingMethods/BytewordEncoding.js";
-import { UrMultipartEncoder } from "./classes/UrMultipartEncoder.js";
-import { UrMultipartDecoder } from "./classes/UrMultipartDecoder.js";
-import { RegistryItem } from "./classes/RegistryItem.js";
+import { CborEncoding } from "../encodingMethods/CborEncoding.js";
+import { Ur } from "./Ur.js";
+import { UrDecoder } from "./UrDecoder.js";
+import { UrEncoder } from "./UrEncoder.js";
+import UrFountainDecoder from "./UrFountainDecoder.js";
+import UrFountainEncoder from "./UrFountainEncoder.js";
+import { HexEncoding } from "../encodingMethods/HexEncoding.js";
+import { BytewordEncoding } from "../encodingMethods/BytewordEncoding.js";
+import { UrMultipartEncoder } from "./UrMultipartEncoder.js";
+import { UrMultipartDecoder } from "./UrMultipartDecoder.js";
+import { RegistryItem } from "./RegistryItem.js";
 
 /**
  * Factory function to create a transcoder used in the ngrave suite.

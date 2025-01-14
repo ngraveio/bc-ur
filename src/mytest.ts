@@ -1,7 +1,7 @@
-import { makeMessage } from "./utils.js";
+import { makeMessage } from "./helpers/utils.js";
 
 import { registryItemFactory } from "./classes/RegistryItem.js";
-import { globalUrRegistry } from "./registry.js";
+import { UrRegistry } from "./registry.js";
 
 import { UrFountainEncoder } from "./new_classes/UrFountainEncoder.js";
 import { UrFountainDecoder } from "./new_classes/UrFountainDecoder.js";
@@ -9,7 +9,7 @@ import { Ur } from "./new_classes/Ur.js";
 
 import { performance } from "node:perf_hooks";
 
-import { createFountainUrTranscoder, createMultipartUrTranscoder, createUrTranscoder } from "./ngraveTranscoder.js";
+import { createFountainUrTranscoder, createMultipartUrTranscoder, createUrTranscoder } from "./classes/ngraveTranscoder.js";
 import { MultipartUr } from "./classes/MultipartUr.js";
 import { EncodingMethodName } from "./enums/EncodingMethodName.js";
 import { dataPipeline, defaultEncoders } from "./encodingMethods/index.js";
@@ -56,7 +56,7 @@ export class MockRegistryItem2 extends registryItemFactory({
   CDDL: ``,
 }) {}
 
-globalUrRegistry.addItem(MockRegistryItem);
+UrRegistry.addItem(MockRegistryItem);
 const { fountainEncoderCreator, fountainDecoderCreator } = createFountainUrTranscoder();
 
 const bir = () => {
@@ -123,7 +123,7 @@ const iki = () => {
 
 // console.log("Benchmarking done");
 
-// globalUrRegistry.removeItem(MockRegistryItem);
+// UrRegistry.removeItem(MockRegistryItem);
 
 // Creating an example
 
@@ -250,7 +250,7 @@ const testPayload = {
 // }) {};
 
 // // IMPORTANT: Register our user item to the global registry
-// globalUrRegistry.addItem(AnyItem);
+// UrRegistry.addItem(AnyItem);
 
 // const anyItem = new AnyItem({id: 123, name: "John Doe"});
 
@@ -372,7 +372,7 @@ export class User extends registryItemFactory({
 }
 
 // IMPORTANT: Register our user item to the global registry
-globalUrRegistry.addItem(User);
+UrRegistry.addItem(User);
 
 // Create our user item
 const user = new User({
