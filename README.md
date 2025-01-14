@@ -95,8 +95,7 @@ else {
 #### Encoding:
 Lets encode basic object:
 ```ts
-
-
+import {UR, UREncoder} from '@ngraveio/bc-ur'
 
 const testPayload = {
   "id": "123",
@@ -105,9 +104,7 @@ const testPayload = {
 
 const userUr = Ur.fromData({type: "user", payload: testPayload});
 userUr.toString();
-```
-```
-ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
+// ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
 ```
 
 **Decoding:**
@@ -136,18 +133,16 @@ const userUr = Ur.fromData({type: "user", payload: testPayload});
 // Because of that we need to create a new encoder for every item.
 const encoder = new UrFountainEncoder(userUr, 5); //  maxFragmentLength: 5
 const fragments = encoder.getAllPartsUr(2); // Ratio of fountain parts compared to original parts
-```
-We will get all results in an array of UR strings.
-```
-[
-  ur:user/1-2/lpadaobbcyjldnbwrlgeoeidiniecskgiejthsjnykwlbbst
-  ur:user/2-2/lpaoaobbcyjldnbwrlgeihisgejlisjtcxfyjlihfmtnlaqz
-  ur:user/3-2/lpaxaobbcyjldnbwrlgeihisgejlisjtcxfyjlihwletaewp
-  ur:user/4-2/lpaaaobbcyjldnbwrlgeoeidiniecskgiejthsjnsbianlki
-]
-```
-**For QR:**
-```ts
+
+// [
+//   ur:user/1-2/lpadaobbcyjldnbwrlgeoeidiniecskgiejthsjnykwlbbst
+//   ur:user/2-2/lpaoaobbcyjldnbwrlgeihisgejlisjtcxfyjlihfmtnlaqz
+//   ur:user/3-2/lpaxaobbcyjldnbwrlgeihisgejlisjtcxfyjlihwletaewp
+//   ur:user/4-2/lpaaaobbcyjldnbwrlgeoeidiniecskgiejthsjnsbianlki
+// ]
+
+// For QR:
+
 // Keep generating new parts, until a condition is met; for example the user exits the page, or clicks "DONE"
 while(!stop) {
   // get the next part in the sequence
@@ -197,15 +192,211 @@ do {
 if (decoder.isSuccessful()) {
   // Get the UR representation of the original single part UR
   const ur = decoder.resultUR;
+  // 'ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl'
 
   // Decode ur into the original data
   const decoded = decoder.getDecodedData();
+  // {"id":123,"name":"John Doe"}
+
+  // Reset decoder state so we can start reading a new UR
+  decoder.reset();
 }
 else {
   // log and handle the error
   console.log('Error found while decoding', decoder.error)
   handleError(decoder.error)
 }
+```
+
+
+# Registry Item
+Registry Item is spacial class that knows how to encode and decode data to CBOR and UR Based on its [CDDL: Concise Data Definition Language](https://datatracker.ietf.org/doc/html/rfc8610).
+
+
+You need extend `registryItemFactory` and pass the following parameters:
+- `tag`: CBOR Tag that will be used to encode and decode the data
+- `URType`: The name that will be used in UR encoded data
+- `CDDL`: The CDDL that defines the structure of the data
+- `keyMap`: Optional, if you want to map the keys string names into integer keys for decreasing the size of the encoded data
+- `allowKeysNotInMap`: Optional, if you want to allow keys that are not in the map to be encoded and decoded
+### Example
+
+```ts
+import {registryItemFactory} from '@ngraveio/bc-ur'
+
+// This takes any data as input and encodes it as a simple CBOR map
+class AnyItem extends registryItemFactory({
+  tag: 999,
+  URType: "simple",
+  CDDL: ``,
+}) {};
+
+// IMPORTANT: Register our item to the UR registry
+globalUrRegistry.addItem(AnyItem);
+
+const anyItem = new AnyItem({id: 123, name: "John Doe"});
+
+// By default you can access following properties
+anyItem.type.tag; // 999
+anyItem.type.URType; // simple
+anyItem.type.CDDL; // ''
+anyItem.data; // {id: 123, name: 'John Doe'}
+
+// And you can encode it as a UR
+const anyItemUr = anyItem.toUr();
+const anyItemUrString = anyItemUr.toString(); // 'ur:simple/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl'
+
+// You can different encoding of the data from UR;
+anyItemUr.getPayloadCbor(); // [162, 98, 105, 100, 24, 123, 100, 110, 97, 109, 101, 104, 74, 111, 104, 110, 32, 68, 111, 101]
+// Diagnostic CBOR notation:
+// A2                     # map(2)
+//    62                  # text(2)
+//       6964             # "id"
+//    18 7B               # unsigned(123)
+//    64                  # text(4)
+//       6E616D65         # "name"
+//    68                  # text(8)
+//       4A6F686E20446F65 # "John Doe"
+anyItemUr.getPayloadHex(); // a2626964187b646e616d65684a6f686e20446f65
+anyItemUr.getPayloadBytewords(); // oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
+
+// Decoding for simple URs
+const decoded = Ur.fromString(anyItemUrString).decode(); // {id: 123, name: 'John Doe'}
+
+// For simple and Multipart URs you can use the fountain decoder
+const myDecoder = new UrFountainDecoder();
+// Receive the first and only part
+myDecoder.receivePartUr(anyItemUrString);
+// Check if the decoding is successful
+if(myDecoder.isSuccessful()) {
+  // Get the decoded data
+  const decodedUr = myDecoder.resultUr; // ur:simple/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
+  const decodedData = myDecoder.getDecodedData(); // {id: 123, name: 'John Doe'}
+}
+else {
+  console.log("Decoding failed", myDecoder.getError());
+}
+```
+
+### Advanced Example
+```ts
+interface IUser {
+  id: number;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  [key: string]: any;
+}
+export class User extends registryItemFactory({
+  tag: 111,
+  URType: "user",
+  // Define the CDDL for the user item
+  CDDL: `
+          user = #6.111({
+              id: uint,
+              name: text,
+              ? email: text,
+              ? phone: text,
+              ? address: text
+          })
+
+          id=1
+          name=2
+          email=3
+          phone=4
+          address=5
+        `,
+
+  // Define the key map for the user item
+  keyMap: {
+    id: 0,
+    name: 1,
+    email: 2,
+    phone: 3,
+    address: 4,
+  },
+  // Allow keys not in the map so we can add more keys to the user item
+  allowKeysNotInMap: true,
+}) {
+  private user: IUser;
+
+  // Constructor for the user item
+  // It adds user data to `this.data` and `this.user`
+  constructor(user: IUser) {
+    super(user);
+    this.user = user;
+  }
+
+  // Verify the input data both on first creating the user item and when decoding it from CBOR
+  verifyInput(input: any) {
+    let reasons: Error[] = [];
+
+    if (!input.id) {
+      reasons.push(new Error("ID is required"));
+    } else {
+      if (typeof input.id !== "number") {
+        reasons.push(new Error("ID should be a number"));
+      }
+    }
+
+    if (!input.name) {
+      reasons.push(new Error("Name is required"));
+    } else {
+      if (typeof input.name !== "string") {
+        reasons.push(new Error("Name should be a string"));
+      }
+    }
+
+    const valid = reasons.length === 0;
+    return { valid, reasons };
+  }
+}
+
+// IMPORTANT: Register our user item to the global registry
+globalUrRegistry.addItem(User);
+
+// Create our user item
+const user = new User({
+  id: 123,
+  name: "John Doe",
+  email: "naber",
+  extraKey: "extraValue",
+});
+
+// Encode the user item to a UR
+const userUr = user.toUr();
+// ur:user/oxaecskgadisgejlisjtcxfyjlihaoihjthsidihjpisihksjyjphsgrihkkimihksjyjphshfhsjzkpihamwpveey
+// Get data in CBOR encoded
+const userCbor = userUr.getPayloadCbor();
+// As you can see the extra key is also included in the CBOR encoding
+// And keys are replaced by their integer values
+// CBOR Diagnostic notation:
+// {0: 123, 1: "John Doe", 2: "naber", "extraKey": "extraValue"}
+// CBOR in its hex representation:
+// A4                         # map(4)
+//    00                      # unsigned(0)
+//    18 7B                   # unsigned(123)
+//    01                      # unsigned(1)
+//    68                      # text(8)
+//       4A6F686E20446F65     # "John Doe"
+//    02                      # unsigned(2)
+//    65                      # text(5)
+//       6E61626572           # "naber"
+//    68                      # text(8)
+//       65787472614B6579     # "extraKey"
+//    6A                      # text(10)
+//       657874726156616C7565 # "extraValue"
+
+// Create UR from the string UR and decode it to Registry Item
+const decoded = Ur.fromString(userUr.toString()).decode();
+decoded.type.tag; // 111
+decoded.type.URType; // user
+decoded.data; // {id: 123, name: 'John Doe', email: 'naber', extraKey: 'extraValue'}
+
+// Or decode it with the fountain decoder
+const myDecoder = new UrFountainDecoder(decoded);
+const decodedUser = myDecoder.getDecodedData();
 ```
 
 
@@ -239,34 +430,6 @@ For example:
 ```
 ur:seed/1-3/lpadaxcsencylobemohsgmoyadhdeynteelblrcygldwvarflojtcywyjydmylgdsa
 ```
-
-### Quick Example:
-**Encoding:**
-Lets encode basic object:
-```ts
-const testPayload = {
-  "id": "123",
-  "name": "John Doe"
-}
-
-const userUr = Ur.fromData({type: "user", payload: testPayload});
-userUr.toString();
-```
-```
-ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
-```
-
-**Decoding:**
-```ts
-const ur = Ur.fromString('ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl');
-const decoded = ur.decode();
-```
-
-Would give us:
-```json
-{"id": 123, "name": "John Doe"}
-```
-
 
 
 
@@ -398,7 +561,12 @@ Would give us:
 {"id": 123, "name": "John Doe"}
 ```
 
+## Fountain Encoder And Decoder & Multipart UR (MUR)
+https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2024-001-multipart-ur.md
 
+### What is Fountain Code:
+
+Fountain codes are a class of erasure codes used in network communications. They were first introduced by Michael Luby in 1998. The basic idea is to generate an infinite number of encoded symbols from a given source symbol, such that any subset of the encoded symbols can be used to reconstruct the source symbol. This is useful in situations where the source symbol is too large to be transmitted in a single message, or where the transmission medium is lossy and some of the encoded symbols may be lost in transit.
 
 ## Technical Choices
 
