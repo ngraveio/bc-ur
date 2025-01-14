@@ -86,7 +86,9 @@ export class FountainDecoder {
   protected queuedBlocks: FountainBlock[] = [];
 
   // For tracking the progress of decoding we can keep seen indexes and decoded indexes
+  /** Bitmap array of seen block */
   public seenBlocks: number[] = [];
+  /** Bitmap array of decoded blocks */
   public decodedBlocks: number[] = [];
   /** Keeps track of the how many parts have been processed */
   protected processedPartsCount: number = 0;

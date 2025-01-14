@@ -107,7 +107,7 @@ const iki = () => {
       const part = newEncoder.nextPartUr();
       newDecoder.receivePartUr(part);
     }
-    const result = newDecoder.getDecodedResult()();
+    const result = newDecoder.getDecodedData();
     // console.log(index);
   };
 
@@ -172,21 +172,250 @@ const testPayload = {
 // console.log('decoded', decoded);
 
 
-const userUr = Ur.fromData({type: "user", payload: testPayload});
-const encoder = new UrFountainEncoder(userUr, 10); //  maxFragmentLength: 5 min fragment length: 1
-const fragments = encoder.getAllPartsUr(1); // Ratio of fountain parts compared to original parts
+// const userUr = Ur.fromData({type: "user", payload: testPayload});
+// const encoder = new UrFountainEncoder(userUr, 10); //  maxFragmentLength: 5 min fragment length: 1
+// const fragments = encoder.getAllPartsUr(1); // Ratio of fountain parts compared to original parts
 
 
-// const decoder = new UrFountainDecoder(fragments);
-// const resultUr = decoder.resultUr;
-// const decoded = resultUr.decode();
+// // const decoder = new UrFountainDecoder(fragments);
+// // const resultUr = decoder.resultUr;
+// // const decoded = resultUr.decode();
 
-const decoder = new UrFountainDecoder();
+// const decoder = new UrFountainDecoder();
 
-// TODO: Convert to UR first inside
-decoder.receivePartUr(part)
+// // TODO: Convert to UR first inside
+// decoder.receivePartUr(part)
 
-decoder.isSuccessful()
+// decoder.isSuccessful()
+
+
+// export class User extends registryItemFactory({
+//   tag: 111,
+//   URType: "user",
+//   CDDL: `
+//           user = #6.111({
+//               id: uint,
+//               name: text,
+//               ? email: text,
+//               ? phone: text,
+//               ? address: text
+//           })
+//         `,
+
+//   keyMap: {
+//     id: 0,
+//     name: 1,
+//     email: 2,
+//     phone: 3,
+//     address: 4,
+//   },
+// }) {
+//   verifyInput(input: any) {
+//     let reasons: Error[] = [];
+
+//     if (!input.id) {
+//       reasons.push(new Error("ID is required"));
+//     } else {
+//       if (typeof input.id !== "number") {
+//         reasons.push(new Error("ID should be a number"));
+//       }
+//     }
+
+//     if (!input.name) {
+//       reasons.push(new Error("Name is required"));
+//     } else {
+//       if (typeof input.name !== "string") {
+//         reasons.push(new Error("Name should be a string"));
+//       }
+//     }
+
+//     const valid = reasons.length === 0;
+//     return { valid, reasons };
+//   }  
+// }
+
+// const user = new User({
+//   id: 123,
+//   name: "John Doe",
+//   email: "naber",
+// });
+
+
+
+// // This takes any data as input and encodes it as a simple CBOR map
+// class AnyItem extends registryItemFactory({
+//   tag: 999,
+//   URType: "simple",
+//   CDDL: ``,
+// }) {};
+
+// // IMPORTANT: Register our user item to the global registry
+// globalUrRegistry.addItem(AnyItem);
+
+// const anyItem = new AnyItem({id: 123, name: "John Doe"});
+
+// // By default you can access following properties
+// anyItem.type.tag; // 999
+// anyItem.type.URType; // simple
+// anyItem.type.CDDL; // ''
+// anyItem.data; // {id: 123, name: 'John Doe'}
+
+// // And you can encode it as a UR
+// const anyItemUr = anyItem.toUr();
+// const anyItemUrString = anyItemUr.toString(); // 'ur:simple/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl'
+
+// // You can different encoding of the data from UR;
+// anyItemUr.getPayloadCbor(); // [162, 98, 105, 100, 24, 123, 100, 110, 97, 109, 101, 104, 74, 111, 104, 110, 32, 68, 111, 101]
+// // Diagnostic CBOR notation:
+// // A2                     # map(2)
+// //    62                  # text(2)
+// //       6964             # "id"
+// //    18 7B               # unsigned(123)
+// //    64                  # text(4)
+// //       6E616D65         # "name"
+// //    68                  # text(8)
+// //       4A6F686E20446F65 # "John Doe"
+// anyItemUr.getPayloadHex(); // a2626964187b646e616d65684a6f686e20446f65
+// anyItemUr.getPayloadBytewords(); // oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
+
+// // Decoding for simple URs
+// const decoded = Ur.fromString(anyItemUrString).decode(); // {id: 123, name: 'John Doe'}
+
+// // For simple and Multipart URs you can use the fountain decoder
+// const myDecoder = new UrFountainDecoder();
+// // Receive the first and only part
+// myDecoder.receivePartUr(anyItemUrString);
+// // Check if the decoding is successful
+// if(myDecoder.isSuccessful()) {
+//   // Get the decoded data
+//   const decodedUr = myDecoder.resultUr; // ur:simple/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl
+//   const decodedData = myDecoder.getDecodedData(); // {id: 123, name: 'John Doe'}
+// }
+// else {
+//   console.log("Decoding failed", myDecoder.getError());
+// }
+
+
+// Define a nested registry items
+interface IUser {
+  id: number;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  [key: string]: any;
+}
+export class User extends registryItemFactory({
+  tag: 111,
+  URType: "user",
+  // Define the CDDL for the user item
+  CDDL: `
+          user = #6.111({
+              id: uint,
+              name: text,
+              ? email: text,
+              ? phone: text,
+              ? address: text
+          })
+
+          id=1
+          name=2
+          email=3
+          phone=4
+          address=5
+        `,
+
+  // Define the key map for the user item
+  keyMap: {
+    id: 0,
+    name: 1,
+    email: 2,
+    phone: 3,
+    address: 4,
+  },
+  // Allow keys not in the map so we can add more keys to the user item
+  allowKeysNotInMap: true,
+}) {
+  private user: IUser;
+
+  // Constructor for the user item
+  // It adds user data to `this.data` and `this.user`
+  constructor(user: IUser) {
+    super(user);
+    this.user = user;
+  }
+
+  // Verify the input data both on first creating the user item 
+  // and when decoding it from CBOR
+  verifyInput(input: any) {
+    let reasons: Error[] = [];
+
+    if (!input.id) {
+      reasons.push(new Error("ID is required"));
+    } else {
+      if (typeof input.id !== "number") {
+        reasons.push(new Error("ID should be a number"));
+      }
+    }
+
+    if (!input.name) {
+      reasons.push(new Error("Name is required"));
+    } else {
+      if (typeof input.name !== "string") {
+        reasons.push(new Error("Name should be a string"));
+      }
+    }
+
+    const valid = reasons.length === 0;
+    return { valid, reasons };
+  }
+}
+
+// IMPORTANT: Register our user item to the global registry
+globalUrRegistry.addItem(User);
+
+// Create our user item
+const user = new User({
+  id: 123,
+  name: "John Doe",
+  email: "naber",
+  extraKey: "extraValue",
+});
+
+// Encode the user item to a UR
+const userUr = user.toUr();
+// ur:user/oxaecskgadisgejlisjtcxfyjlihaoihjthsidihjpisihksjyjphsgrihkkimihksjyjphshfhsjzkpihamwpveey
+// Get data in CBOR encoded
+const userCbor = userUr.getPayloadCbor();
+// As you can see the extra key is also included in the CBOR encoding
+// And keys are replaced by their integer values
+// CBOR Diagnostic notation:
+// {0: 123, 1: "John Doe", 2: "naber", "extraKey": "extraValue"}
+// CBOR in its hex representation:
+// A4                         # map(4)
+//    00                      # unsigned(0)
+//    18 7B                   # unsigned(123)
+//    01                      # unsigned(1)
+//    68                      # text(8)
+//       4A6F686E20446F65     # "John Doe"
+//    02                      # unsigned(2)
+//    65                      # text(5)
+//       6E61626572           # "naber"
+//    68                      # text(8)
+//       65787472614B6579     # "extraKey"
+//    6A                      # text(10)
+//       657874726156616C7565 # "extraValue"
+
+// Create UR from the string UR and decode it to Registry Item
+const decoded = Ur.fromString(userUr.toString()).decode();
+decoded.type.tag; // 111
+decoded.type.URType; // user
+decoded.data; // {id: 123, name: 'John Doe', email: 'naber', extraKey: 'extraValue'}
+
+// Or decode it with the fountain decoder
+const myDecoder = new UrFountainDecoder(decoded);
+const decodedUser = myDecoder.getDecodedData();
 
 console.log('fin');
+
 
