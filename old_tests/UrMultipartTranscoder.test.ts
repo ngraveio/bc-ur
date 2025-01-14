@@ -1,12 +1,12 @@
 import { AssertionError } from "assert";
+import { CborEncoding } from "../src/encodingMethods/CborEncoding.js";
 import {
   createMultipartUrTranscoder,
   createUrTranscoder,
-} from "../src/ngraveTranscoder";
-import { registryItemFactory } from "../src/classes/RegistryItem";
-import { CborEncoding } from "../src/encodingMethods/CborEncoding";
-import { globalUrRegistry } from "../src";
-import { makeMessage } from "../src/utils";
+} from "../src/classes/ngraveTranscoder.js";
+import { registryItemFactory } from "../src/classes/RegistryItem.js";
+import { UrRegistry } from "../src/registry.js";
+import { makeMessage } from "../src/helpers/utils.js";
 import { hexToUint8Array } from "uint8array-extras";
 
 export class MockRegistryItem extends registryItemFactory({
@@ -26,13 +26,13 @@ describe("FountainTranscoder", () => {
     const { encoder, decoder } = createMultipartUrTranscoder();
     beforeAll(() => {
       // Add the MockRegistryItem to the registry
-      globalUrRegistry.addItem(MockRegistryItem);
-      globalUrRegistry.addItem(Metadata);
+      UrRegistry.addItem(MockRegistryItem);
+      UrRegistry.addItem(Metadata);
     });
     afterAll(() => {
       // Remove the MockRegistryItem from the registry
-      globalUrRegistry.removeItem(MockRegistryItem);
-      globalUrRegistry.removeItem(Metadata);
+      UrRegistry.removeItem(MockRegistryItem);
+      UrRegistry.removeItem(Metadata);
     });
     test("should create 3 fragments when payloadlength is 13 and min/max fragment size is 5", () => {
       const item = new MockRegistryItem("custom");

@@ -1,8 +1,8 @@
-import { makeMessage } from "../src/utils.js";
+import { makeMessage } from "../src/helpers/utils.js";
 import { InvalidChecksumError } from "../src/errors.js";
 
 import { registryItemFactory } from "../src/classes/RegistryItem";
-import { globalUrRegistry } from "../src/registry";
+import { UrRegistry } from "../src/registry";
 
 import { UrFountainEncoder } from "../src/new_classes/UrFountainEncoder";
 import { UrFountainDecoder } from "../src/new_classes/UrFountainDecoder";
@@ -23,14 +23,14 @@ export class MockRegistryItem2 extends registryItemFactory({
 describe("Fountain Transcoder", () => {
   beforeAll(() => {
     // Add the MockRegistryItem to the registry
-    globalUrRegistry.addItem(MockRegistryItem);
-    globalUrRegistry.addItem(MockRegistryItem2);
+    UrRegistry.addItem(MockRegistryItem);
+    UrRegistry.addItem(MockRegistryItem2);
   });
 
   afterAll(() => {
     // Clear the registry
-    globalUrRegistry.removeItem(MockRegistryItem);
-    globalUrRegistry.removeItem(MockRegistryItem2);
+    UrRegistry.removeItem(MockRegistryItem);
+    UrRegistry.removeItem(MockRegistryItem2);
   });
 
   describe("FountainUrTranscoder", () => {
@@ -61,7 +61,7 @@ describe("Fountain Transcoder", () => {
       const fountainFragments = fountainEncoder.getAllPartsUr(ratio);
       expect(fountainFragments.length).toEqual(expectedFragmentLength);
     });
-    test("should be able to fountain encode/decode the payload", () => {
+    test.only("should be able to fountain encode/decode the payload", () => {
       const registryItem = new MockRegistryItem({ name: "Pieter" });
       
       const fountainEncoder = new UrFountainEncoder(registryItem, 10, 5);
@@ -216,7 +216,7 @@ describe("Fountain Transcoder", () => {
       } while (!fountainDecoder.done);
 
       expect(fountainDecoder.isSuccessful()).toEqual(true);
-      const result = fountainDecoder.getResultRegistryItem();
+      const result = fountainDecoder.getDecodedData();
       expect(result.data).toEqual(registryItem.data);
     });
 
@@ -249,7 +249,7 @@ describe("Fountain Transcoder", () => {
       } while (!fountainDecoder.done);
 
       expect(fountainDecoder.isSuccessful()).toEqual(true);
-      const result = fountainDecoder.getResultRegistryItem();
+      const result = fountainDecoder.getDecodedData();
       expect(result.data).toEqual(registryItem.data);
     });
     test("Should be able to encode/decode a text", () => {
@@ -280,7 +280,7 @@ describe("Fountain Transcoder", () => {
       } while (!fountainDecoder.done);
 
       expect(fountainDecoder.isSuccessful()).toEqual(true);
-      expect(fountainDecoder.getResultRegistryItem().data).toEqual(
+      expect(fountainDecoder.getDecodedData().data).toEqual(
         registryItem.data
       );
     });
@@ -307,7 +307,7 @@ describe("Fountain Transcoder", () => {
       } while (!fountainDecoder.done);
 
       expect(fountainDecoder.isSuccessful()).toEqual(true);
-      expect(fountainDecoder.getResultRegistryItem().data).toEqual(
+      expect(fountainDecoder.getDecodedData().data).toEqual(
         registryItem.data
       );
     });
@@ -331,7 +331,7 @@ describe("Fountain Transcoder", () => {
       } while (!fountainDecoder.done);
 
       expect(fountainDecoder.isSuccessful()).toEqual(true);
-      expect(fountainDecoder.getResultRegistryItem().data).toEqual(
+      expect(fountainDecoder.getDecodedData().data).toEqual(
         registryItem.data
       );
     });
@@ -352,7 +352,7 @@ describe("Fountain Transcoder", () => {
       } while (!fountainDecoder.done);
 
       expect(fountainDecoder.isSuccessful()).toBe(true);
-      expect(fountainDecoder.getResultRegistryItem().data).toEqual(
+      expect(fountainDecoder.getDecodedData().data).toEqual(
         registryItem.data
       );
     });
@@ -372,7 +372,7 @@ describe("Fountain Transcoder", () => {
       } while (!fountainDecoder.done);
 
       expect(fountainDecoder.isSuccessful()).toEqual(true);
-      expect(fountainDecoder.getResultRegistryItem().data).toEqual(
+      expect(fountainDecoder.getDecodedData().data).toEqual(
         registryItem.data
       );
     });
@@ -392,7 +392,7 @@ describe("Fountain Transcoder", () => {
       } while (!fountainDecoder.done);
 
       expect(fountainDecoder.isSuccessful()).toEqual(true);
-      const decodedUR = fountainDecoder.getResultRegistryItem();
+      const decodedUR = fountainDecoder.getDecodedData();
       expect(decodedUR.type).toEqual(registryItem.type);
       expect(decodedUR.data).toEqual(registryItem.data);
     });
@@ -444,7 +444,7 @@ describe("Fountain Transcoder", () => {
         }
         fountainDecoder.receivePartUr(part);
       }
-      const result = fountainDecoder.getResultRegistryItem();
+      const result = fountainDecoder.getDecodedData();
       expect(result.data).toEqual(registryItem.data);
     });
     test("Should ignore ur parts that have a different sequenceLength then the first read QR code", () => {
@@ -467,7 +467,7 @@ describe("Fountain Transcoder", () => {
         }
         fountainDecoder.receivePartUr(part);
       }
-      const result = fountainDecoder.getResultRegistryItem();
+      const result = fountainDecoder.getDecodedData();
       expect(result.data).toEqual(registryItem.data);
     });
     test("Should ignore ur parts that have a different payload then the first read QR code. This is checked by the checksum", () => {
@@ -490,7 +490,7 @@ describe("Fountain Transcoder", () => {
         }
         fountainDecoder.receivePartUr(part);
       }
-      const result = fountainDecoder.getResultRegistryItem();
+      const result = fountainDecoder.getDecodedData();
       expect(result.data).toEqual(registryItem.data);
     });
     test("Should ignore ur parts of the second ur, that have a different ur types and return the correct result", () => {

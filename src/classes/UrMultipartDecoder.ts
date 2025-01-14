@@ -3,7 +3,7 @@ import { MultipartUr } from "./MultipartUr.js";
 import { Ur } from "./Ur.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
 import assert from "assert";
-import { getCRC } from "../utils.js";
+import { getCRC } from "../helpers/utils.js";
 import { InvalidChecksumError } from "../errors.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { RegistryItem } from "./RegistryItem.js";

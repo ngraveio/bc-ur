@@ -1,5 +1,5 @@
 import { hexToUint8Array, stringToUint8Array } from "uint8array-extras";
-import { getCRCHex } from "../src/utils";
+import { getCRCHex } from "../src/helpers/utils";
 
 describe("CRC32", () => {
   test("crc32 results", () => {

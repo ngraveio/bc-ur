@@ -1,9 +1,9 @@
-import { difference, isSubset } from "../utils.js";
+import { difference, isSubset } from "../helpers/utils.js";
 import { concatUint8Arrays, isUint8Array } from "../wrappers/uint8array.js";
 
 import { InvalidChecksumError, InvalidSchemeError } from "../errors.js";
-import { chooseFragments } from "../fountainUtils.js";
-import { arrayContains, arraysEqual, bufferXOR, getCRC, setDifference } from "../utils.js";
+import { chooseFragments } from "../helpers/fountainUtils.js";
+import { arrayContains, arraysEqual, bufferXOR, getCRC, setDifference } from "../helpers/utils.js";
 
 import { CborEncoding } from "../encodingMethods/CborEncoding.js";
 
@@ -86,7 +86,9 @@ export class FountainDecoder {
   protected queuedBlocks: FountainBlock[] = [];
 
   // For tracking the progress of decoding we can keep seen indexes and decoded indexes
+  /** Bitmap array of seen block */
   public seenBlocks: number[] = [];
+  /** Bitmap array of decoded blocks */
   public decodedBlocks: number[] = [];
   /** Keeps track of the how many parts have been processed */
   protected processedPartsCount: number = 0;
@@ -97,6 +99,10 @@ export class FountainDecoder {
 
   isSuccessful(): boolean {
     return this.done && !this.error;
+  }
+
+  isComplete(): boolean {
+    return this.done;
   }
 
   constructor(parts: Uint8Array[] = []) {
@@ -461,6 +467,18 @@ export class FountainDecoder {
     }
 
     return this.simpleBlocks.length / expectedPartCount;
+  }
+
+  getDecodedData(): any {
+    if (!this.isSuccessful()) {
+      console.log('Fountain decoding was not successful');
+      return undefined;
+    }
+    return cborEncoder.decode(this.resultRaw);
+  }
+
+  getError(): Error | undefined {
+    return this.error;
   }
 }
 

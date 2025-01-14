@@ -1,14 +1,14 @@
-import { makeMessage } from "../src/utils.js";
+import { makeMessage } from "../src/helpers/utils.js";
 import { InvalidChecksumError } from "../src/errors.js";
 import {
   createFountainUrTranscoder,
   createMultipartUrTranscoder,
   createUrTranscoder,
-} from "../src/ngraveTranscoder";
-import { MultipartUr } from "../src/classes/MultipartUr";
-import { registryItemFactory } from "../src/classes/RegistryItem";
-import { globalUrRegistry } from "../src/registry";
-import { CborEncoding } from "../src/encodingMethods/CborEncoding";
+} from "../src/classes/ngraveTranscoder.js";
+import { MultipartUr } from "../src/classes/MultipartUr.js";
+import { registryItemFactory } from "../src/classes/RegistryItem.js";
+import { UrRegistry } from "../src/registry.js";
+import { CborEncoding } from "../src/encodingMethods/CborEncoding.js";
 
 export class MockRegistryItem extends registryItemFactory({
   tag: 998,
@@ -25,14 +25,14 @@ export class MockRegistryItem2 extends registryItemFactory({
 describe("FountainTranscoder", () => {
   beforeAll(() => {
     // Add the MockRegistryItem to the registry
-    globalUrRegistry.addItem(MockRegistryItem);
-    globalUrRegistry.addItem(MockRegistryItem2);
+    UrRegistry.addItem(MockRegistryItem);
+    UrRegistry.addItem(MockRegistryItem2);
   });
 
   afterAll(() => {
     // Clear the registry
-    globalUrRegistry.removeItem(MockRegistryItem);
-    globalUrRegistry.removeItem(MockRegistryItem2);
+    UrRegistry.removeItem(MockRegistryItem);
+    UrRegistry.removeItem(MockRegistryItem2);
   });
 
   describe("FountainUrTranscoder", () => {

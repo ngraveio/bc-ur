@@ -1,7 +1,4 @@
-import { CborEncoding } from "../encodingMethods/CborEncoding.js";
-import { HexEncoding } from "../encodingMethods/HexEncoding.js";
-import { BytewordEncoding } from "../encodingMethods/BytewordEncoding.js";
-import { RegistryItem } from "../classes/RegistryItem.js";
+import { RegistryItem, RegistryItemBase } from "../classes/RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { EncodingPipeline } from "../encodingMethods/pipeline.js";
 import {
@@ -9,24 +6,8 @@ import {
   InvalidSchemeError,
   InvalidTypeError,
 } from "../errors.js";
-
-// By itself encoding goes like this -> registryItem -> cbor -> hex -> bytewords -> ur -> multipartur
-// But i need the input registryItem to have ur type so I need to have access to the registryItem and output Ur directly
-// I want to add until or to parameter on encode and decode so we can stop at a certain encoding method
-// When decoding, ur can force the type of decoding cbor.
-
-//////////////////
-
-const cborEnc = new CborEncoding();
-const hexEnc = new HexEncoding();
-const bytewordsEnc = new BytewordEncoding();
-
-// Create a pipeline that encodes registry registryItem -> cbor -> hex -> bytewords
-export const registry2Bytewords = new EncodingPipeline<RegistryItem | any, string>([
-  cborEnc,
-  hexEnc,
-  bytewordsEnc,
-]);
+import { dataPipeline } from "../encodingMethods/index.js";
+import { ReplaceKeyType } from "../helpers/type.helper.js";
 
 export interface IUr {
   type: string; // bc-ur type defined in the registry
@@ -36,8 +17,6 @@ export interface IUr {
   isFragment?: boolean; // if the ur is a fragment of a multipart message
 }
 
-type IUrInput = IUr | { payload: Uint8Array };
-
 /**
  * https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md
  * Class that represents the structure of the data we encode/decode in this package.
@@ -46,43 +25,51 @@ type IUrInput = IUr | { payload: Uint8Array };
  *
  * Single part = ur:<type>/<message(payload)>
  * Multi part =  ur:<type>/<seqNum-seqLength>/<fragment(payload)>
+ * 
+ * CBOR encoding should not include tag on top level when UR has a tag
+ * 
+ * I want to be able to create UR from encoding normal js types
+ * Or from any type in the pipeline
+ * 
+ * Should i do it on the encoder or ur class itself?
  */
 export class Ur {
   public type: string;
   public payload: string;
-  // public tag: number;
   public seqNum?: number;
   public seqLength?: number;
   public isFragment: boolean;
 
-  static pipeline: EncodingPipeline<any, string> = registry2Bytewords;
+  static pipeline: EncodingPipeline<any, string> = dataPipeline;
 
-  constructor(input: IUrInput | RegistryItem) {
-    if ('type' in input && 'payload' in input) {
-      const { type, payload, seqNum = 0, seqLength = 0 } = input;
-      if (typeof payload == "string") {
-        this.payload = payload;
-      }
-      else {
-        this.payload = Ur.pipeline.encode(payload);
-      }       
-      this.type = type;
-      this.seqNum = seqNum;
-      this.seqLength = seqLength;
-      this.isFragment = seqLength > 0;
-    } else {
+  // If type is unknown it should be cbor, because default encoding will take any and convert to cbor without tagging
+  constructor(input: IUr | RegistryItem) {
+    // Create from registry item
+    if (input instanceof RegistryItemBase) {
       const ur = Ur.fromRegistryItem(input as RegistryItem);
       this.type = ur.type;
       this.payload = ur.payload;
       this.seqNum = ur.seqNum;
       this.seqLength = ur.seqLength;
       this.isFragment = ur.isFragment;
+    } 
+    // Create from raw data
+    else if (typeof input == "object" && 'type' in input && 'payload' in input) {
+      const { type, payload, seqNum = 0, seqLength = 0 } = input;
+      this.payload = payload; 
+      this.type = type;
+      this.seqNum = seqNum;
+      this.seqLength = seqLength;
+      this.isFragment = seqLength > 0;
+    } 
+    else {
+      throw new InvalidTypeError();
     }
   }
 
-  // Decode to
+  // Decode
   decode(until?: EncodingMethodName) {
-    return Ur.pipeline.decode(this.payload, {until});
+    return Ur.pipeline.decode(this.payload, {until, enforceType: this.isFragment ? undefined : this.type});
   }
 
   // Get string representation
@@ -91,7 +78,7 @@ export class Ur {
   }
 
   // Get payload in bytewords
-  getPayload() {
+  getPayloadBytewords() {
     return this.payload;
   }
 
@@ -111,6 +98,8 @@ export class Ur {
         "Cannot convert a multipart ur to registry item, it needs to be decoded first"
       );
     }
+    // Enforce type
+    // registrtqueryByURType
     return Ur.decode(this);
   }
 
@@ -118,13 +107,68 @@ export class Ur {
 
   static fromRegistryItem(item: RegistryItem) {
     // First convert Registry item to bytewords
-    const bytewords = Ur.pipeline.encode(item);
+    // Only on the top level, we should not include the tag
+    const bytewords = Ur.pipeline.encode(item, {ignoreTopLevelTag: true});
 
     // Now create new UR
     return new Ur({
       type: item.type.URType,
       payload: bytewords,
     });
+  }
+
+  /**
+   * Create UR from native javascript types by encoding them to bytewords
+   * @param input 
+   * @returns 
+   */
+  static fromData(input: ReplaceKeyType<IUr, 'payload', any>) {
+    const bytewords = Ur.pipeline.encode(input.payload);
+
+    // Now create new UR
+    return new Ur({
+      ...input,
+      payload: bytewords,
+    });    
+  }
+
+  static fromCbor(input: ReplaceKeyType<IUr, 'payload', Uint8Array>) {
+    const bytewords = Ur.pipeline.encode(input.payload, { from: EncodingMethodName.cbor });
+
+    return new Ur({
+      ...input,
+      payload: bytewords,
+    });      
+  }
+
+  static fromHex(input: ReplaceKeyType<IUr, 'payload', string>) {
+    const bytewords = Ur.pipeline.encode(input.payload, { from: EncodingMethodName.hex });
+
+    return new Ur({
+      ...input,
+      payload: bytewords,
+    });    
+  }
+
+  static fromBytewords(input: IUr) {
+    return new Ur({
+      ...input,
+    });    
+  }
+
+  static from(input: ReplaceKeyType<IUr, 'payload', any>, type: EncodingMethodName) {
+    switch (type) {
+      case EncodingMethodName.bytewords:
+        return Ur.fromBytewords(input);
+      case EncodingMethodName.cbor:
+        return Ur.fromCbor(input);
+      case EncodingMethodName.hex:
+        return Ur.fromHex(input);
+      case EncodingMethodName.ur:
+        return Ur.fromData(input);
+      default:
+        throw new Error("Invalid encoding method");
+    }
   }
 
   static fromString(ur: string) {

@@ -6,7 +6,7 @@ import {
   InvalidTypeError,
   InvalidSequenceComponentError,
 } from "../errors.js";
-import { toUint32 } from "../utils.js";
+import { toUint32 } from "../helpers/utils.js";
 import { RegistryItem } from "./RegistryItem.js";
 
 export interface IMultipartUr {

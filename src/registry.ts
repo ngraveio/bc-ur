@@ -5,16 +5,10 @@ import {
   Tag,
 } from "./wrappers/cbor2.js";
 
-interface inputOptions {
-  registry?: URRegistry;
-  cborLibEncoderOptions?: EncodeOptions;
-  cborLibDecoderOptions?: DecodeOptions;
-}
+type Registry = Map<string, RegistryItemClass>;
 
-export type Registry = Map<string, RegistryItemClass>;
-
-export class URRegistry {
-  private static instance: URRegistry;
+export class URRegistryClass {
+  private static instance: URRegistryClass;
   private registry: Registry = new Map();
   private tagMap: Map<number, string> = new Map();
   private loggingEnabled: boolean;
@@ -30,11 +24,11 @@ export class URRegistry {
   public static getInstance(
     items: RegistryItemClass[] = [],
     loggingEnabled: boolean = true
-  ): URRegistry {
-    if (!URRegistry.instance) {
-      URRegistry.instance = new URRegistry(items, loggingEnabled);
+  ): URRegistryClass {
+    if (!URRegistryClass.instance) {
+      URRegistryClass.instance = new URRegistryClass(items, loggingEnabled);
     }
-    return URRegistry.instance;
+    return URRegistryClass.instance;
   }
 
   public setLoggingEnabled(enabled: boolean): void {
@@ -128,4 +122,4 @@ export class URRegistry {
   }
 }
 
-export const globalUrRegistry = URRegistry.getInstance();
+export const UrRegistry = URRegistryClass.getInstance();

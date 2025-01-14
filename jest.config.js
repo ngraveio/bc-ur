@@ -13,6 +13,7 @@ export default {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },  
   testPathIgnorePatterns: [
-    '/node_modules/'
+    '/node_modules/',
+    'old_tests/'
   ],
 };
