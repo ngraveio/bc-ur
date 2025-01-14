@@ -473,7 +473,11 @@ export class FountainDecoder {
       return undefined;
     }
     return cborEncoder.decode(this.resultRaw);
-  }  
+  }
+
+  getError(): Error | undefined {
+    return this.error;
+  }
 }
 
 export type IMultipartUrPayload = [number, number, number, number, Uint8Array];

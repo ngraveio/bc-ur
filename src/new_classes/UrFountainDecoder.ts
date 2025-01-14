@@ -7,7 +7,7 @@ export class UrFountainDecoder extends FountainDecoder{
   public expectedType: string;
   public resultUr: Ur;
 
-  constructor(parts: Ur[] = []) {
+  constructor(parts: Ur[] | string[] = []) {
     super();
     parts.forEach(part => {
       this.receivePartUr(part);
