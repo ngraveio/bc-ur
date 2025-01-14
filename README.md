@@ -9,89 +9,41 @@ To install, run:
 yarn add @ngraveio/bc-ur
 ```
 
-# Quick Start
+# What is UR?
+**U**niform **R**esource (UR) is a structre for encoding binary data in a form that can be used in a URI and with types. It takes advantage of QR Codes *"alphanumeric"* mode to transfer binary data because the native binary encoding mode of QR codes is not consistently supported by [readers](https://stackoverflow.com/questions/37996101/storing-binary-data-in-qr-codes).
 
-## Encode a message
+More Details in: https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md
 
-```js
-import {UR, UREncoder} from '@ngraveio/bc-ur'
-
-const message = {any: 'property'}
-const messageBuffer = Buffer.from(JSON.stringify(message))
-
-// First step is to create a UR object from a Buffer
-const ur = UR.fromBuffer(messageBuffer)
-
-// Then, create the UREncoder object
-
-// The maximum amount of fragments to be generated in total
-const maxFragmentLength = 150
-
-// The index of the fragment that will be the first to be generated
-// If it's more than the "maxFragmentLength", then all the subsequent fragments will only be
-// fountain parts
-const firstSeqNum = 0
-
-// Create the encoder object
-const encoder = new UREncoder(ur, maxFragmentLength, firstSeqNum)
-
-// Keep generating new parts, until a condition is met; for example the user exits the page, or clicks "DONE"
-while(!stop) {
-  // get the next part in the sequence
-  let part = encoder.nextPart()
-
-  // get the part as a string containing the cbor payload and display it with whatever way
-  // the part looks like this:
-  // ur:bytes/1-9/lpadascfadaxcywenbpljkhdcahkadaemejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtdkgslpgh
-
-  displayPart(part)
-}
-```
-
-## Decode a message
-
-```js
-import {URDecoder} from '@ngraveio/bc-ur'
-
-// Create the decoder object
-const decoder = new URDecoder()
-
-do {
-  // Scan the part from a QRCode
-  // the part should look like this:
-  // ur:bytes/1-9/lpadascfadaxcywenbpljkhdcahkadaemejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtdkgslpgh
-  const part = scanQRCode()
-
-  // register the new part with the decoder
-  decoder.receivePart(part)
-
-  // check if all the necessary parts have been received to successfully decode the message
-} while (!decoder.isComplete())
-
-// If no error has been found
-if (decoder.isSuccess()) {
-  // Get the UR representation of the message
-  const ur = decoder.resultUR()
-
-  // Decode the CBOR message to a Buffer
-  const decoded = ur.decodeCBOR()
-
-  // get the original message, assuming it was a JSON object
-  const originalMessage = JSON.parse(decoded.toString())
-}
-else {
-  // log and handle the error
-  const error = decoder.resultError()
-  console.log('Error found while decoding', error)
-  handleError(error)
-}
+## UR Format
+A single-part UR has the following form:
 
 ```
+ur:<type>/<message (bytewords)>
+```
+
+For example:
+
+```
+ur:seed/oyadhdeynteelblrcygldwvarflojtcywyjytpdkfwprylienshnjnpluypmamtkmybsjkspvseesawmrltdlnlgkplfbkqzzoglfeoyaegslobemohs
+```
+
+A multi-part UR has the following form:
+
+```
+ur:<type>/<seq>/<fragment (bytewords)>
+```
+
+For example:
+
+```
+ur:seed/1-3/lpadaxcsencylobemohsgmoyadhdeynteelblrcygldwvarflojtcywyjydmylgdsa
+```
+
 
 # Quick Start
 
 ### Single UR
-
+Maybe add registry item directly
 #### Encoding:
 Lets encode basic object:
 ```ts
@@ -111,11 +63,7 @@ userUr.toString();
 ```ts
 const ur = Ur.fromString('ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl');
 const decoded = ur.decode();
-```
-
-Would give us:
-```json
-{"id": 123, "name": "John Doe"}
+// {"id": 123, "name": "John Doe"}
 ```
 
 ### Multi-Part UR (MUR)
@@ -129,9 +77,10 @@ const testPayload = {
 }
 
 const userUr = Ur.fromData({type: "user", payload: testPayload});
-// Now we are going to create a fountain encoder which can generate indefined number of parts.
-// Because of that we need to create a new encoder for every item.
+// Now we are going to create a fountain encoder which can generate indefinite number of parts.
+// Because fountain encoder has a state, we need to create a new decoder for each new UR object
 const encoder = new UrFountainEncoder(userUr, 5); //  maxFragmentLength: 5
+// Get all fragments at once
 const fragments = encoder.getAllPartsUr(2); // Ratio of fountain parts compared to original parts
 
 // [
@@ -171,10 +120,10 @@ const decoded = resultUr.decode();
 For continuous decoding:
 
 ```ts
-import {URDecoder} from '@ngraveio/bc-ur'
+import { UrFountainDecoder } from '@ngraveio/bc-ur'
 
 // Create the decoder object
-const decoder = new URDecoder()
+const decoder = new UrFountainDecoder()
 
 do {
   // Scan the part from a QRCode
@@ -182,7 +131,7 @@ do {
   // ur:user/3-2/lpaxaobbcyjldnbwrlgeihisgejlisjtcxfyjlihwletaewp
   const part = scanQRCode()
 
-  // Read the part and set expected type and element count
+  // Read the part and set expected type and fragment count
   decoder.receivePartUr(part)
 
   // check if all the necessary parts have been received to successfully decode the message
@@ -210,12 +159,12 @@ else {
 
 
 # Registry Item
-Registry Item is spacial class that knows how to encode and decode data to CBOR and UR Based on its [CDDL: Concise Data Definition Language](https://datatracker.ietf.org/doc/html/rfc8610).
+Registry Item is special class that knows how to encode and decode data to CBOR and UR, based on its [CDDL: Concise Data Definition Language](https://datatracker.ietf.org/doc/html/rfc8610).
 
 
-You need extend `registryItemFactory` and pass the following parameters:
-- `tag`: CBOR Tag that will be used to encode and decode the data
-- `URType`: The name that will be used in UR encoded data
+You need to extend the `registryItemFactory` function and pass the following parameters:
+- `tag`: CBOR Tag that will be used to encode and decode the data **CBOR TAG**
+- `URType`: The name that will be used in UR encoded data **Ngrave Registry**
 - `CDDL`: The CDDL that defines the structure of the data
 - `keyMap`: Optional, if you want to map the keys string names into integer keys for decreasing the size of the encoded data
 - `allowKeysNotInMap`: Optional, if you want to allow keys that are not in the map to be encoded and decoded
@@ -231,6 +180,7 @@ class AnyItem extends registryItemFactory({
   CDDL: ``,
 }) {};
 
+// TODO: add type automatically to UR registry
 // IMPORTANT: Register our item to the UR registry
 globalUrRegistry.addItem(AnyItem);
 
@@ -301,11 +251,11 @@ export class User extends registryItemFactory({
               ? address: text
           })
 
-          id=1
-          name=2
-          email=3
-          phone=4
-          address=5
+          id=0
+          name=1
+          email=2
+          phone=3
+          address=4
         `,
 
   // Define the key map for the user item
@@ -401,45 +351,13 @@ const decodedUser = myDecoder.getDecodedData();
 
 
 
-# What is UR?
-**U**niform **R**esource (UR) is a structre for encoding binary data in a form that can be used in a URI and with types. It takes advantage of QR Codes *"alphanumeric"* mode to transfer binary data because the native binary encoding mode of QR codes is not consistently supported by [readers](https://stackoverflow.com/questions/37996101/storing-binary-data-in-qr-codes).
-
-More Details in: https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md
-
-## UR Format
-A single-part UR has the following form:
-
-```
-ur:<type>/<message (bytewords)>
-```
-
-For example:
-
-```
-ur:seed/oyadhdeynteelblrcygldwvarflojtcywyjytpdkfwprylienshnjnpluypmamtkmybsjkspvseesawmrltdlnlgkplfbkqzzoglfeoyaegslobemohs
-```
-
-A multi-part UR has the following form:
-
-```
-ur:<type>/<seq>/<fragment (bytewords)>
-```
-
-For example:
-
-```
-ur:seed/1-3/lpadaxcsencylobemohsgmoyadhdeynteelblrcygldwvarflojtcywyjydmylgdsa
-```
-
-
-
 # UR Data Pipeline
 ### Encoding
 For encoding data in UR it goes through the following steps:
 1. **[CBOR Encoding](https://cbor.io/)**: The data is encoded in CBOR format and converted binary representation.
 2. **Hex Encoding**: The binary data is converted to a hexadecimal string.
 3. **[Bytewords Encoding](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-012-bytewords.md)**: The hexadecimal string is converted to a bytewords string and crc32 checksum is added.
-4. **[UR Encoding](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md)**: The bytewords string is encoded in UR format.
+4. **[UR Encoding](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md)**: The bytewords string is wrapped in a UR string.
 
 ### Pipeline Example:
 

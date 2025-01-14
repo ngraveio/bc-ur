@@ -67,7 +67,7 @@ export class Ur {
     }
   }
 
-  // Decode to
+  // Decode
   decode(until?: EncodingMethodName) {
     return Ur.pipeline.decode(this.payload, {until});
   }
