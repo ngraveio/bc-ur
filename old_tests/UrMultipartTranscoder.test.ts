@@ -1,12 +1,12 @@
 import { AssertionError } from "assert";
-import { CborEncoding } from "../src/encodingMethods/CborEncoding";
+import { CborEncoding } from "../src/encodingMethods/CborEncoding.js";
 import {
   createMultipartUrTranscoder,
   createUrTranscoder,
-} from "../src/classes/ngraveTranscoder";
-import { registryItemFactory } from "../src/classes/RegistryItem";
-import { UrRegistry } from "../src/registry";
-import { makeMessage } from "../src/helpers/utils";
+} from "../src/classes/ngraveTranscoder.js";
+import { registryItemFactory } from "../src/classes/RegistryItem.js";
+import { UrRegistry } from "../src/registry.js";
+import { makeMessage } from "../src/helpers/utils.js";
 import { hexToUint8Array } from "uint8array-extras";
 
 export class MockRegistryItem extends registryItemFactory({

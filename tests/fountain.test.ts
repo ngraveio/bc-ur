@@ -1,11 +1,10 @@
+import { makeMessage } from "../src/helpers/utils";
+import { uint8ArrayToHex } from "uint8array-extras";
+import { Ur } from "../src/new_classes/Ur";
 import { FountainEncoder } from "../src/new_classes/FountainEncoder"
 import { FountainDecoder } from "../src/new_classes/FountainDecoder"
-import { makeMessage } from "../src/helpers/utils";
-import { hexToUint8Array, uint8ArrayToHex } from "uint8array-extras";
-import { Ur } from "../src/new_classes/Ur";
 import { UrFountainEncoder } from "../src/new_classes/UrFountainEncoder";
 import { UrFountainDecoder } from "../src/new_classes/UrFountainDecoder";
-import { EncodingMethodName } from "../src/enums/EncodingMethodName";
 
 
 function make_message_ur(len: number, seed?: string): Ur {

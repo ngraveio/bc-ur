@@ -1,6 +1,5 @@
 import { stringToUint8Array, uint8ArrayToHex } from "uint8array-extras";
-import { UrMultipartEncoder } from "../src/classes/UrMultipartEncoder";
-import { chooseDegree, chooseFragments, shuffle } from "../src/helpers/fountainUtils";
+import { chooseDegree, chooseFragments, shuffle, findNominalFragmentLength, partitionMessage } from "../src/helpers/fountainUtils";
 import { bufferXOR, getCRC, intToBytes, makeMessage } from "../src//helpers/utils";
 import Xoshiro from "../src/xoshiro";
 import randomSampler from "@apocentre/alias-sampling";
@@ -162,17 +161,15 @@ describe("XOR", () => {
   });
 });
 
-const encoder = new UrMultipartEncoder([]);
-
 describe("Degree", () => {
   test("choose degree", () => {
     const message = makeMessage(1024);
-    const fragmentLength = encoder.findNominalFragmentLength(
+    const fragmentLength = findNominalFragmentLength(
       message.length,
       10,
       100
     );
-    const fragments = encoder.partitionMessage(message, fragmentLength);
+    const fragments = partitionMessage(message, fragmentLength);
 
     const degrees = [...new Array(200)].map((_, index) => {
       const rng = new Xoshiro(stringToUint8Array(`Wolf-${index + 1}`));
@@ -198,12 +195,12 @@ describe("Fragments", () => {
   test("choose fragments", () => {
     const message = makeMessage(1024);
     const checksum = getCRC(message);
-    const fragmentLength = encoder.findNominalFragmentLength(
+    const fragmentLength = findNominalFragmentLength(
       message.length,
       10,
       100
     );
-    const fragments = encoder.partitionMessage(message, fragmentLength);
+    const fragments = partitionMessage(message, fragmentLength);
 
     const fragmentIndexes = [...new Array(30)].map((_, index) => {
       return chooseFragments(index + 1, fragments.length, checksum).sort(

@@ -1,7 +1,7 @@
-import { UrRegistry } from "../src/registry";
-import { registryItemFactory } from "../src/classes/RegistryItem";
-import { InvalidTypeError } from "../src/errors";
-import { createUrTranscoder } from "../src/classes/ngraveTranscoder";
+import { UrRegistry } from "../src/registry.js";
+import { registryItemFactory } from "../src/classes/RegistryItem.js";
+import { InvalidTypeError } from "../src/errors.js";
+import { createUrTranscoder } from "../src/classes/ngraveTranscoder.js";
 
 export class MockRegistryItem extends registryItemFactory({
   tag: 998,

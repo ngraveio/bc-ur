@@ -4,11 +4,11 @@ import {
   createFountainUrTranscoder,
   createMultipartUrTranscoder,
   createUrTranscoder,
-} from "../src/classes/ngraveTranscoder";
-import { MultipartUr } from "../src/classes/MultipartUr";
-import { registryItemFactory } from "../src/classes/RegistryItem";
-import { UrRegistry } from "../src/registry";
-import { CborEncoding } from "../src/encodingMethods/CborEncoding";
+} from "../src/classes/ngraveTranscoder.js";
+import { MultipartUr } from "../src/classes/MultipartUr.js";
+import { registryItemFactory } from "../src/classes/RegistryItem.js";
+import { UrRegistry } from "../src/registry.js";
+import { CborEncoding } from "../src/encodingMethods/CborEncoding.js";
 
 export class MockRegistryItem extends registryItemFactory({
   tag: 998,
