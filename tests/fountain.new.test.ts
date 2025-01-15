@@ -4,9 +4,9 @@ import { InvalidChecksumError } from "../src/errors.js";
 import { registryItemFactory } from "../src/classes/RegistryItem";
 import { UrRegistry } from "../src/registry";
 
-import { UrFountainEncoder } from "../src/new_classes/UrFountainEncoder";
-import { UrFountainDecoder } from "../src/new_classes/UrFountainDecoder";
-import { Ur } from "../src/new_classes/Ur.js";
+import { UrFountainEncoder } from "../src/classes/UrFountainEncoder";
+import { UrFountainDecoder } from "../src/classes/UrFountainDecoder";
+import { Ur } from "../src/classes/Ur.js";
 
 export class MockRegistryItem extends registryItemFactory({
   tag: 998,

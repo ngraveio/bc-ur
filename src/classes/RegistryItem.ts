@@ -1,4 +1,4 @@
-import { Ur } from "../new_classes/Ur.js";
+import { Ur } from "../classes/Ur.js";
 import { encodeKeys, decodeKeys, IKeyMap } from "./key.helper.js";
 
 /**
