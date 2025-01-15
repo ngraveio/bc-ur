@@ -1,7 +1,7 @@
 import { concatUint8Arrays } from "../wrappers/uint8array.js";
 import { bufferXOR, intToBytes } from "./utils.js";
 import Xoshiro from "../xoshiro.js";
-import randomSampler from "@keystonehq/alias-sampling";
+import {sample as randomSampler} from "@keystonehq/alias-sampling";
 
 export const chooseDegree = (seqLenth: number, rng: Xoshiro): number => {
   const degreeProbabilities = [...new Array(seqLenth)].map(
