@@ -1,162 +1,75 @@
-import { chooseFragments, mixFragments } from "../fountainUtils.js";
-import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
-import { toUint32, getCRC } from "../utils.js";
-import { getMultipartUrString } from "./MultipartUr.js";
-import { UrMultipartEncoder } from "./UrMultipartEncoder.js";
-import { RegistryItem } from "./RegistryItem.js";
-import { CborEncoding } from "../encodingMethods/CborEncoding.js";
+import { RegistryItem, RegistryItemBase } from "../classes/RegistryItem.js";
+import { Ur } from "./Ur.js";
+import { FountainEncoder } from "./FountainEncoder.js";
+import { EncodingMethodName } from "../enums/EncodingMethodName.js";
+
 
 /**
  * Encode data on the fly. This encoder uses an internal state to keep generating ur fragments of the payload.
  */
-export default class UrFountainEncoder extends UrMultipartEncoder {
-  private _messageLength: number;
-  private _maxFragmentLength: number;
-  private _minFragmentLength: number;
-  private _fragments: Uint8Array[];
-  private _nominalFragmentLength: number;
-  private _seqNum: number;
-  private _checksum: number;
+export class UrFountainEncoder extends FountainEncoder {
+  /** Ur type of the input data */
   private _type: string;
+  /** Original Input data as UR */
+  private _inputUr: Ur;
 
   constructor(
-    encodingMethods: IEncodingMethod<any, any>[],
-    registryItem: RegistryItem,
+    input: RegistryItem | Ur,
     maxFragmentLength: number = 100,
     minFragmentLength: number = 10,
     firstSeqNum: number = 0
   ) {
-    super(encodingMethods);
-    this._type = registryItem.type.URType;
-    this._seqNum = toUint32(firstSeqNum);
 
-    // We need to encode the message as a Buffer, because we mix them later on
-    const cborMessage = new CborEncoding().encode(registryItem);
+    // If the input is a RegistryItem, convert it to a Ur
+    if (input instanceof RegistryItemBase) {
+      input = Ur.fromRegistryItem(input);
+    }
+    
+    // Input in CBOR
+    let inputCBOR = input.getPayloadCbor();
 
-    this._messageLength = cborMessage.length;
-    this._checksum = getCRC(cborMessage);
+    super(inputCBOR, maxFragmentLength, minFragmentLength, firstSeqNum);
 
-    // Check for the nominal length of a fragment.
-    const fragmentLength = super.findNominalFragmentLength(
-      cborMessage.length,
-      minFragmentLength,
-      maxFragmentLength
-    );
-
-    this._maxFragmentLength = maxFragmentLength;
-    this._minFragmentLength = minFragmentLength;
-    this._nominalFragmentLength = fragmentLength;
-
-    // Split up the message buffer in an array of buffers, by the nominal length
-    this._fragments = super.partitionMessage(cborMessage, fragmentLength);
+    this._inputUr = input;
+    this._type = input.type;
   }
 
-  /**
-* get an array of encoded fragments, based on the payload length, max and min fragment length.
-* @param ur ur that needs to be encoded.
-* @param maxFragmentLength maximum length of a fragment
-* @param minFragmentLength minimum length of a fragment
-// TODO: see what the best way is for the ratio to work.
-* @param redundancyRatio ratio of additional generated fragments
-* @returns the encoded payload as an array of ur strings
-*/
-  encodeUr<T extends RegistryItem>(
-    registryItem: T,
-    redundancyRatio: number = 0
-  ): string[] {
-    // encode first time to split the original payload up as cbor
-    const cborMessage = new CborEncoding().encode(registryItem);
-    const messageLength = cborMessage.length;
-    const fragmentLength = this.findNominalFragmentLength(
-      messageLength,
-      this._minFragmentLength,
-      this._maxFragmentLength
-    );
-    const checksum = getCRC(cborMessage);
-    const fragments = this.partitionMessage(cborMessage, fragmentLength);
-    // ceil to always get an integer
-    const numberofParts = Math.ceil(fragments.length * (1 + redundancyRatio));
-    const fountainUrs = [...new Array(numberofParts)].map((_, index) => {
-      const seqNum = toUint32(index + 1);
-      const indexes = chooseFragments(seqNum, fragments.length, checksum);
-      const mixed = mixFragments(indexes, fragments, fragmentLength);
-      const encodedFragment = super.encode([
-        seqNum,
-        fragments.length,
-        messageLength,
-        checksum,
-        mixed,
-      ]);
-      return getMultipartUrString(
-        registryItem.type.URType,
-        seqNum,
-        fragments.length,
-        encodedFragment
-      );
-    });
-    return fountainUrs;
-  }
 
   /**
-   * Checks if all the pure fragments (full payload data) for this ur is generated.
-   * @returns boolean indicating if generated fragments have included all the data.
+   * Return all the fragments based on the fountain ratio at once as an array of Uint8Arrays.
+   * @param fountainRatio The ratio of the fountain fragments to the pure fragments. Default is 0.
+   * @returns 
    */
-  public isComplete(): boolean {
-    return this._seqNum >= this.getPureFragmentCount();
-  }
-
-  /**
-   * Checks if there is only one fragment generated for the ur.
-   * @returns boolean if the ur payload is contained in one fragment.
-   */
-  public isSinglePart(): boolean {
-    return this.getPureFragmentCount() === 1;
-  }
-
-  /**
-   * Gets the count of the "pure" fragments. These are fragments where the data is not mixed.
-   * @returns The count of the "pure" fragments.
-   */
-  public getPureFragmentCount(): number {
-    return this._fragments.length;
+  getAllPartsUr(fountainRatio: number = 0): Ur[] {
+    const allParts = super.getAllParts(fountainRatio);
+    return allParts.map((part, index) => this.fragment2Ur(index+1, part));
   }
 
   /**
    * Give the 'next' fragment for the ur for which the fountainEncoder was created.
    * @returns the 'next' fragment, represented as a Ur multipart string.
    */
-  public nextPart(): string {
-    this._seqNum = toUint32(this._seqNum + 1);
-
-    // when the seqnum restarts because of a number bigger than Uint32, we need to make sure to skip 0 to prevent invalid Multipart URs.
-    if (this._seqNum === 0) {
-      this._seqNum = toUint32(this._seqNum + 1);
-    }
-
-    const indexes = chooseFragments(
-      this._seqNum,
-      this._fragments.length,
-      this._checksum
-    );
-    const mixed = mixFragments(
-      indexes,
-      this._fragments,
-      this._nominalFragmentLength
-    );
-
-    const encodedFragment = super.encode([
-      this._seqNum,
-      this._fragments.length,
-      this._messageLength,
-      this._checksum,
-      mixed,
-    ]);
-
-    return getMultipartUrString(
-      this._type,
-      this._seqNum,
-      this._fragments.length,
-      encodedFragment
-    );
+  public nextPartUr(): Ur {
+    const encodedFragment = super.nextPart();
+    return this.fragment2Ur(this._seqNum, encodedFragment);
   }
+
+  private fragment2Ur(seqNum:number, fragment:Uint8Array) {
+    // Fragment is already encoded in CBOR
+    // Just convert it to bytewords instead of encoding it again
+    const payload = Ur.pipeline.encode(fragment, {from: EncodingMethodName.hex});
+    if (this.isSinglePart()) {
+      return new Ur({
+        type: this._type,
+        payload: payload,
+      });
+    }
+    return new Ur({
+      type: this._type,
+      payload: payload,
+      seqNum: seqNum,
+      seqLength: this._pureFragments.length,
+      isFragment: true,
+    })    
+  }  
 }

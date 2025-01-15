@@ -1,3 +1,4 @@
+import { Ur } from "../classes/Ur.js";
 import { encodeKeys, decodeKeys, IKeyMap } from "./key.helper.js";
 
 /**
@@ -106,7 +107,18 @@ export abstract class RegistryItemBase {
    */
   toCBOR(_writer, _options) {
     const processed = this.preCBOR();
-    return [this.type.tag, processed];
+    let tag = this.type.tag;
+    // TODO: find a better way to ignore top level tag on encoder
+    if (_options?.ignoreTopLevelTag) {
+      tag = NaN; // Do not tag the top level item
+      // Set it back to false for child items
+      _options.ignoreTopLevelTag = false;
+    }
+    return [tag, processed];
+  }
+
+  toUr() {
+    return new Ur(this);
   }
 }
 
@@ -151,7 +163,7 @@ export function registryItemFactory(input: IRegistryType): RegistryItemClass {
     }
 
     /**
-     * Static method to create an instance from CBOR data.
+     * Static method to create an instance from CBOR DataItem data.
      * It processes the raw CBOR data if needed and returns a new instance of the class.
      */
     static fromCBORData(val: any, allowKeysNotInMap?: boolean, tagged?: any) {

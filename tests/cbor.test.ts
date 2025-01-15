@@ -1,5 +1,5 @@
 import { stringToUint8Array, uint8ArrayToHex } from "uint8array-extras";
-import { registryItemFactory } from "../src/classes/RegistryItem";
+import { RegistryItemBase, registryItemFactory } from "../src/classes/RegistryItem";
 import { CborEncoding } from "../src/encodingMethods/CborEncoding";
 import { User, UserCollection } from "../src/test.utils";
 
@@ -252,6 +252,77 @@ describe("CBOR Encoder", () => {
       // Remove items from registry
       cbor.registry.removeItem(MyRegistryItem);
       cbor.registry.removeItem(NativeValues);
+    });
+  });
+
+  describe("Features for UR", () => {
+    describe("Ignore Top Level Tag with ignoreTopLevelTag flag", () => {
+      // Define a user
+      const user1 = new User({ id: 1, name: "İrfan Bilaloğlu" });
+      const user2 = new User({ id: 2, name: "Pieter Uyttersprot" });
+
+      const userCollection = new UserCollection({
+        name: "My Collection",
+        users: [user1, user2],
+      });
+
+      beforeAll(() => {
+        cbor.registry.addItem(User);
+        cbor.registry.addItem(UserCollection);
+      });
+
+      afterAll(() => {
+        cbor.registry.removeItem(User);
+        cbor.registry.removeItem(UserCollection);
+      });
+
+      it("should not tag top level", () => {
+        const encoded = cbor.encode(user1, { ignoreTopLevelTag: true });
+
+        // 111({"id": 1, "name": "İrfan Bilaloğlu"}) => ({"id": 1, "name": "İrfan Bilaloğlu"})
+        expect(uint8ArrayToHex(encoded)).toEqual("a262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75");
+      });
+
+      it("should only remove top level tag in Nested Registry item ", () => {
+        const encoded = cbor.encode(userCollection, { ignoreTopLevelTag: true });
+        // 112({"name": "My Collection", "users": [111({"id": 1, "name": "İrfan Bilaloğlu"}), 111({"id": 2, "name": "Pieter Uyttersprot"})]})
+        // to
+        // {"name": "My Collection", "users": [111({"id": 1, "name": "İrfan Bilaloğlu"}), 111({"id": 2, "name": "Pieter Uyttersprot"})]}
+        expect(uint8ArrayToHex(encoded)).toEqual(
+          "a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74"
+        );
+      });
+    });
+
+    describe("Unknown Tag", () => {
+      it("should decode to UnknownTag item when tag is not in registry", () => {
+        // 111({"id": 1, "name": "İrfan Bilaloğlu"})
+        const user = "d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75";
+
+        const decoded = cbor.decode(Buffer.from(user, "hex"));
+
+        expect(decoded).toBeInstanceOf(RegistryItemBase);
+        expect(decoded.type.tag).toBe(111);
+        expect(decoded.type.URType).toBe("unknown-tag");
+      });
+
+      it("should decode all nested items to UnknownTag item when tags is not in registry", () => {
+        // 112({"name": "My Collection", "users": [111({"id": 1, "name": "İrfan Bilaloğlu"}), 111({"id": 2, "name": "Pieter Uyttersprot"})]})
+        const userCollection =
+          "d870a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74";
+
+        const decoded = cbor.decode(Buffer.from(userCollection, "hex"));
+
+        expect(decoded).toBeInstanceOf(RegistryItemBase);
+        expect(decoded.type.tag).toBe(112);
+        expect(decoded.type.URType).toBe("unknown-tag");
+        expect(decoded.data.users[0]).toBeInstanceOf(RegistryItemBase);
+        expect(decoded.data.users[1]).toBeInstanceOf(RegistryItemBase);
+        expect(decoded.data.users[0].type.tag).toBe(111);
+        expect(decoded.data.users[1].type.tag).toBe(111);
+        expect(decoded.data.users[0].type.URType).toBe("unknown-tag");
+        expect(decoded.data.users[1].type.URType).toBe("unknown-tag");
+      });
     });
   });
 });

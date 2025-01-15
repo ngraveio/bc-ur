@@ -1,12 +1,12 @@
 import { AssertionError } from "assert";
+import { CborEncoding } from "../src/encodingMethods/CborEncoding.js";
 import {
   createMultipartUrTranscoder,
   createUrTranscoder,
-} from "../src/ngraveTranscoder";
-import { registryItemFactory } from "../src/classes/RegistryItem";
-import { CborEncoding } from "../src/encodingMethods/CborEncoding";
-import { globalUrRegistry } from "../src";
-import { makeMessage } from "../src/utils";
+} from "../src/classes/ngraveTranscoder.js";
+import { registryItemFactory } from "../src/classes/RegistryItem.js";
+import { UrRegistry } from "../src/registry.js";
+import { makeMessage } from "../src/helpers/utils.js";
 import { hexToUint8Array } from "uint8array-extras";
 
 export class MockRegistryItem extends registryItemFactory({
@@ -26,13 +26,13 @@ describe("FountainTranscoder", () => {
     const { encoder, decoder } = createMultipartUrTranscoder();
     beforeAll(() => {
       // Add the MockRegistryItem to the registry
-      globalUrRegistry.addItem(MockRegistryItem);
-      globalUrRegistry.addItem(Metadata);
+      UrRegistry.addItem(MockRegistryItem);
+      UrRegistry.addItem(Metadata);
     });
     afterAll(() => {
       // Remove the MockRegistryItem from the registry
-      globalUrRegistry.removeItem(MockRegistryItem);
-      globalUrRegistry.removeItem(Metadata);
+      UrRegistry.removeItem(MockRegistryItem);
+      UrRegistry.removeItem(Metadata);
     });
     test("should create 3 fragments when payloadlength is 13 and min/max fragment size is 5", () => {
       const item = new MockRegistryItem("custom");
@@ -41,6 +41,10 @@ describe("FountainTranscoder", () => {
       const expectedFragmentLength = Math.ceil(payloadLength / fragmentLength);
 
       const fragments = encoder.encodeUr(item, fragmentLength, fragmentLength);
+      // [
+      //   "ur:custom1/1-2/lpadaobkcymhnsbgehfetaaxvaiyiapetprelb",
+      //   "ur:custom1/2-2/lpaoaobkcymhnsbgehfekpjkjyjljnskrfrolb",
+      // ]      
 
       expect(fragments.length).toEqual(expectedFragmentLength);
     });
@@ -55,6 +59,11 @@ describe("FountainTranscoder", () => {
     describe("validateMultipartPayload", () => {
       const item = new MockRegistryItem(makeMessage(100));
       const multipartFragments = encoder.encodeUr(item, 50, 10);
+      // [
+      //   "ur:custom1/1-3/lpadaxcsincyutkicwayhdcntaaxvahdiemejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtgwdpfnsbrtrthtpy",
+      //   "ur:custom1/2-3/lpaoaxcsincyutkicwayhdcnoxgwlbaawzuefywkdplrsrjynbvygabwjldapfcsgmghhkhstlhelbknlkuejnbadmssfhvaktwkba",
+      //   "ur:custom1/3-3/lpaxaxcsincyutkicwayhdcnfrdpsbiegecpasvssovlgeykssjykklronvsjksotkhemthydawydtaxneurlkosgwcekolrlgcmcl",
+      // ]
 
       test("Should validate a correctly generated fragment", () => {
         const decodedFragment = decoder.decodeMultipartUr(
@@ -81,6 +90,17 @@ describe("FountainTranscoder", () => {
         });
 
         const encodedPayload = encoder.encodeUr(metadata, 10, 5);
+        // [
+        //   "ur:metadata/1-9/lpadascsgucyghsoceqdgetaaxvdoxiyjkkkjtiagateadvacm",
+        //   "ur:metadata/2-9/lpaoascsgucyghsoceqdgeiegdrdrnaeaerdrnaebyvlfnbegu",
+        //   "ur:metadata/3-9/lpaxascsgucyghsoceqdgecpeofygoiyktlonliyieknvtwpfx",
+        //   "ur:metadata/4-9/lpaaascsgucyghsoceqdgeihkoiniaihinjnkkdpietplghplt",
+        //   "ur:metadata/5-9/lpahascsgucyghsoceqdgeihkoiniaihjzjzhsjtiontueemhn",
+        //   "ur:metadata/6-9/lpamascsgucyghsoceqdgekphsioihfxjlieihidihryjssecy",
+        //   "ur:metadata/7-9/lpatascsgucyghsoceqdgejtjliyinjpjnkthsjpihkbbywkpe",
+        //   "ur:metadata/8-9/lpayascsgucyghsoceqdgehfihjpjkinjljtihehdmtyfdonoe",
+        //   "ur:metadata/9-9/lpasascsgucyghsoceqdgedydmdyaeaeaeaeaeaeaefnuefeos",
+        // ]        
         const decodedPayload = decoder.decodeUr(encodedPayload);
         expect(decodedPayload).toBeInstanceOf(Metadata);
         expect(decodedPayload.data.syncId).toEqual(metadata.data.syncId);
@@ -96,6 +116,7 @@ describe("FountainTranscoder", () => {
       test("Should be able to decode a single UR", () => {
         const { encoder: singleUrEncoder } = createUrTranscoder();
         const singleUr = singleUrEncoder.encodeUr(item);
+        // "ur:custom1/taaxvahdiemejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtgwdpfnsboxgwlbaawzuefywkdplrsrjynbvygabwjldapfcsgmghhkhstlhelbknlkuejnbadmssfhfrdpsbiegecpasvssovlgeykssjykklronvsjksotkhemthydawydtaxneurlkosgwcekoutkicway"        
         const decodedPayload = decoder.decodeUr([singleUr]);
         expect(decodedPayload).toBeInstanceOf(MockRegistryItem);
         expect(decodedPayload.data).toEqual(item.data);

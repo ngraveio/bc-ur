@@ -79,7 +79,7 @@ describe("Advanced Registry Items", () => {
         "hex"
       );
       // It will already decode to User instance and we will force it again
-      const decoded = cbor.decode(encoded, User);
+      const decoded = cbor.decode(encoded, {enforceType: User});
       expect(decoded).toBeInstanceOf(User);
       expect(decoded.data).toEqual({ id: 1, name: "İrfan Bilaloğlu" });
     });
@@ -90,7 +90,7 @@ describe("Advanced Registry Items", () => {
         "a262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75",
         "hex"
       );
-      const decoded = cbor.decode(encoded, User);
+      const decoded = cbor.decode(encoded, {enforceType: User});
 
       expect(decoded).toBeInstanceOf(User);
       expect(decoded.data).toEqual({ id: 1, name: "İrfan Bilaloğlu" });
@@ -99,13 +99,13 @@ describe("Advanced Registry Items", () => {
     it("should throw error if enforced type does not match the tag", () => {
       const simple = new MyRegistryItem({ foo: "bar" });
       const encoded = cbor.encode(simple);
-      expect(() => cbor.decode(encoded, User)).toThrow();
+      expect(() => cbor.decode(encoded, {enforceType: User})).toThrow();
     });
 
     it("should throw error if validation for enforced type fails", () => {
       // 111({"id": "1", "name": 4})
       const encoded = Buffer.from("d86fa26269646131646e616d6504", "hex");
-      expect(() => cbor.decode(encoded, User)).toThrow();
+      expect(() => cbor.decode(encoded, {enforceType: User})).toThrow();
     });
   });
 

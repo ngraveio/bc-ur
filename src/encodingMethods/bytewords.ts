@@ -1,5 +1,5 @@
 import assert from "assert";
-import { getCRCHex, partition, split } from "../utils.js";
+import { getCRCHex, partition, split } from "../helpers/utils.js";
 import { uint8ArrayToHex, hexToUint8Array } from "../wrappers/uint8array.js";
 
 const bytewords =
@@ -34,8 +34,8 @@ const addCRC = (string: string): string => {
   return `${string}${crc}`;
 };
 
-const encodeWithSeparator = (word: string, separator: string): string => {
-  const crcAppendedWord = addCRC(word);
+const encodeWithSeparator = (word: string, separator: string, includeChecksum: boolean): string => {
+  const crcAppendedWord = includeChecksum ? addCRC(word) : word;
   const crcWordArray = hexToUint8Array(crcAppendedWord);
   const result = crcWordArray.reduce(
     (result: string[], w) => [...result, getWord(w)],
@@ -45,8 +45,8 @@ const encodeWithSeparator = (word: string, separator: string): string => {
   return result.join(separator);
 };
 
-const encodeMinimal = (word: string): string => {
-  const crcAppendedWord = addCRC(word);
+const encodeMinimal = (word: string, includeChecksum: boolean): string => {
+  const crcAppendedWord = includeChecksum ? addCRC(word) : word;
   const crcWordArray = hexToUint8Array(crcAppendedWord);
   const result = crcWordArray.reduce(
     (result, w) => result + getMinimalWord(w),
@@ -118,12 +118,14 @@ const decodeWord = (word: string, wordLength: number): string => {
  * @param string string of Bytewords. e.g. "lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
  * @param separator e.g. " " or "-" or "" or any other separator
  * @param wordLength e.g. 4 or 2 or any other length
+ * @param includeChecksum whether to include checksum in the decoding.
  * @returns hex string
  */
 const _decode = (
   string: string,
   separator: string,
-  wordLength: number
+  wordLength: number,
+  includeChecksum: boolean
 ): string => {
   // Split the string into words. e.g. ["lp", "am", "ch", "cf", "at", "tt", "cy", "cl", "eh", "gs", "dp", "hd", "hg", "eh", "fg", "hk", "kk", "dl", ...]
   const words =
@@ -139,39 +141,45 @@ const _decode = (
   // e.g. "8506171907d11a21314c2d5857314659792f..."
   const decodedString = decodedWords.join("");
 
-  // 4 bytes for checksum, at least 1 byte for body
-  assert(
-    decodedString.length >= 5,
-    "Invalid Bytewords: invalid decoded string length"
-  );
+  if (includeChecksum) {
+    // 4 bytes for checksum, at least 1 byte for body
+    assert(
+      decodedString.length >= 5,
+      "Invalid Bytewords: invalid decoded string length"
+    );
 
-  // decoded string consists of `body` and `checksum`
-  const decodedArray = hexToUint8Array(decodedString);
-  const [body, bodyChecksum] = split(decodedArray, 4);
-  const checksum = getCRCHex(body); // convert to hex
+    // decoded string consists of `body` and `checksum`
+    const decodedArray = hexToUint8Array(decodedString);
+    const [body, bodyChecksum] = split(decodedArray, 4);
+    const checksum = getCRCHex(body); // convert to hex
 
-  assert(checksum === uint8ArrayToHex(bodyChecksum), "Invalid Checksum");
+    assert(checksum === uint8ArrayToHex(bodyChecksum), "Invalid Checksum");
 
-  return uint8ArrayToHex(body);
+    return uint8ArrayToHex(body);
+  } else {
+    return decodedString;
+  }
 };
 
 /**
  * Decode a string of bytewords into a hex string.
  * @param string string of Bytewords
  * @param style style of Bytewords
+ * @param includeChecksum whether to include checksum in the decoding.
  * @returns hex string
  */
 export const decode = (
   string: string,
-  style: STYLES = STYLES.MINIMAL
+  style: STYLES = STYLES.MINIMAL,
+  includeChecksum: boolean = true
 ): string => {
   switch (style) {
     case STYLES.STANDARD:
-      return _decode(string, " ", BYTEWORD_LENGTH);
+      return _decode(string, " ", BYTEWORD_LENGTH, includeChecksum);
     case STYLES.URI:
-      return _decode(string, "-", BYTEWORD_LENGTH);
+      return _decode(string, "-", BYTEWORD_LENGTH, includeChecksum);
     case STYLES.MINIMAL:
-      return _decode(string, "", MINIMAL_BYTEWORD_LENGTH);
+      return _decode(string, "", MINIMAL_BYTEWORD_LENGTH, includeChecksum);
     default:
       throw new Error(`Invalid style ${style}`);
   }
@@ -181,19 +189,21 @@ export const decode = (
  * Encodes a string (hex representation of a buffer) into bytewords.
  * @param string string to encode.
  * @param style style to use for the encoding.
+ * @param includeChecksum whether to include checksum in the encoding.
  * @returns the byteword encoded string
  */
 export const encode = (
   string: string,
-  style: STYLES = STYLES.MINIMAL
+  style: STYLES = STYLES.MINIMAL,
+  includeChecksum: boolean = true
 ): string => {
   switch (style) {
     case STYLES.STANDARD:
-      return encodeWithSeparator(string, " ");
+      return encodeWithSeparator(string, " ", includeChecksum);
     case STYLES.URI:
-      return encodeWithSeparator(string, "-");
+      return encodeWithSeparator(string, "-", includeChecksum);
     case STYLES.MINIMAL:
-      return encodeMinimal(string);
+      return encodeMinimal(string, includeChecksum);
     default:
       throw new Error(`Invalid style ${style}`);
   }
