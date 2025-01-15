@@ -17,7 +17,7 @@
     "build": "yarn clean && yarn compile",
     "compile": "tshy && rollup -c",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
-    "prepublish": "yarn build",
+    "prepublishOnly": "yarn build",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" --max-warnings=0",
     "start": "live-server --watch=src,dist --port=8080"
   },
