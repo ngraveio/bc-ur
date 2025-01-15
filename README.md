@@ -76,6 +76,10 @@ const testPayload = {
   "name": "John Doe"
 }
 
+// The maximum amount of fragments to be generated in total
+// For NGRAVE ZERO support please keep to a maximum fragment size of 200
+// const maxFragmentLength = 200
+
 const userUr = Ur.fromData({type: "user", payload: testPayload});
 // Now we are going to create a fountain encoder which can generate indefinite number of parts.
 // Because fountain encoder has a state, we need to create a new decoder for each new UR object

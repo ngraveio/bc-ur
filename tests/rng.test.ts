@@ -2,7 +2,7 @@ import { stringToUint8Array, uint8ArrayToHex } from "uint8array-extras";
 import { chooseDegree, chooseFragments, shuffle, findNominalFragmentLength, partitionMessage } from "../src/helpers/fountainUtils";
 import { bufferXOR, getCRC, intToBytes, makeMessage } from "../src//helpers/utils";
 import Xoshiro from "../src/xoshiro";
-import randomSampler from "@apocentre/alias-sampling";
+import randomSampler from "@keystonehq/alias-sampling";
 
 describe("Xoshiro rng", () => {
   test("1", () => {
@@ -107,7 +107,7 @@ describe.only("Shuffle", () => {
 describe("Random Sampler", () => {
   test("random sampler", () => {
     const rng = new Xoshiro(stringToUint8Array("Wolf"));
-    const sampler = randomSampler([1, 2, 4, 8], null, rng.nextDouble);
+    const sampler = randomSampler([1, 2, 4, 8], undefined, rng.nextDouble as any);
 
     const samples = [...new Array(500)].map(() => sampler.next());
     const expectedSamples = [
