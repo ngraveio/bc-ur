@@ -13,7 +13,6 @@ export class UrEncoding implements IEncodingMethod<RegistryItem, Ur> {
   }
 
   encode(payload: RegistryItem): Ur {
-    // return payload.toString("hex");
     return Ur.fromRegistryItem(payload);
   }
   decode(payload: Ur): RegistryItem {
