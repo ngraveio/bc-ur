@@ -43,7 +43,7 @@ jobs:
 
       - name: Dry-run release
         run: |
-          npx semantic-release --dry-run --branches '[{"name": "${{ github.ref_name }}", "prerelease": "beta", "channel": "beta"}, "release"]'
+          npx semantic-release --dry-run --branches '[{"name": "${{ github.ref_name }}", "prerelease": "beta", "channel": "beta"}, {"name": "release"}]'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GH_TOKEN: ${{ github.token }}
