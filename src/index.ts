@@ -7,6 +7,10 @@ import { FountainEncoder } from "./classes/FountainEncoder.js"
 import { FountainDecoder } from "./classes/FountainDecoder.js"
 import { defaultEncoders, dataPipeline } from "./encodingMethods/index.js"
 
+import { CborEncoding } from "./encodingMethods/CborEncoding.js"
+import { BytewordEncoding } from "./encodingMethods/BytewordEncoding.js"
+import { HexEncoding } from "./encodingMethods/HexEncoding.js"
+
 export {
   UrRegistry,
   registryItemFactory,
@@ -15,6 +19,9 @@ export {
   UrFountainEncoder,
   FountainDecoder,
   FountainEncoder,
+  CborEncoding,
+  BytewordEncoding,
+  HexEncoding,  
   defaultEncoders,
   dataPipeline,
 }
