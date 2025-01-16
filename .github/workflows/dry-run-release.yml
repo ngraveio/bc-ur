@@ -1,4 +1,4 @@
-name: Release
+name: Dry-run release
 
 on:
   push:
@@ -10,7 +10,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   release:
-    name: Release
+    name: Dry-run release
     runs-on: ubuntu-22.04
     # GH Token permissions as required by semantic-release
     # https://github.com/semantic-release/github?tab=readme-ov-file#github-authentication
