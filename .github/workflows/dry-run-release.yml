@@ -1,7 +1,10 @@
 name: Release
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -9,8 +12,6 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-22.04
-    # Release can only be triggered on the main or release branches
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/release'
     # GH Token permissions as required by semantic-release
     # https://github.com/semantic-release/github?tab=readme-ov-file#github-authentication
     permissions:
@@ -36,8 +37,8 @@ jobs:
       - name: Run test
         run: yarn test
 
-      - name: Publish to NPM and create a GitHub release
-        run: npx semantic-release
+      - name: Dry-run publish to NPM and create a GitHub release
+        run: npx semantic-release --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GH_TOKEN: ${{ github.token }}
