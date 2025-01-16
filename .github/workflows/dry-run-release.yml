@@ -1,0 +1,44 @@
+name: Dry-run release
+
+on:
+  workflow_dispatch:
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Dry-run release
+    runs-on: ubuntu-22.04
+    # Dry-run cannot be be triggered on the main or release branches
+    if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/release'
+    # GH Token permissions as required by semantic-release
+    # https://github.com/semantic-release/github?tab=readme-ov-file#github-authentication
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run build
+        run: yarn build
+
+      - name: Run test
+        run: yarn test
+
+      - name: Dry-run release
+        run: |
+          npx semantic-release --dry-run --branches '[{"name": "${{ github.ref_name }}", "prerelease": "beta", "channel": "beta"}]'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
