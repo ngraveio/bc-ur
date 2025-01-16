@@ -20,7 +20,7 @@
     "compile": "tshy && rollup -c",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "prepublishOnly": "yarn build",
-    "postinstall": "patch-package",
+    "prebuild": "patch-package",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" --max-warnings=0",
     "start": "live-server --watch=src,dist --port=8080"
   },
@@ -49,6 +49,9 @@
     "tslib": "^2.8.1",
     "typescript": "5.6.2"
   },
+  "bundleDependencies": [
+    "@keystonehq/alias-sampling"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ngraveio/bc-ur.git"
