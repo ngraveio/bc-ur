@@ -1,10 +1,7 @@
 name: Dry-run release
 
 on:
-  push:
-    branches:
-      - main
-      - release
+  workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -12,6 +9,8 @@ jobs:
   release:
     name: Dry-run release
     runs-on: ubuntu-22.04
+    # Dry-run cannot be be triggered on the main or release branches
+    if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/release'
     # GH Token permissions as required by semantic-release
     # https://github.com/semantic-release/github?tab=readme-ov-file#github-authentication
     permissions:
