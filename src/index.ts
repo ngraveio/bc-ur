@@ -1,10 +1,24 @@
-import UR from './ur';
-import UREncoder from './urEncoder';
-import URDecoder from './urDecoder';
+import { Ur } from "./classes/Ur.js"
+import { UrRegistry } from "./registry.js"
+import { registryItemFactory } from "./classes/RegistryItem.js"
+import { UrFountainEncoder } from "./classes/UrFountainEncoder.js"
+import { UrFountainDecoder } from "./classes/UrFountainDecoder.js"
+import { FountainEncoder } from "./classes/FountainEncoder.js"
+import { FountainDecoder } from "./classes/FountainDecoder.js"
+import { defaultEncoders, dataPipeline } from "./encodingMethods/index.js"
 
 export {
-  UR,
-  UREncoder,
-  URDecoder
+  UrRegistry,
+  registryItemFactory,
+  Ur,
+  UrFountainDecoder,
+  UrFountainEncoder,
+  FountainDecoder,
+  FountainEncoder,
+  defaultEncoders,
+  dataPipeline,
 }
 
+// Export types
+import type { RegistryItem, RegistryItemClass } from "./classes/RegistryItem.js"
+export type { RegistryItem, RegistryItemClass }

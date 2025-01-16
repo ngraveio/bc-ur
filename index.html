@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bytewords Interface</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 10px;
+    }
+    .button-container {
+      display: flex;
+      justify-content: space-between;
+    }
+    button {
+      width: 48%;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Bytewords Interface</h1>
+    <label for="hexInput">Hex Input:</label>
+    <textarea id="hexInput"></textarea>
+    <label for="encodeStyle">Encode Style:</label>
+    <select id="encodeStyle">
+      <option value="minimal">Minimal</option>
+      <option value="standard">Standard</option>
+      <option value="uri">URI</option>
+    </select>
+    <label for="includeChecksum">
+      <input type="checkbox" id="includeChecksum" checked> Include Checksum
+    </label>
+    <div class="button-container">
+      <button id="encodeButton">Encode to Bytewords</button>
+      <button id="decodeButton">Decode to Hex</button>
+    </div>
+    <label for="bytewordsOutput">Bytewords Output:</label>
+    <textarea id="bytewordsOutput"></textarea>
+    <div id="error" class="error"></div>
+  </div>
+  <script type="module">
+    import { encode, decode, STYLES } from './dist/web/bytewords.js';
+
+    const showError = (message) => {
+      const errorDiv = document.getElementById('error');
+      errorDiv.textContent = message;
+    };
+
+    document.getElementById('encodeButton').addEventListener('click', () => {
+      try {
+        const hexInput = document.getElementById('hexInput').value.trim();
+        const encodeStyle = document.getElementById('encodeStyle').value;
+        const includeChecksum = document.getElementById('includeChecksum').checked;
+        const bytewordsOutput = encode(hexInput, STYLES[encodeStyle.toUpperCase()], includeChecksum);
+        document.getElementById('bytewordsOutput').value = bytewordsOutput;
+        showError(''); // Clear any previous error
+      } catch (error) {
+        showError(`Encoding Error: ${error.message}`);
+      }
+    });
+
+    document.getElementById('decodeButton').addEventListener('click', () => {
+      try {
+        const bytewordsInput = document.getElementById('bytewordsOutput').value;
+        const decodeStyle = document.getElementById('encodeStyle').value;
+        const includeChecksum = document.getElementById('includeChecksum').checked;
+        const hexOutput = decode(bytewordsInput, STYLES[decodeStyle.toUpperCase()], includeChecksum);
+        document.getElementById('hexInput').value = hexOutput;
+        showError(''); // Clear any previous error
+      } catch (error) {
+        showError(`Decoding Error: ${error.message}`);
+      }
+    });
+  </script>
+</body>
+</html>

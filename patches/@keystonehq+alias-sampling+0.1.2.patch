@@ -1,0 +1,37 @@
+diff --git a/node_modules/@keystonehq/alias-sampling/dist/cjs/index.d.ts b/node_modules/@keystonehq/alias-sampling/dist/cjs/index.d.ts
+index a11c780..814932f 100644
+--- a/node_modules/@keystonehq/alias-sampling/dist/cjs/index.d.ts
++++ b/node_modules/@keystonehq/alias-sampling/dist/cjs/index.d.ts
+@@ -8,3 +8,4 @@ declare const sample: (probabilities: number[], outcomes?: any[], rng?: RNGFunct
+     next: (numOfSamples?: number) => any | any[];
+ };
+ export default sample;
++export { sample }
+diff --git a/node_modules/@keystonehq/alias-sampling/dist/cjs/index.js b/node_modules/@keystonehq/alias-sampling/dist/cjs/index.js
+index 48c7d33..5bc3815 100644
+--- a/node_modules/@keystonehq/alias-sampling/dist/cjs/index.js
++++ b/node_modules/@keystonehq/alias-sampling/dist/cjs/index.js
+@@ -77,3 +77,4 @@ var sample = function (probabilities, outcomes, rng) {
+     };
+ };
+ exports.default = sample;
++exports.sample = sample;
+diff --git a/node_modules/@keystonehq/alias-sampling/dist/esm/index.d.ts b/node_modules/@keystonehq/alias-sampling/dist/esm/index.d.ts
+index a11c780..2ec4586 100644
+--- a/node_modules/@keystonehq/alias-sampling/dist/esm/index.d.ts
++++ b/node_modules/@keystonehq/alias-sampling/dist/esm/index.d.ts
+@@ -8,3 +8,5 @@ declare const sample: (probabilities: number[], outcomes?: any[], rng?: RNGFunct
+     next: (numOfSamples?: number) => any | any[];
+ };
+ export default sample;
++export { sample };
++
+diff --git a/node_modules/@keystonehq/alias-sampling/dist/esm/index.js b/node_modules/@keystonehq/alias-sampling/dist/esm/index.js
+index 0761ba7..1d598ec 100644
+--- a/node_modules/@keystonehq/alias-sampling/dist/esm/index.js
++++ b/node_modules/@keystonehq/alias-sampling/dist/esm/index.js
+@@ -75,3 +75,4 @@ var sample = function (probabilities, outcomes, rng) {
+     };
+ };
+ export default sample;
++export { sample };
