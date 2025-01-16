@@ -36,8 +36,9 @@ jobs:
       - name: Run test
         run: yarn test
 
-      - name: Dry-run publish to NPM and create a GitHub release
-        run: npx semantic-release --dry-run
+      - name: Dry-run release
+        run: |
+          npx semantic-release --dry-run --branches '[{"name": "${{ github.ref_name }}", "prerelease": "beta", "channel": "beta"}]'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GH_TOKEN: ${{ github.token }}
