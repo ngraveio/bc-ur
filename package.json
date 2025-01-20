@@ -17,7 +17,7 @@
   "scripts": {
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
     "build": "yarn clean && yarn compile",
-    "compile": "tshy && rollup -c",
+    "compile": "tshy && rollup -c && \\cp -f ./src/wrappers/cbor2Wrapper.ts ./dist/commonjs/wrappers/cbor2Wrapper.d.ts",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "prepublishOnly": "yarn build",
     "prebuild": "patch-package",
