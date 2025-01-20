@@ -51,14 +51,18 @@ export class URRegistryClass {
       this.log(`Warning: Tag collision detected for tag: ${item.tag}`);
     }
     this.registry.set(item.URType, item);
-    this.tagMap.set(item.tag, item.URType);
-    Tag.registerDecoder(item.tag, (tag: Tag, opts: any) => {
-      return item.fromCBORData.bind(item)(
-        tag.contents,
-        item.allowKeysNotInMap,
-        opts
-      );
-    });
+
+    // Register to CBOR decoder only if it has a tag
+    if (!Number.isNaN(item.tag)) {
+      this.tagMap.set(item.tag, item.URType);
+      Tag.registerDecoder(item.tag, (tag: Tag, opts: any) => {
+        return item.fromCBORData.bind(item)(
+          tag.contents,
+          item.allowKeysNotInMap,
+          opts
+        );
+      });
+    }
   }
 
   public addItems(items: RegistryItemClass[]): void {
