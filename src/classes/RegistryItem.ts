@@ -120,6 +120,9 @@ export abstract class RegistryItemBase {
   toUr() {
     return new Ur(this);
   }
+
+  public encodeKeys = encodeKeys;
+  public decodeKeys = decodeKeys;
 }
 
 /**
@@ -130,7 +133,7 @@ export abstract class RegistryItemBase {
  * @param input
  * @returns
  */
-export function registryItemFactory(input: IRegistryType): RegistryItemClass {
+export function registryItemFactory<T extends RegistryItemBase>(input: IRegistryType): RegistryItemClass<T> {
   const { tag, URType, CDDL, keyMap, allowKeysNotInMap = true } = input;
   const _keyMap = keyMap;
 
@@ -173,7 +176,7 @@ export function registryItemFactory(input: IRegistryType): RegistryItemClass {
       // Return an instance of the generated class
       return new this(data);
     }
-  };
+  } as RegistryItemClass<T>;
 }
 
 // Helper type to define the RegistryItem class with custom constructors and static properties

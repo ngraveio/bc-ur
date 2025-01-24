@@ -1,6 +1,6 @@
 {
   "name": "@ngraveio/bc-ur",
-  "version": "2.0.1-beta.1",
+  "version": "2.0.0-beta.4",
   "author": "Antonis Poulakis <antwnic4@gmail.com>, Irfan Bilaloğlu <irfanbilaloglu@gmail.com>, Pieter Uyttersprot <pieter.uyttersprot@ngrave.io>",
   "description": "A JS implementation of the Uniform Resources (UR) specification from Blockchain Commons",
   "license": "MIT",
@@ -17,10 +17,10 @@
   "scripts": {
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
     "build": "yarn clean && yarn compile",
-    "compile": "tshy && rollup -c",
+    "compile": "tshy && rollup -c && \\cp -f ./src/wrappers/cbor2Wrapper.ts ./dist/commonjs/wrappers/cbor2Wrapper.d.ts",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "prepublishOnly": "yarn build",
-    "postinstall": "patch-package",
+    "prebuild": "patch-package",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" --max-warnings=0",
     "start": "live-server --watch=src,dist --port=8080"
   },
@@ -49,6 +49,9 @@
     "tslib": "^2.8.1",
     "typescript": "5.6.2"
   },
+  "bundleDependencies": [
+    "@keystonehq/alias-sampling"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ngraveio/bc-ur.git"

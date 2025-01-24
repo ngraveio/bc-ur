@@ -1,6 +1,7 @@
 import type {
   DecodeOptions,
   EncodeOptions,
+//@ts-ignore
 } from 'cbor2' with { 'resolution-mode': 'import' };
 
 //@ts-ignore
