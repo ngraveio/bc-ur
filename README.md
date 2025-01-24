@@ -38,6 +38,7 @@ A JavaScript/TypeScript library implementing BC-UR encoding, based on the [C++ r
     - [Quick Start](#quick-start-1)
   - [Technical Choices](#technical-choices)
   - [Contributing](#contributing)
+  - [Building the Project](#building-the-project)
   - [License](#license)
 
 ---
@@ -953,6 +954,26 @@ We welcome contributions to this project! Please follow these steps to contribut
 Please ensure your code follows the project's coding standards and includes appropriate tests.
 
 ---
+
+## Building the Project
+
+You need to have Node.js **version 20** or higher installed on your system to *pack* the project.
+
+- `yarn`
+- `yarn build`
+- `yarn test`
+- `yarn pack`
+
+The build is using Rollup to convert ESM only packages to CommonJS.
+You will find those in
+- `src/wrappers`:
+  - `cbor2`
+  - `uint8arrays`
+
+Rollup inject the ESM converted to CommonJs version of the CBOR2 library into the CommonJS version of the BC-UR library.
+Same for the uint8arrays library.
+
+In order to prevent the dual package hazard, the ESM version of the BC-UR library is also using the bundled version of the CBOR2 library.
 
 ## License
 
