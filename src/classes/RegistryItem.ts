@@ -120,6 +120,9 @@ export abstract class RegistryItemBase {
   toUr() {
     return new Ur(this);
   }
+
+  public encodeKeys = encodeKeys;
+  public decodeKeys = decodeKeys;
 }
 
 /**
