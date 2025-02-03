@@ -51,31 +51,33 @@ export function encodeKeys(
  * For some CDDL types we use integer as keys to keep the CBOR encoded data small
  * This function converts the data keys back to their respective string values
  *
- * @param data Object that has encoded key - value pairs
+ * @param _data Object that has encoded key - value pairs
  * @param keyMap Map of the keys to integer values
  * @returns Object with string keys
  */
 export function decodeKeys(
-  data: Map<string | number, any>,
+  data: Map<string | number, any> | Record<string | number, any>,
   keyMap: IKeyMap,
   allowKeysNotInMap: boolean
 ): object {
-  const result = {};
   // If we have a mapping, use it to map the data
+  const result = {};
+  // Convert the data to a map if it is not already
+  const _data = data instanceof Map ? data : new Map(Object.entries(data));
 
   // Get all the keys in the data
-  const keys = new Set(data.keys());
+  const keys = new Set(_data.keys());
 
   // Add the keys in the correct order
   for (const key in keyMap) {
-    if (data.has(keyMap[key])) result[key] = data.get(keyMap[key]);
+    if (_data.has(keyMap[key])) result[key] = _data.get(keyMap[key]);
     keys.delete(keyMap[key]);
   }
 
   if (allowKeysNotInMap) {
     // Add other keys as string if they are not existent in the map
     keys.forEach((key) => {
-      result[key] = data.get(key);
+      result[key] = _data.get(key);
     });
   }
 
