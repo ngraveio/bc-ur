@@ -1,5 +1,4 @@
-import assert from "assert";
-import { getCRCHex, partition, split } from "../helpers/utils.js";
+import { assert, getCRCHex, partition, split } from "../helpers/utils.js";
 import { uint8ArrayToHex, hexToUint8Array } from "../wrappers/uint8array.js";
 
 const bytewords =
