@@ -85,11 +85,13 @@ export class Ur {
   // Get payload in hex
   getPayloadHex() {
     return Ur.pipeline.decode<string>(this.payload, { until: EncodingMethodName.hex });
+    // TODO: add tag information
   }
 
   // Get Payload in cbor
   getPayloadCbor() {
     return Ur.pipeline.decode<Uint8Array>(this.payload, {until: EncodingMethodName.cbor} );
+    // TODO: add tag information
   }
 
   toRegistryItem() {
