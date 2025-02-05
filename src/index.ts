@@ -1,3 +1,6 @@
+// Before everyhing else, import the compatibility layer for react-native
+import "./compatibility.js";
+
 import { Ur } from "./classes/Ur.js"
 import { UrRegistry } from "./registry.js"
 import { registryItemFactory, RegistryItemBase } from "./classes/RegistryItem.js"

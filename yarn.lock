@@ -268,6 +268,11 @@
     "@babel/helper-string-parser" "^7.25.9"
     "@babel/helper-validator-identifier" "^7.25.9"
 
+"@bacons/text-decoder@0.0.0":
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/@bacons/text-decoder/-/text-decoder-0.0.0.tgz#8265d60b1305b2cf167e85fee182a09333c6a319"
+  integrity sha512-8KNbnXSHfhZRR1S1IQEdWQNa9HE/ylWRisDdkoCmHiaP53mksnPaxyqUSlwpJ3DyG1xEekRwFDEG+pbCbSsrkQ==
+
 "@bcoe/v8-coverage@^0.2.3":
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
@@ -3673,11 +3678,6 @@ typescript@^5.5.3:
   version "5.7.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.7.3.tgz#919b44a7dbb8583a9b856d162be24a54bf80073e"
   integrity sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==
-
-uint8array-extras@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/uint8array-extras/-/uint8array-extras-1.4.0.tgz#e42a678a6dd335ec2d21661333ed42f44ae7cc74"
-  integrity sha512-ZPtzy0hu4cZjv3z5NW9gfKnNLjoz4y6uv4HlelAjDK7sY/xOkKZv9xK/WQpcsBB3jEybChz9DPC2U/+cusjJVQ==
 
 undici-types@~6.20.0:
   version "6.20.0"
