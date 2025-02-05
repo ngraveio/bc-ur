@@ -222,8 +222,22 @@ export function compareUint8Arrays(a: Uint8Array, b: Uint8Array): -1 | 0 | 1 {
 	return Math.sign(a.length - b.length) as -1 | 0 | 1;
 }
 
-const cachedDecoders: { [encoding: string]: TextDecoder } = {
-	utf8: new globalThis.TextDecoder('utf8'),
+function miniTextDecoder() {
+	return {
+		decode(input: Uint8Array | ArrayBuffer): string {
+			const uint8Array = input instanceof Uint8Array ? input : new Uint8Array(input);
+			let result = '';
+			for (let i = 0; i < uint8Array.length; i++) {
+				result += String.fromCharCode(uint8Array[i]);
+			}
+			return result;
+		}
+	};
+}
+
+const cachedDecoders: { [encoding: string]: TextDecoder | { decode: (input: Uint8Array | ArrayBuffer) => string } } = {
+	// Use TextDecoder if available (web, Node.js), otherwise use miniTextDecoder for React Native
+	utf8: typeof globalThis.TextDecoder !== 'undefined' ? new globalThis.TextDecoder('utf8') : miniTextDecoder(),
 };
 
 /**
@@ -252,7 +266,6 @@ console.log(uint8ArrayToString(ja, 'shift-jis'));
 */
 export function uint8ArrayToString(array: Uint8Array | ArrayBuffer, encoding: string = 'utf8'): string {
 	assertUint8ArrayOrArrayBuffer(array);
-	cachedDecoders[encoding] ??= new globalThis.TextDecoder(encoding);
 	return cachedDecoders[encoding].decode(array);
 }
 
@@ -594,5 +607,5 @@ export function includes(array: Uint8Array, value: Uint8Array): boolean {
 // stringToUint8Array
 // toUint8Array
 // hexToUint8Array
-// uint8ArrayToHex 
+// uint8ArrayToHex
 
