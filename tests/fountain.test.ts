@@ -1,5 +1,5 @@
 import { makeMessage } from "../src/helpers/utils";
-import { uint8ArrayToHex } from "uint8array-extras";
+import { uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
 import { Ur } from "../src/classes/Ur";
 import { FountainEncoder } from "../src/classes/FountainEncoder"
 import { FountainDecoder } from "../src/classes/FountainDecoder"

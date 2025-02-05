@@ -1,5 +1,5 @@
 import bytewords from "../src/encodingMethods/bytewords";
-import { uint8ArrayToHex } from "uint8array-extras";
+import { uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
 
 describe("Bytewords", () => {
   const hexInput = "d9012ca20150c7098580125e2ab0981253468b2dbc5202d8641947da";

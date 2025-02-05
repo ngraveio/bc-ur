@@ -1,4 +1,4 @@
-import { stringToUint8Array } from "uint8array-extras";
+import { stringToUint8Array } from "../src/helpers/uintArrayHelper";
 import { HexEncoding } from "../src/encodingMethods/HexEncoding";
 
 describe("HexEncoding", () => {

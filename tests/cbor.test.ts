@@ -1,4 +1,4 @@
-import { stringToUint8Array, uint8ArrayToHex } from "uint8array-extras";
+import { stringToUint8Array, uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
 import { RegistryItemBase, registryItemFactory } from "../src/classes/RegistryItem";
 import { CborEncoding } from "../src/encodingMethods/CborEncoding";
 import { User, UserCollection } from "../src/test.utils";

@@ -1,4 +1,4 @@
-import { stringToUint8Array, uint8ArrayToHex } from "uint8array-extras";
+import { stringToUint8Array, uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
 import { chooseDegree, chooseFragments, shuffle, findNominalFragmentLength, partitionMessage } from "../src/helpers/fountainUtils";
 import { bufferXOR, getCRC, intToBytes, makeMessage } from "../src//helpers/utils";
 import Xoshiro from "../src/xoshiro";
