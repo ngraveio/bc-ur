@@ -3,17 +3,17 @@ import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { FountainDecoder, MultipartPayload, validateDecodedMultipart } from "./FountainDecoder.js";
 import { Ur } from "./Ur.js";
 
-export class UrFountainDecoder extends FountainDecoder{
+export class UrFountainDecoder extends FountainDecoder {
   public expectedType: string;
   public resultUr: Ur;
+  public decodedData: RegistryItem | any;
 
   constructor(parts: Ur[] | string[] = []) {
     super();
-    parts.forEach(part => {
+    parts.forEach((part) => {
       this.receivePartUr(part);
     });
   }
-
 
   public reset(): void {
     super.reset();
@@ -25,7 +25,7 @@ export class UrFountainDecoder extends FountainDecoder{
     this.expectedType = part.type;
     this.expectedPartCount = part.seqLength;
     super.setExpectedValues(decodedPart);
-  }  
+  }
 
   protected validateUr(part: Ur, decodedPart: MultipartPayload): boolean {
     // Check if UR is a fragment
@@ -59,10 +59,10 @@ export class UrFountainDecoder extends FountainDecoder{
     }
 
     // Convert string into UR
-    if (typeof part === 'string') {
+    if (typeof part === "string") {
       part = Ur.fromString(part);
     }
-    
+
     // If what we received is not a multupart UR, then we're done
     if (!part.isFragment) {
       // If this is not a fragment and we have not received any fragments yet then its the whole UR
@@ -83,11 +83,10 @@ export class UrFountainDecoder extends FountainDecoder{
     let parsed: MultipartPayload;
     try {
       const decoded = part.decode();
-      parsed = validateDecodedMultipart(decoded)
-    }
-    catch (e) {
+      parsed = validateDecodedMultipart(decoded);
+    } catch (e) {
       console.error(e);
-      return false
+      return false;
     }
 
     // If this is the first part we've seen then set expected values
@@ -105,27 +104,33 @@ export class UrFountainDecoder extends FountainDecoder{
   public finalize(): void {
     super.finalize();
 
-    if(this.error) {
+    if (this.error) {
       return;
     }
 
-    if(this.resultRaw !== undefined) {
+    if (this.resultRaw !== undefined) {
       // Result data is already in CBOR
       // Just convert it to bytewords instead of encoding it again
-      const payload = Ur.pipeline.encode(this.resultRaw, {from: EncodingMethodName.hex});
+      const payload = Ur.pipeline.encode(this.resultRaw, { from: EncodingMethodName.hex });
       this.resultUr = new Ur({
         type: this.expectedType,
         payload: payload,
       });
+
+      // Now Try to decode the result UR
+      try {
+        this.decodedData = this.resultUr.decode();
+      } catch (error) {
+        this.error = error;
+      }
     }
   }
 
   getDecodedData(): RegistryItem | any {
     if (!this.isSuccessful()) {
-      console.log('Fountain decoding was not successful');
+      console.log("Fountain decoding was not successful");
       return undefined;
     }
-    return this.resultUr.decode();
+    return this.decodedData;
   }
-
 }
