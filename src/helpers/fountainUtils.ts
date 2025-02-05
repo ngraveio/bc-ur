@@ -1,4 +1,4 @@
-import { concatUint8Arrays } from "../wrappers/uint8array.js";
+import { concatUint8Arrays } from "./uintArrayHelper.js";
 import { bufferXOR, intToBytes, assert } from "./utils.js";
 import Xoshiro from "../xoshiro.js";
 import {sample as randomSampler} from "./aliasSampling.js";

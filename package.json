@@ -25,8 +25,7 @@
   "dependencies": {
     "cbor2": "^1.8.0",
     "crc": "^4.3.2",
-    "sha.js": "^2.4.11",
-    "uint8array-extras": "^1.4.0"
+    "sha.js": "^2.4.11"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.2",

@@ -1,9 +1,7 @@
-import { hexToUint8Array, uint8ArrayToHex } from "../wrappers/uint8array.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
 import { Ur } from "../classes/Ur.js";
 import { RegistryItem } from "../classes/RegistryItem.js";
-
 
 export class UrEncoding implements IEncodingMethod<RegistryItem, Ur> {
   private _name: EncodingMethodName = EncodingMethodName.ur;
