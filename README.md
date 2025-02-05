@@ -941,6 +941,17 @@ More details about CBOR2 and dual packaging here: https://github.com/hildjj/cbor
 
 ---
 
+### Libraries used
+Because of compatibility issues with the original packages
+ - `uint8array-extras` https://github.com/sindresorhus/uint8array-extras
+ - `@keystonehq/alias-sampling` https://www.npmjs.com/package/@keystonehq/alias-sampling
+
+ They are included in the source code of this project.
+
+### React-Native
+React native uses *commonjs* versions by default and its Hermes engine does not support `TextDecoder`.
+That is why we have `./src/compatibility` that includes a `TextDecoder` polyfill.
+
 ## Contributing
 
 We welcome contributions to this project! Please follow these steps to contribute:
@@ -968,10 +979,8 @@ The build is using Rollup to convert ESM only packages to CommonJS.
 You will find those in
 - `src/wrappers`:
   - `cbor2`
-  - `uint8arrays`
 
 Rollup inject the ESM converted to CommonJs version of the CBOR2 library into the CommonJS version of the BC-UR library.
-Same for the uint8arrays library.
 
 In order to prevent the dual package hazard, the ESM version of the BC-UR library is also using the bundled version of the CBOR2 library.
 
