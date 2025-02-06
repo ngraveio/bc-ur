@@ -6,3 +6,7 @@
  *  So lets inject TextDecoder polyfill for React Native if it is not supported
  */
 import "@bacons/text-decoder/install";
+
+// Export everything from the main index file
+//@ts-ignore
+export * from "./index.js";

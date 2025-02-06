@@ -949,8 +949,8 @@ Because of compatibility issues with the original packages
  They are included in the source code of this project.
 
 ### React-Native
-React native uses *commonjs* versions by default and its Hermes engine does not support `TextDecoder`.
-That is why we have `./src/compatibility` that includes a `TextDecoder` polyfill.
+React native uses *commonjs* versions by default and its Hermes engine does not support `TextDecoder` as of (React Native 77) yet.
+That is why we have `./src/index-react-native.ts` that includes a `TextDecoder` polyfill.
 
 ## Contributing
 

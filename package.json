@@ -13,13 +13,9 @@
     "dist",
     "index.html"
   ],
-  "sideEffects": [
-    "./dist/esm/compatibility.js",
-    "./dist/commonjs/compatibility.js"
-  ],
   "scripts": {
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
-    "build": "yarn clean && yarn compile",
+    "build": "yarn clean && yarn compile && node ./scripts/post.build.js",
     "compile": "tshy && rollup -c && \\cp -f ./src/wrappers/cbor2Wrapper.ts ./dist/commonjs/wrappers/cbor2Wrapper.d.ts",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "prepublishOnly": "yarn build",
@@ -78,6 +74,10 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
+      "react-native": {
+        "types": "./dist/commonjs/index-react-native.d.ts",
+        "default": "./dist/commonjs/index-react-native.js"
+      },
       "import": {
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
@@ -89,5 +89,6 @@
     }
   },
   "main": "./dist/commonjs/index.js",
+  "react-native": "./dist/commonjs/index-react-native.js",
   "module": "./dist/esm/index.js"
 }
