@@ -1,4 +1,4 @@
-import { RegistryItem, RegistryItemBase } from "../classes/RegistryItem.js";
+import { RegistryItem, RegistryItemBase } from "./RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { EncodingPipeline } from "../encodingMethods/pipeline.js";
 import {
@@ -9,7 +9,7 @@ import {
 import { dataPipeline } from "../encodingMethods/index.js";
 import { ReplaceKeyType } from "../helpers/type.helper.js";
 
-export interface IUr {
+export interface IUR {
   type: string; // bc-ur type defined in the registry
   payload: string; // encoded data
   seqNum?: number; // sequence number if multipart starting with index 1 - if single part, this is 0
@@ -33,7 +33,7 @@ export interface IUr {
  * 
  * Should i do it on the encoder or ur class itself?
  */
-export class Ur {
+export class UR {
   public type: string;
   public payload: string;
   public seqNum?: number;
@@ -43,10 +43,10 @@ export class Ur {
   static pipeline: EncodingPipeline<any, string> = dataPipeline;
 
   // If type is unknown it should be cbor, because default encoding will take any and convert to cbor without tagging
-  constructor(input: IUr | RegistryItem) {
+  constructor(input: IUR | RegistryItem) {
     // Create from registry item
     if (input instanceof RegistryItemBase) {
-      const ur = Ur.fromRegistryItem(input as RegistryItem);
+      const ur = UR.fromRegistryItem(input as RegistryItem);
       this.type = ur.type;
       this.payload = ur.payload;
       this.seqNum = ur.seqNum;
@@ -69,12 +69,12 @@ export class Ur {
 
   // Decode
   decode(until?: EncodingMethodName) {
-    return Ur.pipeline.decode(this.payload, {until, enforceType: this.isFragment ? undefined : this.type});
+    return UR.pipeline.decode(this.payload, {until, enforceType: this.isFragment ? undefined : this.type});
   }
 
   // Get string representation
   toString() {
-    return Ur.getUrString(this.type, this.payload, this.seqNum, this.seqLength);
+    return UR.getUrString(this.type, this.payload, this.seqNum, this.seqLength);
   }
 
   // Get payload in bytewords
@@ -84,12 +84,14 @@ export class Ur {
 
   // Get payload in hex
   getPayloadHex() {
-    return Ur.pipeline.decode<string>(this.payload, { until: EncodingMethodName.hex });
+    return UR.pipeline.decode<string>(this.payload, { until: EncodingMethodName.hex });
+    // TODO: add tag information
   }
 
   // Get Payload in cbor
   getPayloadCbor() {
-    return Ur.pipeline.decode<Uint8Array>(this.payload, {until: EncodingMethodName.cbor} );
+    return UR.pipeline.decode<Uint8Array>(this.payload, {until: EncodingMethodName.cbor} );
+    // TODO: add tag information
   }
 
   toRegistryItem() {
@@ -100,7 +102,7 @@ export class Ur {
     }
     // Enforce type
     // registrtqueryByURType
-    return Ur.decode(this);
+    return UR.decode(this);
   }
 
   /// Static methods
@@ -108,10 +110,10 @@ export class Ur {
   static fromRegistryItem(item: RegistryItem) {
     // First convert Registry item to bytewords
     // Only on the top level, we should not include the tag
-    const bytewords = Ur.pipeline.encode(item, {ignoreTopLevelTag: true});
+    const bytewords = UR.pipeline.encode(item, {ignoreTopLevelTag: true});
 
     // Now create new UR
-    return new Ur({
+    return new UR({
       type: item.type.URType,
       payload: bytewords,
     });
@@ -122,63 +124,63 @@ export class Ur {
    * @param input 
    * @returns 
    */
-  static fromData(input: ReplaceKeyType<IUr, 'payload', any>) {
-    const bytewords = Ur.pipeline.encode(input.payload);
+  static fromData(input: ReplaceKeyType<IUR, 'payload', any>) {
+    const bytewords = UR.pipeline.encode(input.payload);
 
     // Now create new UR
-    return new Ur({
+    return new UR({
       ...input,
       payload: bytewords,
     });    
   }
 
-  static fromCbor(input: ReplaceKeyType<IUr, 'payload', Uint8Array>) {
-    const bytewords = Ur.pipeline.encode(input.payload, { from: EncodingMethodName.cbor });
+  static fromCbor(input: ReplaceKeyType<IUR, 'payload', Uint8Array>) {
+    const bytewords = UR.pipeline.encode(input.payload, { from: EncodingMethodName.cbor });
 
-    return new Ur({
+    return new UR({
       ...input,
       payload: bytewords,
     });      
   }
 
-  static fromHex(input: ReplaceKeyType<IUr, 'payload', string>) {
-    const bytewords = Ur.pipeline.encode(input.payload, { from: EncodingMethodName.hex });
+  static fromHex(input: ReplaceKeyType<IUR, 'payload', string>) {
+    const bytewords = UR.pipeline.encode(input.payload, { from: EncodingMethodName.hex });
 
-    return new Ur({
+    return new UR({
       ...input,
       payload: bytewords,
     });    
   }
 
-  static fromBytewords(input: IUr) {
-    return new Ur({
+  static fromBytewords(input: IUR) {
+    return new UR({
       ...input,
     });    
   }
 
-  static from(input: ReplaceKeyType<IUr, 'payload', any>, type: EncodingMethodName) {
+  static from(input: ReplaceKeyType<IUR, 'payload', any>, type: EncodingMethodName) {
     switch (type) {
       case EncodingMethodName.bytewords:
-        return Ur.fromBytewords(input);
+        return UR.fromBytewords(input);
       case EncodingMethodName.cbor:
-        return Ur.fromCbor(input);
+        return UR.fromCbor(input);
       case EncodingMethodName.hex:
-        return Ur.fromHex(input);
+        return UR.fromHex(input);
       case EncodingMethodName.ur:
-        return Ur.fromData(input);
+        return UR.fromData(input);
       default:
         throw new Error("Invalid encoding method");
     }
   }
 
   static fromString(ur: string) {
-    return new Ur(Ur.parseUr(ur));
+    return new UR(UR.parseUr(ur));
   }
 
   static encode = this.fromRegistryItem;
-  static decode(ur: Ur): RegistryItem {
+  static decode(ur: UR): RegistryItem {
     // Force cbor type
-    return Ur.pipeline.decode(ur.payload);
+    return UR.pipeline.decode(ur.payload);
   }
 
   /**
@@ -224,11 +226,11 @@ export class Ur {
    * Parses a UR and performs basic validation
    * @param message e.g. "UR:BYTES/6-23/LPAMCHCFATTTCYCLEHGSDPHDHGEHFGHKKKDL..."
    */
-  static parseUr(message: string): IUr {
+  static parseUr(message: string): IUR {
     const lowercase = message.toLowerCase(); // e.g. "ur:bytes/6-23/lpamchcfatttcyclehgsdphdhgehfghkkkdl..."
 
     // check if it is valid ur string
-    if (!Ur.validate(lowercase)) {
+    if (!UR.validate(lowercase)) {
       throw new Error("Invalid UR string");
     }
 

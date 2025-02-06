@@ -1,7 +1,7 @@
-import { concatUint8Arrays } from "../wrappers/uint8array.js";
-import { bufferXOR, intToBytes } from "./utils.js";
+import { concatUint8Arrays } from "./uintArrayHelper.js";
+import { bufferXOR, intToBytes, assert } from "./utils.js";
 import Xoshiro from "../xoshiro.js";
-import {sample as randomSampler} from "@keystonehq/alias-sampling";
+import {sample as randomSampler} from "./aliasSampling.js";
 
 export const chooseDegree = (seqLenth: number, rng: Xoshiro): number => {
   const degreeProbabilities = [...new Array(seqLenth)].map(
@@ -154,10 +154,4 @@ export function partitionMessage(message: Uint8Array, fragmentLength: number): U
   }
 
   return fragments;
-}
-
-function assert(condition: boolean, message?: string): void {
-  if (!condition) {
-    throw new Error(message || "Assertion failed");
-  }
 }

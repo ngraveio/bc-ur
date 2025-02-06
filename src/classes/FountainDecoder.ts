@@ -1,5 +1,5 @@
 import { difference, isSubset } from "../helpers/utils.js";
-import { concatUint8Arrays, isUint8Array } from "../wrappers/uint8array.js";
+import { concatUint8Arrays, isUint8Array } from "../helpers/uintArrayHelper.js";
 
 import { InvalidChecksumError, InvalidSchemeError } from "../errors.js";
 import { chooseFragments } from "../helpers/fountainUtils.js";

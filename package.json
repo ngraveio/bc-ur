@@ -11,25 +11,22 @@
   "files": [
     "src",
     "dist",
-    "patches",
     "index.html"
   ],
   "scripts": {
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
-    "build": "yarn clean && yarn compile",
+    "build": "yarn clean && yarn compile && node ./scripts/post.build.js",
     "compile": "tshy && rollup -c && \\cp -f ./src/wrappers/cbor2Wrapper.ts ./dist/commonjs/wrappers/cbor2Wrapper.d.ts",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "prepublishOnly": "yarn build",
-    "prebuild": "patch-package",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" --max-warnings=0",
     "start": "live-server --watch=src,dist --port=8080"
   },
   "dependencies": {
-    "@keystonehq/alias-sampling": "^0.1.1",
     "cbor2": "^1.8.0",
     "crc": "^4.3.2",
     "sha.js": "^2.4.11",
-    "uint8array-extras": "^1.4.0"
+    "@bacons/text-decoder": "0.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.2",
@@ -40,7 +37,6 @@
     "@types/sha.js": "^2.4.4",
     "jest": "^29.7.0",
     "live-server": "^1.2.1",
-    "patch-package": "^8.0.0",
     "rimraf": "^6.0.1",
     "rollup": "^4.28.1",
     "rollup-plugin-node-polyfills": "^0.2.1",
@@ -49,9 +45,6 @@
     "tslib": "^2.8.1",
     "typescript": "5.6.2"
   },
-  "bundleDependencies": [
-    "@keystonehq/alias-sampling"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ngraveio/bc-ur.git"
@@ -81,6 +74,10 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
+      "react-native": {
+        "types": "./dist/commonjs/index-react-native.d.ts",
+        "default": "./dist/commonjs/index-react-native.js"
+      },
       "import": {
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
@@ -92,5 +89,6 @@
     }
   },
   "main": "./dist/commonjs/index.js",
+  "react-native": "./dist/commonjs/index-react-native.js",
   "module": "./dist/esm/index.js"
 }

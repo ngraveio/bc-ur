@@ -1,4 +1,4 @@
-import { hexToUint8Array, uint8ArrayToHex } from "../wrappers/uint8array.js";
+import { hexToUint8Array, uint8ArrayToHex } from "../helpers/uintArrayHelper.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
 

@@ -1,7 +1,7 @@
 //@ts-ignore
 import { crc32 } from "crc";
 import Xoshiro from "../xoshiro.js";
-import { stringToUint8Array, toUint8Array } from "../wrappers/uint8array.js";
+import { stringToUint8Array, toUint8Array } from "./uintArrayHelper.js";
 
 export const partition = (s: string, n: number): string[] =>
   s.match(new RegExp(".{1," + n + "}", "g")) || [s];
@@ -128,3 +128,12 @@ export const symmetricDifference = <T>(set1: Set<T>, set2: Set<T>): Set<T> => {
 export const isSubset = <T>(sub: Set<T>, container: Set<T>): boolean => {
   return [...sub].every((x) => container.has(x));
 };
+
+export function assert(condition: boolean, message?: string): void {
+  if (!condition) {
+    throw new Error(message || "Assertion failed");
+  }
+}
+
+// Check if we are in a Node.js environment
+export const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;

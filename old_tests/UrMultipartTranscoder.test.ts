@@ -7,7 +7,7 @@ import {
 import { registryItemFactory } from "../src/classes/RegistryItem.js";
 import { UrRegistry } from "../src/registry.js";
 import { makeMessage } from "../src/helpers/utils.js";
-import { hexToUint8Array } from "uint8array-extras";
+import { hexToUint8Array } from "../src/helpers/uintArrayHelper";
 
 export class MockRegistryItem extends registryItemFactory({
   tag: 998,

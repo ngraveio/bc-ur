@@ -1,6 +1,5 @@
-import { AssertionError } from "assert";
 import bytewords from "../src/encodingMethods/bytewords";
-import { uint8ArrayToHex } from "uint8array-extras";
+import { uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
 
 describe("Bytewords", () => {
   const hexInput = "d9012ca20150c7098580125e2ab0981253468b2dbc5202d8641947da";
@@ -105,26 +104,26 @@ describe("Bytewords", () => {
           "able acid also lava zero jade need echo wolf",
           bytewords.STYLES.STANDARD
         )
-      ).toThrow(AssertionError);
+      ).toThrow(Error);
 
       expect(() =>
         bytewords.decode(
           "able-acid-also-lava-zero-jade-need-echo-wolf",
           bytewords.STYLES.URI
         )
-      ).toThrow(AssertionError);
+      ).toThrow(Error);
 
       expect(() =>
         bytewords.decode("aeadaolazojendeowf", bytewords.STYLES.MINIMAL)
-      ).toThrow(AssertionError);
+      ).toThrow(Error);
     });
 
     test("Too short", () => {
       expect.assertions(2);
 
-      expect(() => bytewords.decode("wolf")).toThrow(AssertionError);
+      expect(() => bytewords.decode("wolf")).toThrow(Error);
 
-      expect(() => bytewords.decode("")).toThrow(AssertionError);
+      expect(() => bytewords.decode("")).toThrow(Error);
     });
   });
 });

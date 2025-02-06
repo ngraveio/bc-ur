@@ -1,4 +1,4 @@
-import { Ur } from "../classes/Ur.js";
+import { UR } from "./UR.js";
 import { encodeKeys, decodeKeys, IKeyMap } from "./key.helper.js";
 
 /**
@@ -118,7 +118,7 @@ export abstract class RegistryItemBase {
   }
 
   toUr() {
-    return new Ur(this);
+    return new UR(this);
   }
 
   public encodeKeys = encodeKeys;

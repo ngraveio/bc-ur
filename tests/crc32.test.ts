@@ -1,4 +1,4 @@
-import { hexToUint8Array, stringToUint8Array } from "uint8array-extras";
+import { hexToUint8Array, stringToUint8Array } from "../src/helpers/uintArrayHelper";
 import { getCRCHex } from "../src/helpers/utils";
 
 describe("CRC32", () => {

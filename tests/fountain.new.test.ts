@@ -6,7 +6,7 @@ import { UrRegistry } from "../src/registry";
 
 import { UrFountainEncoder } from "../src/classes/UrFountainEncoder";
 import { UrFountainDecoder } from "../src/classes/UrFountainDecoder";
-import { Ur } from "../src/classes/Ur.js";
+import { UR } from "../src/classes/UR.js";
 
 export class MockRegistryItem extends registryItemFactory({
   tag: 998,
@@ -137,7 +137,7 @@ describe("Fountain Transcoder", () => {
 
       const encoder = new UrFountainEncoder(registryItem, 30);
       let generatedParts = 0;
-      let part: Ur;
+      let part: UR;
 
       while (!encoder.isComplete()) {
         part = encoder.nextPartUr();
@@ -153,7 +153,7 @@ describe("Fountain Transcoder", () => {
 
       const fountainEncoder = new UrFountainEncoder(registryItem, 10, 10);
       const count = 10;
-      const parts: Ur[] = [];
+      const parts: UR[] = [];
       for (let index = 0; index < count; index++) {
         const part = fountainEncoder.nextPartUr();
         parts.push(part);
@@ -167,7 +167,7 @@ describe("Fountain Transcoder", () => {
     test("encoded ur should be equal to input ur", () => {
       const registryItem = new MockRegistryItem({ name: "Pieter" });
       const fountainEncoder = new UrFountainEncoder(registryItem, 10, 10);
-      const parts: Ur[] = [];
+      const parts: UR[] = [];
       
       const minimumCount = fountainEncoder.getPureFragmentCount();
       
@@ -188,7 +188,7 @@ describe("Fountain Transcoder", () => {
       const registryItem = new MockRegistryItem({ name: "Pieter" });
       const fountainEncoder = new UrFountainEncoder(registryItem, 5, 5);
       const count = 1;
-      const parts: Ur[] = [];
+      const parts: UR[] = [];
       
       for (let index = 0; index < count; index++) {
         const part = fountainEncoder.nextPartUr();

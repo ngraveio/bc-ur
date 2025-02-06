@@ -1,4 +1,4 @@
-import { Ur } from "./classes/Ur.js"
+import { UR } from "./classes/UR.js"
 import { UrRegistry } from "./registry.js"
 import { registryItemFactory, RegistryItemBase } from "./classes/RegistryItem.js"
 import { UrFountainEncoder } from "./classes/UrFountainEncoder.js"
@@ -7,6 +7,7 @@ import { FountainEncoder } from "./classes/FountainEncoder.js"
 import { FountainDecoder } from "./classes/FountainDecoder.js"
 import { defaultEncoders, dataPipeline } from "./encodingMethods/index.js"
 
+// Encodings
 import { CborEncoding } from "./encodingMethods/CborEncoding.js"
 import { BytewordEncoding } from "./encodingMethods/BytewordEncoding.js"
 import { HexEncoding } from "./encodingMethods/HexEncoding.js"
@@ -15,7 +16,7 @@ export {
   UrRegistry,
   registryItemFactory,
   RegistryItemBase,
-  Ur,
+  UR,
   UrFountainDecoder,
   UrFountainEncoder,
   FountainDecoder,

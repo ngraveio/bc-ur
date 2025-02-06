@@ -1,8 +1,8 @@
-import { stringToUint8Array, uint8ArrayToHex } from "uint8array-extras";
+import { stringToUint8Array, uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
 import { chooseDegree, chooseFragments, shuffle, findNominalFragmentLength, partitionMessage } from "../src/helpers/fountainUtils";
 import { bufferXOR, getCRC, intToBytes, makeMessage } from "../src//helpers/utils";
 import Xoshiro from "../src/xoshiro";
-import {sample as randomSampler} from "@keystonehq/alias-sampling";
+import {sample as randomSampler} from "../src/helpers/aliasSampling";
 
 describe("Xoshiro rng", () => {
   test("1", () => {
