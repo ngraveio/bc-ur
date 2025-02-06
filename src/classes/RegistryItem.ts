@@ -80,15 +80,17 @@ export abstract class RegistryItemBase {
 
   /**
    * Preprocess the data before encoding into CBOR Tagged instance
+   * 
+   * @param data, data before keymap conversion, if left empty, it will use the this.data property
    */
-  preCBOR() {
+  preCBOR(data = this.data) {
     // If key-map exists, convert keys to integers
     if (this.keyMap) {
       const allowKeysNotInMap = (this.constructor as typeof RegistryItemBase)
         .allowKeysNotInMap;
-      return encodeKeys(this.data, this.keyMap, allowKeysNotInMap);
+      return encodeKeys(data, this.keyMap, allowKeysNotInMap);
     }
-    return this.data;
+    return data;
   }
 
   /**
@@ -106,7 +108,7 @@ export abstract class RegistryItemBase {
    * @returns
    */
   toCBOR(_writer, _options) {
-    const processed = this.preCBOR();
+    const processed = this.preCBOR(this.data);
     let tag = this.type.tag;
     // TODO: find a better way to ignore top level tag on encoder
     if (_options?.ignoreTopLevelTag) {
