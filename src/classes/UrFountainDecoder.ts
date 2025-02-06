@@ -1,14 +1,14 @@
 import { RegistryItem } from "../classes/RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { FountainDecoder, MultipartPayload, validateDecodedMultipart } from "./FountainDecoder.js";
-import { Ur } from "./Ur.js";
+import { UR } from "./UR.js";
 
 export class UrFountainDecoder extends FountainDecoder {
   public expectedType: string;
-  public resultUr: Ur;
+  public resultUr: UR;
   public decodedData: RegistryItem | any;
 
-  constructor(parts: Ur[] | string[] = []) {
+  constructor(parts: UR[] | string[] = []) {
     super();
     parts.forEach((part) => {
       this.receivePartUr(part);
@@ -21,13 +21,13 @@ export class UrFountainDecoder extends FountainDecoder {
     this.expectedType = undefined;
   }
 
-  setExpectedValuesUr(part: Ur, decodedPart: MultipartPayload): void {
+  setExpectedValuesUr(part: UR, decodedPart: MultipartPayload): void {
     this.expectedType = part.type;
     this.expectedPartCount = part.seqLength;
     super.setExpectedValues(decodedPart);
   }
 
-  protected validateUr(part: Ur, decodedPart: MultipartPayload): boolean {
+  protected validateUr(part: UR, decodedPart: MultipartPayload): boolean {
     // Check if UR is a fragment
     if (!part.isFragment) {
       return false;
@@ -52,7 +52,7 @@ export class UrFountainDecoder extends FountainDecoder {
     return super.validatePart(decodedPart);
   }
 
-  receivePartUr(part: Ur | string): boolean {
+  receivePartUr(part: UR | string): boolean {
     // If we already have a result, we're done
     if (this.done) {
       return false;
@@ -60,7 +60,7 @@ export class UrFountainDecoder extends FountainDecoder {
 
     // Convert string into UR
     if (typeof part === "string") {
-      part = Ur.fromString(part);
+      part = UR.fromString(part);
     }
 
     // If what we received is not a multupart UR, then we're done
@@ -111,8 +111,8 @@ export class UrFountainDecoder extends FountainDecoder {
     if (this.resultRaw !== undefined) {
       // Result data is already in CBOR
       // Just convert it to bytewords instead of encoding it again
-      const payload = Ur.pipeline.encode(this.resultRaw, { from: EncodingMethodName.hex });
-      this.resultUr = new Ur({
+      const payload = UR.pipeline.encode(this.resultRaw, { from: EncodingMethodName.hex });
+      this.resultUr = new UR({
         type: this.expectedType,
         payload: payload,
       });

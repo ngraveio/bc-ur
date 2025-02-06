@@ -1,16 +1,16 @@
 import { makeMessage } from "../src/helpers/utils";
 import { uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
-import { Ur } from "../src/classes/Ur";
+import { UR } from "../src/classes/UR";
 import { FountainEncoder } from "../src/classes/FountainEncoder"
 import { FountainDecoder } from "../src/classes/FountainDecoder"
 import { UrFountainEncoder } from "../src/classes/UrFountainEncoder";
 import { UrFountainDecoder } from "../src/classes/UrFountainDecoder";
 
 
-function make_message_ur(len: number, seed?: string): Ur {
+function make_message_ur(len: number, seed?: string): UR {
   const message = makeMessage(len, seed);
   // Encode this bytes as cbor then as bytewords
-  const ur = Ur.fromData({type: "bytes", payload: message});
+  const ur = UR.fromData({type: "bytes", payload: message});
   return ur;
 }
 
