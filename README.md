@@ -330,7 +330,7 @@ class PostProcessedItem extends registryItemFactory({
     return processedData;
   }
 }
-const encodedData = new Ur(PostProcessedItem);
+const encodedData = new UR(PostProcessedItem);
 const decodedData = encodedData.decode();
 console.log(decodedData.data.name); // Name will be transformed to uppercase
 ```
@@ -728,7 +728,7 @@ Multipart URs use **Fountain Codes** to ensure reliable transmission of large da
 #### Encoding Multipart URs
 
 ```ts
-import { UR, URFountainEncoder } from '@ngraveio/bc-ur';
+import { UR, UrFountainEncoder } from '@ngraveio/bc-ur';
 
 const testPayload = {
   "id": "123",
@@ -738,7 +738,7 @@ const testPayload = {
 const userUr = UR.fromData({ type: "user", payload: testPayload });
 // Now we are going to create a fountain encoder which can generate an indefinite number of parts.
 // Because the fountain encoder has a state, we need to create a new decoder for each new UR object
-const encoder = new URFountainEncoder(userUr, 5); // maxFragmentLength: 5
+const encoder = new UrFountainEncoder(userUr, 5); // maxFragmentLength: 5
 
 // Get all fragments at once
 const fragments = encoder.getAllPartsUr(2); // Ratio of fountain parts compared to original parts
@@ -770,10 +770,10 @@ while (!stop) {
 If you have all the parts, you can decode them into the original UR object at once:
 
 ```ts
-import { URFountainDecoder } from '@ngraveio/bc-ur';
+import { UrFountainDecoder } from '@ngraveio/bc-ur';
 
 // If we have all the fragments, we can decode them into the original UR object
-const decoder = new URFountainDecoder(fragments);
+const decoder = new UrFountainDecoder(fragments);
 const resultUr = decoder.resultUr;
 // 'ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl'
 const decoded = resultUr.decode();
@@ -784,10 +784,10 @@ const decoded = resultUr.decode();
 For continuous decoding:
 
 ```ts
-import { URFountainDecoder } from '@ngraveio/bc-ur';
+import { UrFountainDecoder } from '@ngraveio/bc-ur';
 
 // Create the decoder object
-const decoder = new URFountainDecoder();
+const decoder = new UrFountainDecoder();
 
 do {
   // Scan the part from a QRCode
@@ -809,6 +809,7 @@ do {
 if (decoder.isSuccessful()) {
   // Get the UR representation of the original single part UR
   const ur = decoder.resultUR;
+  // decoder.resultUR.decode();
   // 'ur:user/oeidiniecskgiejthsjnihisgejlisjtcxfyjlihjldnbwrl'
 
   // Decode ur into the original data
@@ -833,11 +834,11 @@ Fountain codes are a class of erasure codes used in network communications. They
 
 ### API Details
 
-The `URFountainEncoder` and `URFountainDecoder` classes provide methods for encoding and decoding Multipart URs. Below are the details and usage examples for these classes.
+The `UrFountainEncoder` and `UrFountainDecoder` classes provide methods for encoding and decoding Multipart URs. Below are the details and usage examples for these classes.
 
-#### URFountainEncoder
+#### UrFountainEncoder
 
-The `URFountainEncoder` class is used to encode data into Multipart URs. It takes the following input values:
+The `UrFountainEncoder` class is used to encode data into Multipart URs. It takes the following input values:
 
 - `ur`: The UR instance to be encoded.
 - `maxFragmentLength`: The maximum size of the CBOR data encoded in the UR. This determines the size of one UR, and the size of the QR code will increase depending on it. However, it is not the direct size; instead, more data is added on top of that size. Default is 100.
@@ -847,7 +848,7 @@ The `URFountainEncoder` class is used to encode data into Multipart URs. It take
 **Example Usage:**
 
 ```ts
-import { UR, URFountainEncoder } from '@ngraveio/bc-ur';
+import { UR, UrFountainEncoder } from '@ngraveio/bc-ur';
 
 const testPayload = {
   "id": "123",
@@ -855,7 +856,7 @@ const testPayload = {
 };
 
 const userUr = UR.fromData({ type: "user", payload: testPayload });
-const encoder = new URFountainEncoder(userUr, 5); // maxFragmentLength: 5, minFragmentLength: 10, firstSeqNum: 0
+const encoder = new UrFountainEncoder(userUr, 5); // maxFragmentLength: 5, minFragmentLength: 10, firstSeqNum: 0
 
 while (!stop) {
   let part = encoder.nextPart().toString();
@@ -863,9 +864,9 @@ while (!stop) {
 }
 ```
 
-#### URFountainDecoder
+#### UrFountainDecoder
 
-The `URFountainDecoder` class is used to decode Multipart URs. It tracks the state of the decoder, including the parts that have been seen and decoded. When the first part is received, it sets the expected type and values. If subsequent parts do not match these expected values, they are skipped. To start decoding a new UR, you need to call the `reset` method.
+The `UrFountainDecoder` class is used to decode Multipart URs. It tracks the state of the decoder, including the parts that have been seen and decoded. When the first part is received, it sets the expected type and values. If subsequent parts do not match these expected values, they are skipped. To start decoding a new UR, you need to call the `reset` method.
 
 **State Tracking:**
 
@@ -876,9 +877,9 @@ The `URFountainDecoder` class is used to decode Multipart URs. It tracks the sta
 **Example Usage:**
 
 ```ts
-import { URFountainDecoder } from '@ngraveio/bc-ur';
+import { UrFountainDecoder } from '@ngraveio/bc-ur';
 
-const decoder = new URFountainDecoder();
+const decoder = new UrFountainDecoder();
 
 do {
   const part = scanQRCode();
@@ -901,9 +902,9 @@ if (decoder.isSuccessful()) {
 ```
 
 **References:**
-- [URFountainEncoder.ts](path/to/URFountainEncoder.ts)
-- [URFountainDecoder.ts](path/to/URFountainDecoder.ts)
-- [fountain.new.test.ts](path/to/fountain.new.test.ts)
+- [UrFountainEncoder.ts](./src/classes/UrFountainEncoder.ts)
+- [UrFountainDecoder.ts](./src/classes/UrFountainDecoder.ts)
+- [fountain.new.test.ts](./tests/fountain.new.test.ts)
 
 ---
 
