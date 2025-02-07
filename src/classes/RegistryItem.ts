@@ -123,6 +123,10 @@ export abstract class RegistryItemBase {
     return new UR(this);
   }
 
+  toHex() {
+    return this.toUr().getPayloadHex();
+  }
+
   public encodeKeys = encodeKeys;
   public decodeKeys = decodeKeys;
 }
@@ -167,6 +171,20 @@ export function registryItemFactory<T extends RegistryItemBase>(input: IRegistry
       return val;
     }
 
+    static fromUr(ur: UR | string): T {
+      const urObj = typeof ur === "string" ? UR.fromString(ur) : ur;
+      const decoded = urObj.decode() as unknown;
+
+      return decoded as T;
+    }
+
+    static fromHex(hex: string): T {
+      const ur = UR.fromHex({ type: URType, payload: hex });
+      const decoded = ur.decode() as unknown;
+
+      return decoded as T;
+    }
+
     /**
      * Static method to create an instance from CBOR DataItem data.
      * It processes the raw CBOR data if needed and returns a new instance of the class.
@@ -190,6 +208,8 @@ export type RegistryItemClass<T extends RegistryItemBase = RegistryItemBase> = {
   keyMap?: IKeyMap;
   allowKeysNotInMap: boolean;
   postCBOR(val: any, allowKeysNotInMapOverwrite?: boolean): any;
-  fromCBORData(val: any, allowKeysNotInMap?: boolean, tagged?: any): T;  
+  fromCBORData(val: any, allowKeysNotInMap?: boolean, tagged?: any): T; 
+  fromUr(ur: UR | string): T;
+  fromHex(hex: string): T;
 };
 export type RegistryItem = InstanceType<RegistryItemClass>;

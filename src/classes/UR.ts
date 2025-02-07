@@ -135,7 +135,9 @@ export class UR {
   }
 
   static fromCbor(input: ReplaceKeyType<IUR, 'payload', Uint8Array>) {
-    const bytewords = UR.pipeline.encode(input.payload, { from: EncodingMethodName.cbor });
+    // This means we already have cbor Uint8Array
+    // So we will start from the next method
+    const bytewords = UR.pipeline.encode(input.payload, { from: EncodingMethodName.hex });
 
     return new UR({
       ...input,
@@ -144,7 +146,9 @@ export class UR {
   }
 
   static fromHex(input: ReplaceKeyType<IUR, 'payload', string>) {
-    const bytewords = UR.pipeline.encode(input.payload, { from: EncodingMethodName.hex });
+    // This means we already have hex string
+    // So we will start from the next method
+    const bytewords = UR.pipeline.encode(input.payload, { from: EncodingMethodName.bytewords });
 
     return new UR({
       ...input,
