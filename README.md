@@ -301,10 +301,12 @@ class PreProcessedItem extends registryItemFactory({
   CDDL: ``,
 }) {
   preCBOR() {
-    // Call the base method to handle keymap processing
-    const processedData = super.preCBOR();
     // Add a timestamp before encoding
-    return { ...processedData, timestamp: Date.now() };
+    const processedData = { ...this.data, timestamp: Date.now() };
+
+    // Call the base method to handle keymap processing
+    // If no argument is provided to preCBOR it will use `this.data`
+    return super.preCBOR(processedData);
   }
 }
 const item = new PreProcessedItem({ id: 123 });

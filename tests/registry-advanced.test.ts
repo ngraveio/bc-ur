@@ -2,6 +2,7 @@ import { uint8ArrayToHex } from "../src/helpers/uintArrayHelper";
 import { registryItemFactory } from "../src/classes/RegistryItem";
 import { CborEncoding } from "../src/encodingMethods/CborEncoding";
 import { User, UserCollection } from "../src/test.utils";
+import exp from "constants";
 
 const cbor = new CborEncoding();
 
@@ -38,6 +39,36 @@ describe("Advanced Registry Items", () => {
         "hex"
       );
       const decoded = cbor.decode(encoded);
+      expect(decoded).toBeInstanceOf(User);
+      expect(decoded.data).toEqual(userInput);
+    });
+
+    it("should convert registry item to UR", () => {
+      const item = user;
+      const expected = "ur:user/oeidinieadiejthsjnihjssspfjpiyhsjtcxfwinjzhsjzjlssnejzkpldfxfrnd"
+
+      expect(item.toUr().toString()).toEqual(expected);
+    });
+
+    it("should decode from UR to correct instance", () => {
+      const urString = "ur:user/oeidinieadiejthsjnihjssspfjpiyhsjtcxfwinjzhsjzjlssnejzkpldfxfrnd";
+      const decoded = User.fromUr(urString);
+
+      expect(decoded).toBeInstanceOf(User);
+      expect(decoded.data).toEqual(userInput);
+    });
+
+    it("should convert registry item to Cbor hex", () => {
+      const item = user;
+      const expected = "a262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75";
+
+      expect(item.toHex()).toEqual(expected);
+    });
+    
+    it.only("should decode from hex to correct instance", () => {
+      const hexData = "a262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75";
+      const decoded = User.fromHex(hexData);
+
       expect(decoded).toBeInstanceOf(User);
       expect(decoded.data).toEqual(userInput);
     });
@@ -140,6 +171,45 @@ describe("Advanced Registry Items", () => {
       const encoded = cbor.encode(userCollection);
       const decoded = cbor.decode(encoded);
 
+      expect(decoded).toBeInstanceOf(UserCollection);
+      expect(decoded.data.users[0]).toBeInstanceOf(User);
+      expect(decoded.data.users[1]).toBeInstanceOf(User);
+
+      expect(decoded.data.users[0].data).toEqual(user1.data);
+      expect(decoded.data.users[1].data).toEqual(user2.data);
+    });
+
+    test("should convert Embedding Registry Items to correct UR", () => {
+      const urString = userCollection.toUr().toString();
+      const expected = "ur:user-collection/oeiejthsjnihjngtkkcxfxjljzjzihiajyinjljtihkpjkihjpjklftpjloeidinieadiejthsjnihjssspfjpiyhsjtcxfwinjzhsjzjlssnejzkptpjloeidinieaoiejthsjnihjpgdinihjyihjpcxgokkjyjyihjpjkjojpjljyjsfeoeyl"
+
+      expect(urString).toEqual(expected);
+    });
+
+    test("should convert hex to expected Registry Item", () => {
+      const urString = "ur:user-collection/oeiejthsjnihjngtkkcxfxjljzjzihiajyinjljtihkpjkihjpjklftpjloeidinieadiejthsjnihjssspfjpiyhsjtcxfwinjzhsjzjlssnejzkptpjloeidinieaoiejthsjnihjpgdinihjyihjpcxgokkjyjyihjpjkjojpjljyjsfeoeyl";
+
+      const decoded = UserCollection.fromUr(urString);
+
+      expect(decoded).toBeInstanceOf(UserCollection);
+      expect(decoded.data.users[0]).toBeInstanceOf(User);
+      expect(decoded.data.users[1]).toBeInstanceOf(User);
+
+      expect(decoded.data.users[0].data).toEqual(user1.data);
+      expect(decoded.data.users[1].data).toEqual(user2.data);
+    });
+
+    test("should convert Embedding Registry Items to correct hex", () => {
+      const hexData = userCollection.toHex();
+      const expected = "a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74";
+
+      expect(hexData).toEqual(expected);
+    });
+    
+    test("should convert hex to expected Registry Item", () => {
+      const hexData = "a2646e616d656d4d7920436f6c6c656374696f6e65757365727382d86fa262696401646e616d6571c4b07266616e2042696c616c6fc49f6c75d86fa262696402646e616d6572506965746572205579747465727370726f74";
+
+      const decoded = UserCollection.fromHex(hexData);
       expect(decoded).toBeInstanceOf(UserCollection);
       expect(decoded.data.users[0]).toBeInstanceOf(User);
       expect(decoded.data.users[1]).toBeInstanceOf(User);

@@ -80,15 +80,17 @@ export abstract class RegistryItemBase {
 
   /**
    * Preprocess the data before encoding into CBOR Tagged instance
+   * 
+   * @param data, data before keymap conversion, if left empty, it will use the this.data property
    */
-  preCBOR() {
+  preCBOR(data = this.data) {
     // If key-map exists, convert keys to integers
     if (this.keyMap) {
       const allowKeysNotInMap = (this.constructor as typeof RegistryItemBase)
         .allowKeysNotInMap;
-      return encodeKeys(this.data, this.keyMap, allowKeysNotInMap);
+      return encodeKeys(data, this.keyMap, allowKeysNotInMap);
     }
-    return this.data;
+    return data;
   }
 
   /**
@@ -106,7 +108,7 @@ export abstract class RegistryItemBase {
    * @returns
    */
   toCBOR(_writer, _options) {
-    const processed = this.preCBOR();
+    const processed = this.preCBOR(this.data);
     let tag = this.type.tag;
     // TODO: find a better way to ignore top level tag on encoder
     if (_options?.ignoreTopLevelTag) {
@@ -119,6 +121,10 @@ export abstract class RegistryItemBase {
 
   toUr() {
     return new UR(this);
+  }
+
+  toHex() {
+    return this.toUr().getPayloadHex();
   }
 
   public encodeKeys = encodeKeys;
@@ -165,6 +171,20 @@ export function registryItemFactory<T extends RegistryItemBase>(input: IRegistry
       return val;
     }
 
+    static fromUr(ur: UR | string): T {
+      const urObj = typeof ur === "string" ? UR.fromString(ur) : ur;
+      const decoded = urObj.decode() as unknown;
+
+      return decoded as T;
+    }
+
+    static fromHex(hex: string): T {
+      const ur = UR.fromHex({ type: URType, payload: hex });
+      const decoded = ur.decode() as unknown;
+
+      return decoded as T;
+    }
+
     /**
      * Static method to create an instance from CBOR DataItem data.
      * It processes the raw CBOR data if needed and returns a new instance of the class.
@@ -188,6 +208,8 @@ export type RegistryItemClass<T extends RegistryItemBase = RegistryItemBase> = {
   keyMap?: IKeyMap;
   allowKeysNotInMap: boolean;
   postCBOR(val: any, allowKeysNotInMapOverwrite?: boolean): any;
-  fromCBORData(val: any, allowKeysNotInMap?: boolean, tagged?: any): T;  
+  fromCBORData(val: any, allowKeysNotInMap?: boolean, tagged?: any): T; 
+  fromUr(ur: UR | string): T;
+  fromHex(hex: string): T;
 };
 export type RegistryItem = InstanceType<RegistryItemClass>;
