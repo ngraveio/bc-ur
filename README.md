@@ -52,6 +52,8 @@ yarn add @ngraveio/bc-ur
 ---
 
 ## Quick Start
+> ⚠️ **Warning**: `Buffer` instances are encoded and decoded as `Uint8Array` for compatibility. Convert `Uint8Array` back to `Buffer` using `Buffer.from(uint8Array)` in the `postCbor` function. See the [example](#3-postcbor) below for details.
+
 
 ### Encoding and Decoding with Registry Items
 
@@ -329,6 +331,7 @@ class PostProcessedItem extends registryItemFactory({
     const processedData = super.postCBOR(decodedData);
     // Transform a field after decoding
     processedData.name = processedData.name.toUpperCase();
+    processedData.bytes = Buffer.from(processedData.bytes);
     return processedData;
   }
 }

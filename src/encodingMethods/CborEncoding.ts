@@ -2,6 +2,7 @@ import { URRegistryClass, UrRegistry } from "../registry.js";
 import { RegistryItem, RegistryItemClass, registryItemFactory } from "../classes/RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod.js";
+import { Buffer as BufferPolyfill } from "buffer/";
 
 import {
   DecodeOptions,
@@ -31,6 +32,16 @@ if (isBufferDefined) {
     return [NaN, u8];
   });
 }
+
+// Register BufferPolyfill for non-node environments
+registerEncoder(BufferPolyfill, (b, _writer, _options) => {
+  // Conver buffer to Uint8Array
+  const u8 = new Uint8Array(b);
+  // This is a major type ( MT.BYTE_STRING ) so no tag is given
+  return [NaN, u8];
+});
+
+
 export class CborEncoding<T extends RegistryItem>
   implements IEncodingMethod<T, Uint8Array>
 {

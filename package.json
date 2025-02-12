@@ -1,6 +1,6 @@
 {
   "name": "@ngraveio/bc-ur",
-  "version": "2.0.0-beta.5",
+  "version": "2.0.0-beta.6",
   "author": "Antonis Poulakis <antwnic4@gmail.com>, Irfan Bilaloğlu <irfanbilaloglu@gmail.com>, Pieter Uyttersprot <pieter.uyttersprot@ngrave.io>",
   "description": "A JS implementation of the Uniform Resources (UR) specification from Blockchain Commons",
   "license": "MIT",
@@ -23,10 +23,11 @@
     "start": "live-server --watch=src,dist --port=8080"
   },
   "dependencies": {
+    "@bacons/text-decoder": "0.0.0",
+    "buffer": "^6.0.3",
     "cbor2": "^1.8.0",
     "crc": "^4.3.2",
-    "sha.js": "^2.4.11",
-    "@bacons/text-decoder": "0.0.0"
+    "sha.js": "^2.4.11"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.2",
