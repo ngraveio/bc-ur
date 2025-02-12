@@ -1,7 +1,5 @@
 import { RegistryItemClass } from "./classes/RegistryItem.js";
 import {
-  DecodeOptions,
-  EncodeOptions,
   Tag,
 } from "./wrappers/cbor2.js";
 
@@ -63,6 +61,25 @@ export class URRegistryClass {
         );
       });
     }
+  }
+
+  public addItemOnce(item: RegistryItemClass): void {
+    // If we already have the item in the registry, do nothing
+    if (this.registry.has(item.URType) || this.tagMap.has(item.tag)) {
+      // Check if its the same item
+      const existingItem = this.registry.get(item.URType);
+      if (existingItem !== item) {
+        this.log(
+          `Warning: Resgistry already has an item with URType: ${item.URType} but it seems to be a different instance`
+        );
+        this.log(`Existing item: ${existingItem}`);
+        this.log(`New item: ${item}`);
+      }
+      return;
+    }
+
+    // Otherwise, add the item
+    this.addItem(item);
   }
 
   public addItems(items: RegistryItemClass[]): void {
