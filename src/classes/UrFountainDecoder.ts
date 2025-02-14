@@ -71,6 +71,12 @@ export class UrFountainDecoder extends FountainDecoder {
         this.started = true;
         this.done = true;
 
+        try {
+          this.decodedData = this.resultUr.decode();
+        } catch (error) {
+          this.error = error;
+        }
+
         // Finish here
         return true;
       }
