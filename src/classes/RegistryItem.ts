@@ -72,8 +72,10 @@ export abstract class RegistryItemBase {
   }
 
   toJSON() {
+    // TODO: if there is any registry item in the data (could be nested or in array), we should call toJSON on them as well
     return {
       type: this.type.URType,
+      tag: this.type.tag,
       ...this.data,
     };
   }
@@ -125,6 +127,10 @@ export abstract class RegistryItemBase {
 
   toHex() {
     return this.toUr().getPayloadHex();
+  }
+
+  toBytes() {
+    return this.toUr().getPayloadCbor();
   }
 
   public encodeKeys = encodeKeys;
