@@ -113,7 +113,7 @@ describe("Fountain Encoder Ur", () => {
 
   test("fountain UR", () => {
     const myUr = make_message_ur(256);
-    const encoder = new UrFountainEncoder(myUr, 30);
+    const encoder = new UrFountainEncoder(myUr, 30, undefined, undefined, 0);
 
     let fragments:string[] = []
     // Call encoder.nextPart() for 20 times
