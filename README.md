@@ -760,7 +760,7 @@ const fragments = encoder.getAllPartsUr(2); // Ratio of fountain parts compared 
 // Keep generating new parts, until a condition is met; for example, the user exits the page, or clicks "DONE"
 while (!stop) {
   // get the next part in the sequence
-  let part = encoder.nextPart().toString();
+  let part = encoder.nextPartUr().toString();
 
   // Get the UR string part that contains data from the original UR data
   // the part looks like this:
@@ -849,6 +849,7 @@ The `UrFountainEncoder` class is used to encode data into Multipart URs. It take
 - `maxFragmentLength`: The maximum size of the CBOR data encoded in the UR. This determines the size of one UR, and the size of the QR code will increase depending on it. However, it is not the direct size; instead, more data is added on top of that size. Default is 100.
 - `minFragmentLength`: The minimum size of the CBOR data encoded in the UR. Default is 10.
 - `firstSeqNum`: The starting sequence number. The encoder will give you direct parts of the original UR until the sequence number reaches the total number of fragments. Then it will start to spit out mixed blocks or fragments using the fountain encoder. This ensures that you don't have to wait for the original part to repeat, and every next fountain part contains a few of the original parts. You can get lucky and decode the whole original payload without waiting to re-read all the parts again if you miss a QR code. Default is 0.
+- `repeatAfterRatio`: The ratio of part to reset the sequence number and start from the beginning if it goes over `fragmentCount * repeatAfterRatio`. . Default is 2. `0` means fountain encoder `.nextPartUr()` will generate a new part forever.
 
 **Example Usage:**
 
@@ -861,10 +862,10 @@ const testPayload = {
 };
 
 const userUr = UR.fromData({ type: "user", payload: testPayload });
-const encoder = new UrFountainEncoder(userUr, 5); // maxFragmentLength: 5, minFragmentLength: 10, firstSeqNum: 0
+const encoder = new UrFountainEncoder(userUr, 5); // maxFragmentLength: 5, minFragmentLength: 10, firstSeqNum: 0, repeatAfterRatio: 2
 
 while (!stop) {
-  let part = encoder.nextPart().toString();
+  let part = encoder.nextPartUr().toString();
   displayPart(part);
 }
 ```
