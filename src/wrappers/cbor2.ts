@@ -4,9 +4,9 @@
 // So we only have one source of truth for cbor2
 
 //@ts-ignore
-export { decode, encode, Tag, registerEncoder } from "../../commonjs/wrappers/cbor2Wrapper.js";
+export { decode, encode, Tag, registerEncoder, comment, diagnose } from "../../commonjs/wrappers/cbor2Wrapper.js";
 //@ts-ignore
-export type { DecodeOptions, EncodeOptions } from "../../commonjs/wrappers/cbor2Wrapper.js";
+export type { DecodeOptions, EncodeOptions, CommentOptions } from "../../commonjs/wrappers/cbor2Wrapper.js";
 
 // export { decode, encode, Tag, registerEncoder } from "./cbor2Wrapper.js";
 // export type { DecodeOptions, EncodeOptions } from "./cbor2Wrapper.js";
