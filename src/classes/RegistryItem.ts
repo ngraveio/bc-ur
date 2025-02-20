@@ -135,11 +135,6 @@ export abstract class RegistryItemBase {
   public encodeKeys = encodeKeys;
   public decodeKeys = decodeKeys;
 
-  /** Property for instanceof checks */
-  static [Symbol.hasInstance](instance: any) {
-    return instance && instance[registryItemSymbol] === true;
-  }
-
   // Custom inspection method for Node.js
   public [Symbol.for("nodejs.util.inspect.custom")](
     _depth: number,
@@ -212,10 +207,6 @@ export function registryItemFactory<T extends RegistryItemBase>(input: IRegistry
       return new this(data);
     }
 
-    /** Property for instanceof checks */
-    static [Symbol.hasInstance](instance: any) {
-      return instance && instance[registryItemSymbol] === true;
-    }
   } as RegistryItemClass<T>;
 }
 
@@ -231,7 +222,6 @@ export type RegistryItemClass<T extends RegistryItemBase = RegistryItemBase> = {
   fromCBORData(val: any, allowKeysNotInMap?: boolean, tagged?: any): T;
   fromUr(ur: UR | string): T;
   fromHex(hex: string): T;
-  [Symbol.hasInstance](instance: any): boolean;
 };
 export type RegistryItem = InstanceType<RegistryItemClass>;
 

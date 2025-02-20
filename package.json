@@ -1,6 +1,6 @@
 {
   "name": "@ngraveio/bc-ur",
-  "version": "2.0.0-beta.8",
+  "version": "2.0.0-beta.9",
   "author": "Irfan Bilaloğlu <irfanbilaloglu@gmail.com>, Pieter Uyttersprot <pieter.uyttersprot@ngrave.io>, Antonis Poulakis <antwnic4@gmail.com>",
   "description": "A JS implementation of the Uniform Resources (UR) specification from Blockchain Commons",
   "license": "MIT",
