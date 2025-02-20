@@ -1,4 +1,4 @@
-import { RegistryItem, RegistryItemBase } from "../classes/RegistryItem.js";
+import { isRegistryItem, RegistryItem, RegistryItemBase } from "../classes/RegistryItem.js";
 import { UR } from "./UR.js";
 import { FountainEncoder } from "./FountainEncoder.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
@@ -31,18 +31,22 @@ export class UrFountainEncoder extends FountainEncoder {
     repeatAfterRatio = 2
   ) {
 
+    let inputUr;
     // If the input is a RegistryItem, convert it to a Ur
-    if (input instanceof RegistryItemBase) {
-      input = UR.fromRegistryItem(input);
+    if (input instanceof RegistryItemBase || isRegistryItem(input)) {
+      inputUr = UR.fromRegistryItem(input);
+    }
+    else {
+      inputUr = input;
     }
     
     // Input in CBOR
-    let inputCBOR = input.getPayloadCbor();
+    let inputCBOR = inputUr.getPayloadCbor();
 
     super(inputCBOR, maxFragmentLength, minFragmentLength, firstSeqNum);
 
-    this._inputUr = input;
-    this._type = input.type;
+    this._inputUr = inputUr;
+    this._type = inputUr.type;
     this.repeatAfterRatio = repeatAfterRatio;
   }
 

@@ -1,6 +1,6 @@
 import { UR } from "./classes/UR.js"
 import { UrRegistry } from "./registry.js"
-import { registryItemFactory, RegistryItemBase } from "./classes/RegistryItem.js"
+import { registryItemFactory, RegistryItemBase, isRegistryItem } from "./classes/RegistryItem.js"
 import { UrFountainEncoder } from "./classes/UrFountainEncoder.js"
 import { UrFountainDecoder } from "./classes/UrFountainDecoder.js"
 import { FountainEncoder } from "./classes/FountainEncoder.js"
@@ -19,6 +19,7 @@ export {
   UrRegistry,
   registryItemFactory,
   RegistryItemBase,
+  isRegistryItem,
   UR,
   UrFountainDecoder,
   UrFountainEncoder,

@@ -1,4 +1,4 @@
-import { RegistryItem, RegistryItemBase } from "./RegistryItem.js";
+import { isRegistryItem, RegistryItem, RegistryItemBase } from "./RegistryItem.js";
 import { EncodingMethodName } from "../enums/EncodingMethodName.js";
 import { EncodingPipeline } from "../encodingMethods/pipeline.js";
 import {
@@ -45,7 +45,7 @@ export class UR {
   // If type is unknown it should be cbor, because default encoding will take any and convert to cbor without tagging
   constructor(input: IUR | RegistryItem) {
     // Create from registry item
-    if (input instanceof RegistryItemBase) {
+    if (input instanceof RegistryItemBase || isRegistryItem(input)) {
       const ur = UR.fromRegistryItem(input as RegistryItem);
       this.type = ur.type;
       this.payload = ur.payload;
