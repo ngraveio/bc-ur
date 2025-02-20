@@ -1,6 +1,9 @@
 import { UR } from "./UR.js";
 import { encodeKeys, decodeKeys, IKeyMap } from "./key.helper.js";
 
+// Define the symbol
+export const registryItemSymbol = Symbol.for("RegistryItemBase");
+
 /**
  * Static interface that RegistryItem classes should implement
  */
@@ -45,11 +48,10 @@ export abstract class RegistryItemBase {
     // Verify input
     const { valid, reasons } = this.verifyInput(data);
     if (!valid) {
-      throw new Error(
-        `Invalid input: ${reasons?.map((r) => r.message).join(", ")}`
-      );
+      throw new Error(`Invalid input: ${reasons?.map((r) => r.message).join(", ")}`);
     }
     this.data = data;
+    (this as any)[registryItemSymbol] = true;
   }
 
   /**
@@ -66,28 +68,27 @@ export abstract class RegistryItemBase {
   }
 
   toString(): string {
-    return `${this.type.URType}[${this.type.tag}](${JSON.stringify(
-      this.data
-    )})`;
+    return `${this.type.URType}[${this.type.tag}](${JSON.stringify(this.data)})`;
   }
 
   toJSON() {
+    // TODO: if there is any registry item in the data (could be nested or in array), we should call toJSON on them as well
     return {
       type: this.type.URType,
+      tag: this.type.tag,
       ...this.data,
     };
   }
 
   /**
    * Preprocess the data before encoding into CBOR Tagged instance
-   * 
+   *
    * @param data, data before keymap conversion, if left empty, it will use the this.data property
    */
   preCBOR(data = this.data) {
     // If key-map exists, convert keys to integers
     if (this.keyMap) {
-      const allowKeysNotInMap = (this.constructor as typeof RegistryItemBase)
-        .allowKeysNotInMap;
+      const allowKeysNotInMap = (this.constructor as typeof RegistryItemBase).allowKeysNotInMap;
       return encodeKeys(data, this.keyMap, allowKeysNotInMap);
     }
     return data;
@@ -127,8 +128,26 @@ export abstract class RegistryItemBase {
     return this.toUr().getPayloadHex();
   }
 
+  toBytes() {
+    return this.toUr().getPayloadCbor();
+  }
+
   public encodeKeys = encodeKeys;
   public decodeKeys = decodeKeys;
+
+  /** Property for instanceof checks */
+  static [Symbol.hasInstance](instance: any) {
+    return instance && instance[registryItemSymbol] === true;
+  }
+
+  // Custom inspection method for Node.js
+  public [Symbol.for("nodejs.util.inspect.custom")](
+    _depth: number,
+    inspectOptions: object,
+    inspect: (val: unknown, opts: object) => unknown
+  ): string {
+    return `${this.type.URType}[${this.type.tag}](${inspect(this.data, inspectOptions)})`;
+  }
 }
 
 /**
@@ -162,11 +181,7 @@ export function registryItemFactory<T extends RegistryItemBase>(input: IRegistry
     static postCBOR(val: any, allowKeysNotInMapOverwrite?: boolean) {
       // If key-map exists, convert integer keys back to string keys
       if (keyMap) {
-        return decodeKeys(
-          val,
-          keyMap,
-          allowKeysNotInMapOverwrite ?? allowKeysNotInMap
-        );
+        return decodeKeys(val, keyMap, allowKeysNotInMapOverwrite ?? allowKeysNotInMap);
       }
       return val;
     }
@@ -196,6 +211,11 @@ export function registryItemFactory<T extends RegistryItemBase>(input: IRegistry
       // Return an instance of the generated class
       return new this(data);
     }
+
+    /** Property for instanceof checks */
+    static [Symbol.hasInstance](instance: any) {
+      return instance && instance[registryItemSymbol] === true;
+    }
   } as RegistryItemClass<T>;
 }
 
@@ -208,8 +228,23 @@ export type RegistryItemClass<T extends RegistryItemBase = RegistryItemBase> = {
   keyMap?: IKeyMap;
   allowKeysNotInMap: boolean;
   postCBOR(val: any, allowKeysNotInMapOverwrite?: boolean): any;
-  fromCBORData(val: any, allowKeysNotInMap?: boolean, tagged?: any): T; 
+  fromCBORData(val: any, allowKeysNotInMap?: boolean, tagged?: any): T;
   fromUr(ur: UR | string): T;
   fromHex(hex: string): T;
+  [Symbol.hasInstance](instance: any): boolean;
 };
 export type RegistryItem = InstanceType<RegistryItemClass>;
+
+/**
+ * Function to check if an object is an instance of RegistryItemBase or its subclasses
+ * @param obj - The object to check
+ * @returns true if the object is an instance of RegistryItemBase or its subclasses
+ */
+export function isRegistryItem(obj: any): obj is RegistryItem {
+  return (
+    obj instanceof RegistryItemBase ||
+    (obj && obj[registryItemSymbol] === true) ||
+    //(obj && typeof obj.toCBOR === 'function' && typeof obj.toUr === 'function' && typeof obj.toHex === 'function' && typeof obj.toBytes === 'function' && obj.type !== undefined && obj.data !== undefined)
+    (obj && typeof obj.toCBOR === 'function' && typeof obj.toUr === 'function' && typeof obj.toHex === 'function' && obj.type !== undefined && obj.data !== undefined)
+  );
+}

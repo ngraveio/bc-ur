@@ -33,6 +33,15 @@ if (isBufferDefined) {
   });
 }
 
+if (globalThis?.Buffer !== undefined) {
+  registerEncoder(globalThis.Buffer, (b, _writer, _options) => {
+    // Conver buffer to Uint8Array
+    const u8 = new Uint8Array(b);
+    // This is a major type ( MT.BYTE_STRING ) so no tag is given
+    return [NaN, u8];
+  });
+}
+
 // Register BufferPolyfill for non-node environments
 registerEncoder(BufferPolyfill, (b, _writer, _options) => {
   // Conver buffer to Uint8Array
