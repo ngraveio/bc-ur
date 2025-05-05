@@ -1,9 +1,9 @@
-name: Sync main with release
+name: Sync beta with main
 
 on:
   push:
     branches:
-      - release
+      - main
 
 jobs:
   sync-main-branch:
@@ -15,24 +15,21 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Create PR from release to main
+      - name: Create PR from main to beta
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Check if a pull request already exists from release to main
-          pr_url=$(gh pr list --head release --base main --json url --jq '.[0].url')
+          # Check if a pull request already exists from main to beta
+          pr_url=$(gh pr list --head main --base beta --json url --jq '.[0].url')
           
           if [ -n "$pr_url" ]; then
             echo "PR already exists: $pr_url"
           else
             pr_url=$(gh pr create \
-              --head release \
-              --base main \
-              --title "[skip ci][skip release] Sync main with the release branch" \
-              --body "Auto-created pull request to merge changes from release into main."
+              --head main \
+              --base beta \
+              --title "[skip ci][skip release] Sync beta with the main branch" \
+              --body "Auto-created pull request to merge changes from main into beta."
             )
             echo "Created PR: $pr_url"
           fi
-
-          # Attempt to merge the pull request (Fails, investigate later)
-          # gh pr merge "$pr_url" --merge --auto

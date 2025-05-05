@@ -9,8 +9,8 @@ jobs:
   release:
     name: Dry-run release
     runs-on: ubuntu-22.04
-    # Dry-run cannot be be triggered on the release branch
-    if: github.ref != 'refs/heads/release'
+    # Dry-run cannot be be triggered on the main branch
+    if: github.ref != 'refs/heads/main'
     # GH Token permissions as required by semantic-release
     # https://github.com/semantic-release/github?tab=readme-ov-file#github-authentication
     permissions:
@@ -23,8 +23,8 @@ jobs:
         with:
           fetch-depth: 0 # Fetch all branches
 
-      - name: Fetch release branch
-        run: git fetch origin release:refs/remotes/origin/release
+      - name: Fetch main branch
+        run: git fetch origin main:refs/remotes/origin/main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -43,11 +43,7 @@ jobs:
 
       - name: Dry-run release
         run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            echo '{ "branches": [ "${{ github.ref_name }}", "release" ]}' > .releaserc;
-          else
-            echo '{ "branches": [{ "name": "${{ github.ref_name }}", "prerelease": "beta", "channel": "beta" }, "release" ]}' > .releaserc;
-          fi
+          echo '{ "branches": [{ "name": "${{ github.ref_name }}", "prerelease": "beta", "channel": "beta" }, "main" ]}' > .releaserc;
           npx semantic-release --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
