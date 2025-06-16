@@ -15,6 +15,14 @@ import { HexEncoding } from "./encodingMethods/HexEncoding.js"
 // CBOR2 library
 import * as cbor2 from "./wrappers/cbor2.js";
 
+// Registry types
+import { BatchSignRequest } from "./registry-types/batch-sign-request.js";
+import { BatchSignResponse } from "./registry-types/batch-sign-response.js";
+
+// Register the batch sign types
+UrRegistry.addItem(BatchSignRequest);
+UrRegistry.addItem(BatchSignResponse);
+
 export {
   UrRegistry,
   registryItemFactory,
@@ -31,6 +39,8 @@ export {
   defaultEncoders,
   dataPipeline,
   cbor2,
+  BatchSignRequest,
+  BatchSignResponse,
 }
 
 // Export types
