@@ -8,7 +8,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
   release:
     name: Dry-run release
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     # Dry-run cannot be be triggered on the release branch
     if: github.ref != 'refs/heads/release'
     # GH Token permissions as required by semantic-release
@@ -20,7 +20,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Fetch all branches
 
@@ -28,7 +28,7 @@ jobs:
         run: git fetch origin release:refs/remotes/origin/release
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "24.x"
 
